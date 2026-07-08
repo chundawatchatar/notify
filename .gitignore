@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnp.*
+
+# Build outputs
+dist/
+build/
+coverage/
+storybook-static/
+tmp/
+
+# TanStack Start / Vinxi outputs
+.output/
+.vinxi/
+
+# Nx
+.nx/
+
+# Elixir
+_build/
+deps/
+.elixir_ls/
+*.ez
+
+# Logs
+*.log
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

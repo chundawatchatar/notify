@@ -1,0 +1,44 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "@notify/api",
+  "projectType": "application",
+  "sourceRoot": "apps/api/lib",
+  "implicitDependencies": ["@notify/domain"],
+  "targets": {
+    "deps": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix deps.get",
+        "cwd": "apps/api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix compile",
+        "cwd": "apps/api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix test",
+        "cwd": "apps/api"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix format --check-formatted",
+        "cwd": "apps/api"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix format",
+        "cwd": "apps/api"
+      }
+    }
+  }
+}

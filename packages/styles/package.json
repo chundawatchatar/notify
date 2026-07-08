@@ -1,0 +1,19 @@
+{
+  "name": "@notify/styles",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "src"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    "./app.css": "./src/app.css",
+    "./globals.css": "./src/globals.css"
+  },
+  "scripts": {
+    "lint": "oxlint . --no-error-on-unmatched-pattern && biome check ."
+  }
+}

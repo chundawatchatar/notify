@@ -1,0 +1,36 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "@notify/domain",
+  "projectType": "library",
+  "sourceRoot": "libs/domain/lib",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix compile",
+        "cwd": "libs/domain"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix test",
+        "cwd": "libs/domain"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix format --check-formatted",
+        "cwd": "libs/domain"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix format",
+        "cwd": "libs/domain"
+      }
+    }
+  }
+}
