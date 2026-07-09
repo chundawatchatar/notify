@@ -1,5 +1,6 @@
 import path from "node:path";
 
+const biomeFiles = "*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,json,jsonc,css}";
 const sourceFiles = "*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,json,jsonc,css,md,mdx,yml,yaml}";
 const scriptFiles = "*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}";
 const elixirFiles = "*.{ex,exs}";
@@ -35,10 +36,8 @@ const runElixirFormat = (files) => {
 };
 
 export default {
-  [sourceFiles]: [
-    runOnSourceFiles("biome check --write --files-ignore-unknown=true"),
-    runOnSourceFiles("oxfmt --write --no-error-on-unmatched-pattern"),
-  ],
+  [biomeFiles]: runOnSourceFiles("biome check --write --files-ignore-unknown=true"),
+  [sourceFiles]: runOnSourceFiles("oxfmt --write --no-error-on-unmatched-pattern"),
   [scriptFiles]: runOnSourceFiles("oxlint --no-error-on-unmatched-pattern"),
   [elixirFiles]: runElixirFormat,
 };
