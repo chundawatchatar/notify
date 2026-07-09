@@ -30,6 +30,7 @@ Default local ports are:
 
 ```sh
 pnpm docker:up
+pnpm dev:all
 pnpm api:setup
 pnpm api
 pnpm check

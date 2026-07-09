@@ -37,10 +37,14 @@ Default local ports are API `4100`, web `3100`, PostgreSQL `15432`, and Redis
 
 ```sh
 pnpm install
+pnpm dev:all
 pnpm check
 pnpm build
 pnpm test
-pnpm format
+pnpm format:all
+pnpm lint:all
+pnpm lint:all:fix
+pnpm typecheck:all
 pnpm docker:up
 pnpm docker:down
 pnpm api
