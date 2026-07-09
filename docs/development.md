@@ -23,6 +23,7 @@ Default local ports are:
 
 - API: `4100`
 - web: `3100`
+- marketing: `3200`
 - PostgreSQL: `15432`
 - Redis: `16379`
 
@@ -36,6 +37,7 @@ pnpm api
 pnpm check
 pnpm build
 pnpm web
+pnpm marketing
 pnpm storybook
 ```
 

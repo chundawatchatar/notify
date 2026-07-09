@@ -30,8 +30,8 @@ mise x -- pnpm setup
 The setup command installs pinned runtimes, creates `.env` from `.env.example`
 when needed, installs dependencies, and starts local PostgreSQL and Redis.
 
-Default local ports are API `4100`, web `3100`, PostgreSQL `15432`, and Redis
-`16379`.
+Default local ports are API `4100`, web `3100`, marketing `3200`, PostgreSQL
+`15432`, and Redis `16379`.
 
 ## Commands
 
@@ -57,6 +57,7 @@ pnpm domain:compile
 pnpm domain:test
 pnpm storybook
 pnpm web
+pnpm marketing
 pnpm nx show projects
 pnpm graph
 ```
@@ -99,6 +100,8 @@ Elixir and Mix are required before running the `api:*` and `domain:*` scripts.
 - `@notify/storybook`: Storybook app for documenting and previewing UI
   components from `@notify/ui`.
 - `@notify/web`: TanStack Start frontend app for the Notify dashboard.
+- `@notify/marketing`: TanStack Start public marketing website for the apex
+  product domain.
 
 ## Project Conventions
 

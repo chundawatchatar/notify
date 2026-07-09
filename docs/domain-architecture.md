@@ -15,7 +15,7 @@ This document describes the intended public domain layout for Notify. Replace
 
 | Host              | Purpose                                        | Owner                                  |
 | ----------------- | ---------------------------------------------- | -------------------------------------- |
-| `notify.tld`      | Portfolio/marketing website                    | Web/marketing app                      |
+| `notify.tld`      | Portfolio/marketing website                    | `apps/marketing`                       |
 | `www.notify.tld`  | Optional redirect to `notify.tld`              | Edge/router                            |
 | `app.notify.tld`  | Main dashboard web app                         | `apps/web`                             |
 | `api.notify.tld`  | Public API for customer backends and dashboard | `apps/api`                             |
@@ -41,6 +41,7 @@ Local development can use ports instead of local DNS:
 
 | Local URL                    | Purpose                   |
 | ---------------------------- | ------------------------- |
+| `http://localhost:3200`      | marketing website         |
 | `http://localhost:3100`      | dashboard web app         |
 | `http://localhost:4100`      | API and realtime endpoint |
 | `postgres://localhost:15432` | PostgreSQL                |

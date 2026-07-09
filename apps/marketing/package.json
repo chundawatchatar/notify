@@ -1,0 +1,54 @@
+{
+  "name": "@notify/marketing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "sh ../../tools/with-env.sh vite dev",
+    "generate-routes": "tsr generate",
+    "lint": "oxlint . --no-error-on-unmatched-pattern && biome check .",
+    "preview": "sh ../../tools/with-env.sh vite preview",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@notify/styles": "workspace:*",
+    "@notify/ui": "workspace:*",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
+    "@tanstack/router-cli": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/.output",
+          "{projectRoot}/dist"
+        ]
+      },
+      "test": {
+        "outputs": [
+          "{projectRoot}/coverage"
+        ]
+      }
+    }
+  }
+}
