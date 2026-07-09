@@ -31,10 +31,10 @@ fi
 echo "Installing JavaScript dependencies..."
 run_pnpm install
 
-echo "Installing Elixir API dependencies..."
-run_pnpm api:deps
-
 echo "Starting local Docker services..."
 docker compose up -d --wait
+
+echo "Setting up the Phoenix API database..."
+run_pnpm api:setup
 
 echo "Development environment is ready."

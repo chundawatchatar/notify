@@ -30,6 +30,9 @@ mise x -- pnpm setup
 The setup command installs pinned runtimes, creates `.env` from `.env.example`
 when needed, installs dependencies, and starts local PostgreSQL and Redis.
 
+Default local ports are API `4100`, web `3100`, PostgreSQL `15432`, and Redis
+`16379`.
+
 ## Commands
 
 ```sh
@@ -40,7 +43,9 @@ pnpm test
 pnpm format
 pnpm docker:up
 pnpm docker:down
+pnpm api
 pnpm api:deps
+pnpm api:setup
 pnpm api:compile
 pnpm api:test
 pnpm elixir:check

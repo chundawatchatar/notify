@@ -12,6 +12,20 @@
         "cwd": "apps/api"
       }
     },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh ../../tools/with-env.sh mix phx.server",
+        "cwd": "apps/api"
+      }
+    },
+    "setup": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh ../../tools/with-env.sh mix setup",
+        "cwd": "apps/api"
+      }
+    },
     "build": {
       "executor": "nx:run-commands",
       "options": {
@@ -22,7 +36,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "mix test",
+        "command": "sh ../../tools/with-env.sh mix test",
         "cwd": "apps/api"
       }
     },

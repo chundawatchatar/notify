@@ -1,10 +1,17 @@
 import Config
 
+postgres_hostname = System.get_env("POSTGRES_HOST", "localhost")
+postgres_port = System.get_env("POSTGRES_PORT", "15432")
+postgres_username = System.get_env("POSTGRES_USER", "notify")
+postgres_password = System.get_env("POSTGRES_PASSWORD", "notify")
+api_port = System.get_env("API_PORT") || System.get_env("PORT") || "4100"
+
 # Configure your database
 config :api, Api.Repo,
-  username: "notify",
-  password: "notify",
-  hostname: "localhost",
+  username: postgres_username,
+  password: postgres_password,
+  hostname: postgres_hostname,
+  port: String.to_integer(postgres_port),
   database: "notify_api_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
@@ -15,7 +22,7 @@ config :api, Api.Repo,
 config :api, ApiWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT") || "4000")],
+  http: [ip: {127, 0, 0, 1}, port: String.to_integer(api_port)],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,

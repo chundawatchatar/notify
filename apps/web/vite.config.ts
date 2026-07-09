@@ -6,10 +6,14 @@ import { defineConfig } from "vitest/config";
 
 const uiSourcePath = fileURLToPath(new URL("../../packages/ui/src", import.meta.url));
 const appSourcePath = fileURLToPath(new URL("./src", import.meta.url));
+const webPort = Number(process.env.WEB_PORT ?? "3100");
 
 export default defineConfig({
   server: {
-    port: 3000,
+    port: webPort,
+  },
+  preview: {
+    port: webPort,
   },
   resolve: {
     alias: [

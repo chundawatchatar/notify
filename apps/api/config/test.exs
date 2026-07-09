@@ -1,14 +1,20 @@
 import Config
 
+postgres_hostname = System.get_env("POSTGRES_HOST", "localhost")
+postgres_port = System.get_env("POSTGRES_PORT", "15432")
+postgres_username = System.get_env("POSTGRES_USER", "notify")
+postgres_password = System.get_env("POSTGRES_PASSWORD", "notify")
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :api, Api.Repo,
-  username: "notify",
-  password: "notify",
-  hostname: "localhost",
+  username: postgres_username,
+  password: postgres_password,
+  hostname: postgres_hostname,
+  port: String.to_integer(postgres_port),
   database: "notify_api_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2

@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite dev --port 3000",
+    "dev": "sh ../../tools/with-env.sh vite dev",
     "lint": "oxlint . --no-error-on-unmatched-pattern && biome check .",
-    "preview": "vite preview --port 3000",
+    "preview": "sh ../../tools/with-env.sh vite preview",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
