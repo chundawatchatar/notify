@@ -76,7 +76,19 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    text-rendering: geometricPrecision;
+  }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
   }
 }
