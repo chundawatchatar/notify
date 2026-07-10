@@ -100,8 +100,8 @@ Elixir and Mix are required before running the `api:*` and `domain:*` scripts.
 - `@notify/storybook`: Storybook app for documenting and previewing UI
   components from `@notify/ui`.
 - `@notify/web`: TanStack Start frontend app for the Notify dashboard.
-- `@notify/marketing`: TanStack Start public marketing website for the apex
-  product domain.
+- `@notify/marketing`: Astro public marketing website for the apex product
+  domain, sharing React UI components from `@notify/ui`.
 
 ## Project Conventions
 

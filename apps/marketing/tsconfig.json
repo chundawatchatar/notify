@@ -1,17 +1,9 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "../../tsconfig.base.json",
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"],
   "compilerOptions": {
     "jsx": "react-jsx",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "paths": {
-      "#/*": ["./src/*"],
-      "@/*": ["./src/*"],
-      "@notify/ui": ["../../packages/ui/src/index.ts"]
-    },
-    "types": ["node", "vite/client", "vitest/globals"],
-    "verbatimModuleSyntax": false
-  },
-  "include": ["src", "vite.config.ts"],
-  "exclude": [".output", "coverage", "dist", "node_modules"]
+    "jsxImportSource": "react"
+  }
 }

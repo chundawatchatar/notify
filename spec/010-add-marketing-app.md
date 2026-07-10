@@ -2,12 +2,15 @@
 
 ## Status
 
-Implemented.
+Superseded by `011-adopt-astro-marketing-app.md`.
 
 ## Goal
 
 Add a dedicated public marketing website app for the apex product domain while
 keeping the dashboard app in `apps/web`.
+
+This spec originally added a TanStack Start marketing app. The implementation
+was later replaced with Astro in `011-adopt-astro-marketing-app.md`.
 
 ## Context
 

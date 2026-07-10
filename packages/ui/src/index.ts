@@ -74,4 +74,27 @@ export {
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/tabs";
 export { Textarea } from "./components/textarea";
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/tooltip";
+export type {
+  TypographyElement,
+  TypographyProps,
+  TypographyVariant,
+} from "./components/typography";
+export {
+  Typography,
+  TypographyBlockquote,
+  TypographyCode,
+  TypographyH1,
+  TypographyH2,
+  TypographyH3,
+  TypographyH4,
+  TypographyLarge,
+  TypographyLead,
+  TypographyLink,
+  TypographyList,
+  TypographyMuted,
+  TypographyP,
+  TypographyProseP,
+  TypographySmall,
+  typographyVariants,
+} from "./components/typography";
 export { cn } from "./lib/utils";

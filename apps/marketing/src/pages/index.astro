@@ -1,0 +1,23 @@
+---
+import "@notify/styles/app.css";
+// biome-ignore lint/correctness/noUnusedImports: Astro renders this component from the template.
+import { MarketingHome } from "../components/MarketingHome";
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<meta
+			name="description"
+			content="Notify is a developer-first realtime notification platform for product teams."
+		/>
+		<title>Notify | Realtime notification infrastructure</title>
+	</head>
+	<body>
+		<MarketingHome />
+	</body>
+</html>

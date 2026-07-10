@@ -3,6 +3,7 @@ node_modules/
 .pnp.*
 
 # Build outputs
+.astro/
 dist/
 build/
 coverage/

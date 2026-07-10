@@ -52,7 +52,6 @@
     "@biomejs/biome": "catalog:",
     "@nx/js": "catalog:",
     "@tailwindcss/vite": "catalog:",
-    "@tanstack/react-start": "catalog:",
     "lint-staged": "catalog:",
     "nx": "catalog:",
     "oxfmt": "catalog:",

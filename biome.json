@@ -13,6 +13,7 @@
       "!build",
       "!coverage",
       "!tmp",
+      "!apps/**/.astro",
       "!apps/**/src/routeTree.gen.ts",
       "!apps/**/.output",
       "!apps/**/.vinxi"
