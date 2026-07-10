@@ -11,9 +11,11 @@ const external = [
   "class-variance-authority",
   "clsx",
   "lucide-react",
+  "next-themes",
   "react",
   "react-dom",
   "react/jsx-runtime",
+  "sonner",
   "tailwind-merge",
 ];
 
@@ -43,6 +45,12 @@ export default defineConfig({
     },
   },
   test: {
+    coverage: {
+      exclude: ["dist/**", "src/**/*.test.{ts,tsx}", "src/test/**", "vite.config.ts"],
+      provider: "v8",
+      reporter: ["text", "json-summary", "lcov"],
+      reportsDirectory: "coverage",
+    },
     environment: "jsdom",
     globals: true,
     passWithNoTests: true,
