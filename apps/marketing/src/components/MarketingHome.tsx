@@ -13,11 +13,15 @@ import {
   Zap,
 } from "lucide-react";
 
+const webAppUrl = import.meta.env.PUBLIC_WEB_APP_URL ?? "http://localhost:3100";
+const loginUrl = `${webAppUrl}/login`;
+const signupUrl = `${webAppUrl}/signup`;
+
 const navItems = [
   { label: "Platform", href: "#platform" },
   { label: "Architecture", href: "#architecture" },
   { label: "Logs", href: "#logs" },
-  { label: "Pricing", href: "https://app.notify.tld" },
+  { label: "Pricing", href: signupUrl },
 ];
 
 const codeLines = [
@@ -103,10 +107,10 @@ function MarketingHome() {
 
           <div className="flex items-center gap-2">
             <Button asChild className="hidden sm:inline-flex" variant="ghost">
-              <a href="https://docs.notify.tld">Docs</a>
+              <a href={loginUrl}>Sign in</a>
             </Button>
             <Button asChild>
-              <a href="https://app.notify.tld">
+              <a href={signupUrl}>
                 Get API key
                 <ArrowRight />
               </a>
@@ -131,7 +135,7 @@ function MarketingHome() {
             </Typography>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild className="h-12 px-6" size="lg">
-                <a href="https://app.notify.tld">
+                <a href={signupUrl}>
                   Start building
                   <ArrowRight />
                 </a>
@@ -273,7 +277,7 @@ function MarketingHome() {
               React UI components, design tokens, Tailwind, and package versions.
             </Typography>
             <Button asChild className="bg-background text-foreground hover:bg-background/90">
-              <a href="https://app.notify.tld">
+              <a href={signupUrl}>
                 Create workspace
                 <ArrowRight />
               </a>

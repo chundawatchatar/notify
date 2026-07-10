@@ -63,6 +63,7 @@ export {
   DropdownMenuTrigger,
 } from "./components/dropdown-menu";
 export { HoverCard, HoverCardContent, HoverCardTrigger } from "./components/hover-card";
+export { GoogleMarkIcon, NotifyMarkIcon } from "./components/icons";
 export type { InputProps } from "./components/input";
 export { Input } from "./components/input";
 export { Label } from "./components/label";
