@@ -1,5 +1,5 @@
-import { Button, Typography } from "@notify/ui";
-import { ArrowRight, BellRing } from "lucide-react";
+import { Button, NotifyMarkIcon, Typography } from "@notify/ui";
+import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 
 const webAppUrl = import.meta.env.PUBLIC_WEB_APP_URL ?? "http://localhost:3100";
@@ -35,7 +35,7 @@ function MarketingHeader({ activePage }: Readonly<{ activePage: "home" | "pricin
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 md:px-6">
         <a className="flex items-center gap-2 font-semibold text-base" href="/">
           <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
-            <BellRing className="size-4" />
+            <NotifyMarkIcon className="size-4" />
           </span>
           Notify
         </a>
@@ -79,7 +79,7 @@ function MarketingFooter() {
         <div>
           <a className="flex w-fit items-center gap-2 font-semibold" href="/">
             <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
-              <BellRing className="size-4" />
+              <NotifyMarkIcon className="size-4" />
             </span>
             Notify
           </a>

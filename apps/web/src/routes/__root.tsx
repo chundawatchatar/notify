@@ -7,6 +7,13 @@ import "@notify/styles/app.css";
 
 export const Route = createRootRoute({
   head: () => ({
+    links: [
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: "/favicon.svg",
+      },
+    ],
     meta: [
       {
         charSet: "utf-8",
