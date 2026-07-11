@@ -1,6 +1,18 @@
 export { toast } from "sonner";
 export { Alert, AlertDescription, AlertTitle } from "./components/alert";
 export {
+  AppShell,
+  AppShellBrand,
+  AppShellContent,
+  AppShellHeader,
+  AppShellHeaderInner,
+  AppShellLayout,
+  AppShellMain,
+  AppShellNav,
+  AppShellSidebar,
+  AppShellSidebarFooter,
+} from "./components/app-shell";
+export {
   Avatar,
   AvatarBadge,
   AvatarFallback,
@@ -33,6 +45,14 @@ export {
 } from "./components/card";
 export { Checkbox } from "./components/checkbox";
 export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/collapsible";
+export type { SidebarNavItemProps } from "./components/dashboard";
+export {
+  SidebarNavItem,
+  SidebarNavLabel,
+  StatCard,
+  StatusLine,
+  UsageBar,
+} from "./components/dashboard";
 export {
   Dialog,
   DialogClose,

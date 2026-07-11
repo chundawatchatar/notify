@@ -16,7 +16,7 @@
     "lint:all:fix": "pnpm format:all",
     "prepare": "git config core.hooksPath .githooks",
     "precommit": "lint-staged --concurrent false",
-    "prepush": "pnpm check && pnpm build",
+    "prepush": "pnpm lint:all && pnpm typecheck:all && pnpm build",
     "format": "pnpm format:all",
     "format:all": "biome check --write . && oxfmt --write . && pnpm elixir:format",
     "format:all:check": "biome check . && oxfmt --check . && pnpm elixir:format:check",

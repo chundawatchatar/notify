@@ -1,6 +1,7 @@
 import { Button, Checkbox, GoogleMarkIcon, Input, Label, NotifyMarkIcon } from "@notify/ui";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { z } from "zod";
@@ -28,6 +29,8 @@ const defaultAuthValues: AuthValues = {
 };
 
 function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
+  const navigate = useNavigate();
+
   const submitMutation = useMutation({
     mutationFn: async (values: AuthValues) => {
       await wait(700);
@@ -55,6 +58,7 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
     onSubmit: async ({ value }) => {
       googleMutation.reset();
       await submitMutation.mutateAsync(value);
+      await navigate({ to: "/dashboard" });
     },
   });
 
@@ -72,7 +76,11 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
         disabled={googleMutation.isPending || submitMutation.isPending}
         onClick={() => {
           submitMutation.reset();
-          googleMutation.mutate();
+          googleMutation.mutate(undefined, {
+            onSuccess: () => {
+              void navigate({ to: "/dashboard" });
+            },
+          });
         }}
         type="button"
         variant="outline"
