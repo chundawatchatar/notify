@@ -1,12 +1,12 @@
 import { Button, Checkbox, GoogleMarkIcon, Input, Label, NotifyMarkIcon } from "@notify/ui";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
 import type { ReactNode } from "react";
 import { z } from "zod";
 
-type AuthMode = "login" | "signup";
+type AuthMode = "forgot-password" | "login" | "signup";
 type AuthValues = {
   email: string;
   password: string;
@@ -30,6 +30,7 @@ const defaultAuthValues: AuthValues = {
 
 function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
   const navigate = useNavigate();
+  const isForgotPassword = mode === "forgot-password";
 
   const submitMutation = useMutation({
     mutationFn: async (values: AuthValues) => {
@@ -37,10 +38,7 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
 
       return {
         email: values.email,
-        message:
-          mode === "login"
-            ? "Sign-in form is validated and ready for the API."
-            : "Signup form is validated and ready to create a workspace.",
+        message: authSuccessMessage(mode),
       };
     },
   });
@@ -58,7 +56,10 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
     onSubmit: async ({ value }) => {
       googleMutation.reset();
       await submitMutation.mutateAsync(value);
-      await navigate({ to: "/dashboard" });
+
+      if (!isForgotPassword) {
+        await navigate({ to: "/dashboard" });
+      }
     },
   });
 
@@ -71,29 +72,33 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
         void form.handleSubmit();
       }}
     >
-      <Button
-        className="h-11 w-full"
-        disabled={googleMutation.isPending || submitMutation.isPending}
-        onClick={() => {
-          submitMutation.reset();
-          googleMutation.mutate(undefined, {
-            onSuccess: () => {
-              void navigate({ to: "/dashboard" });
-            },
-          });
-        }}
-        type="button"
-        variant="outline"
-      >
-        <GoogleMarkIcon className="size-4" />
-        {googleMutation.isPending ? "Connecting to Google" : "Continue with Google"}
-      </Button>
+      {isForgotPassword ? null : (
+        <>
+          <Button
+            className="h-11 w-full"
+            disabled={googleMutation.isPending || submitMutation.isPending}
+            onClick={() => {
+              submitMutation.reset();
+              googleMutation.mutate(undefined, {
+                onSuccess: () => {
+                  void navigate({ to: "/dashboard" });
+                },
+              });
+            }}
+            type="button"
+            variant="outline"
+          >
+            <GoogleMarkIcon className="size-4" />
+            {googleMutation.isPending ? "Connecting to Google" : "Continue with Google"}
+          </Button>
 
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-muted-foreground text-xs">or</span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-muted-foreground text-xs">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+        </>
+      )}
 
       <form.Field
         name="email"
@@ -122,42 +127,44 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
         )}
       </form.Field>
 
-      <form.Field
-        name="password"
-        validators={{
-          onChange: ({ value }) => zodError(passwordSchema, value),
-          onSubmit: ({ value }) => zodError(passwordSchema, value),
-        }}
-      >
-        {(field) => (
-          <FormField
-            action={
-              mode === "login" ? (
-                <a
-                  className="text-muted-foreground text-sm hover:text-foreground"
-                  href="/forgot-password"
-                >
-                  Forgot password?
-                </a>
-              ) : null
-            }
-            error={firstFieldError(field.state.meta.errors)}
-            inputId={field.name}
-            label="Password"
-          >
-            <Input
-              aria-invalid={!field.state.meta.isValid}
-              id={field.name}
-              name={field.name}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-              placeholder="Enter password"
-              type="password"
-              value={field.state.value}
-            />
-          </FormField>
-        )}
-      </form.Field>
+      {isForgotPassword ? null : (
+        <form.Field
+          name="password"
+          validators={{
+            onChange: ({ value }) => zodError(passwordSchema, value),
+            onSubmit: ({ value }) => zodError(passwordSchema, value),
+          }}
+        >
+          {(field) => (
+            <FormField
+              action={
+                mode === "login" ? (
+                  <Link
+                    className="text-muted-foreground text-sm hover:text-foreground"
+                    to="/auth/forgot-password"
+                  >
+                    Forgot password?
+                  </Link>
+                ) : null
+              }
+              error={firstFieldError(field.state.meta.errors)}
+              inputId={field.name}
+              label="Password"
+            >
+              <Input
+                aria-invalid={!field.state.meta.isValid}
+                id={field.name}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+                placeholder="Enter password"
+                type="password"
+                value={field.state.value}
+              />
+            </FormField>
+          )}
+        </form.Field>
+      )}
 
       {mode === "signup" ? (
         <form.Field
@@ -187,41 +194,43 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
         </form.Field>
       ) : null}
 
-      <form.Field
-        name={mode === "login" ? "remember" : "acceptTerms"}
-        validators={
-          mode === "signup"
-            ? {
-                onChange: ({ value }) => zodError(acceptTermsSchema, value),
-                onSubmit: ({ value }) => zodError(acceptTermsSchema, value),
-              }
-            : undefined
-        }
-      >
-        {(field) => {
-          const checkboxId = `${mode}-${field.name}`;
+      {isForgotPassword ? null : (
+        <form.Field
+          name={mode === "login" ? "remember" : "acceptTerms"}
+          validators={
+            mode === "signup"
+              ? {
+                  onChange: ({ value }) => zodError(acceptTermsSchema, value),
+                  onSubmit: ({ value }) => zodError(acceptTermsSchema, value),
+                }
+              : undefined
+          }
+        >
+          {(field) => {
+            const checkboxId = `${mode}-${field.name}`;
 
-          return (
-            <div className="grid gap-2">
-              <Label className="flex items-start gap-3 text-sm" htmlFor={checkboxId}>
-                <Checkbox
-                  aria-invalid={!field.state.meta.isValid}
-                  checked={field.state.value}
-                  className="mt-0.5"
-                  id={checkboxId}
-                  onCheckedChange={(value) => field.handleChange(value === true)}
-                />
-                <span className="text-muted-foreground">
-                  {mode === "login"
-                    ? "Keep me signed in on this device."
-                    : "I agree to Notify's terms and operational data policy."}
-                </span>
-              </Label>
-              <FieldError message={firstFieldError(field.state.meta.errors)} />
-            </div>
-          );
-        }}
-      </form.Field>
+            return (
+              <div className="grid gap-2">
+                <Label className="flex items-start gap-3 text-sm" htmlFor={checkboxId}>
+                  <Checkbox
+                    aria-invalid={!field.state.meta.isValid}
+                    checked={field.state.value}
+                    className="mt-0.5"
+                    id={checkboxId}
+                    onCheckedChange={(value) => field.handleChange(value === true)}
+                  />
+                  <span className="text-muted-foreground">
+                    {mode === "login"
+                      ? "Keep me signed in on this device."
+                      : "I agree to Notify's terms and operational data policy."}
+                  </span>
+                </Label>
+                <FieldError message={firstFieldError(field.state.meta.errors)} />
+              </div>
+            );
+          }}
+        </form.Field>
+      )}
 
       <form.Subscribe
         selector={(state) => [state.canSubmit, state.isSubmitting]}
@@ -231,14 +240,8 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
             disabled={!canSubmit || isSubmitting || submitMutation.isPending}
             type="submit"
           >
-            {submitMutation.isPending
-              ? mode === "login"
-                ? "Signing in"
-                : "Creating workspace"
-              : mode === "login"
-                ? "Sign in"
-                : "Create workspace"}
-            <ArrowRight />
+            {submitButtonLabel(mode, submitMutation.isPending)}
+            {isForgotPassword ? <Mail /> : <ArrowRight />}
           </Button>
         )}
       />
@@ -247,6 +250,15 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
         error={submitMutation.error ?? googleMutation.error}
         message={submitMutation.data?.message ?? googleMutation.data}
       />
+
+      {isForgotPassword ? (
+        <Button asChild className="w-full" variant="ghost">
+          <Link to="/auth/login">
+            <ArrowLeft />
+            Back to sign in
+          </Link>
+        </Button>
+      ) : null}
     </form>
   );
 }
@@ -324,9 +336,9 @@ function AuthShell({
 
             <p className="mt-8 text-center text-muted-foreground text-sm">
               {footerLabel}{" "}
-              <a className="font-medium text-foreground hover:underline" href={footerHref}>
+              <Link className="font-medium text-foreground hover:underline" to={footerHref}>
                 {footerAction}
-              </a>
+              </Link>
             </p>
           </div>
         </section>
@@ -418,6 +430,30 @@ function zodError(schema: z.ZodType, value: unknown) {
   }
 
   return result.error.issues[0]?.message ?? "Invalid value.";
+}
+
+function authSuccessMessage(mode: AuthMode) {
+  if (mode === "forgot-password") {
+    return "If an account exists for this email, password reset instructions will be sent.";
+  }
+
+  if (mode === "login") {
+    return "Sign-in form is validated and ready for the API.";
+  }
+
+  return "Signup form is validated and ready to create a workspace.";
+}
+
+function submitButtonLabel(mode: AuthMode, pending: boolean) {
+  if (mode === "forgot-password") {
+    return pending ? "Sending reset link" : "Send reset link";
+  }
+
+  if (mode === "login") {
+    return pending ? "Signing in" : "Sign in";
+  }
+
+  return pending ? "Creating workspace" : "Create workspace";
 }
 
 function wait(milliseconds: number) {
