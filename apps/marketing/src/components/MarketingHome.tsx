@@ -2,7 +2,6 @@ import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Typography } f
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
-  BellRing,
   Braces,
   Database,
   Gauge,
@@ -12,17 +11,7 @@ import {
   Terminal,
   Zap,
 } from "lucide-react";
-
-const webAppUrl = import.meta.env.PUBLIC_WEB_APP_URL ?? "http://localhost:3100";
-const loginUrl = `${webAppUrl}/login`;
-const signupUrl = `${webAppUrl}/signup`;
-
-const navItems = [
-  { label: "Platform", href: "#platform" },
-  { label: "Architecture", href: "#architecture" },
-  { label: "Logs", href: "#logs" },
-  { label: "Pricing", href: signupUrl },
-];
+import { MarketingShell, marketingUrls } from "./MarketingShell";
 
 const codeLines = [
   "import { Notify } from '@notify/client'",
@@ -83,42 +72,7 @@ const deliveryRows = [
 
 function MarketingHome() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-6">
-          <a className="flex items-center gap-2 font-semibold text-base" href="/">
-            <span className="grid size-7 place-items-center rounded-sm border bg-foreground text-background">
-              <BellRing className="size-4" />
-            </span>
-            Notify
-          </a>
-
-          <div className="hidden items-center gap-6 text-muted-foreground text-sm lg:flex">
-            {navItems.map((item) => (
-              <a
-                className="transition-colors hover:text-foreground"
-                href={item.href}
-                key={item.href}
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button asChild className="hidden sm:inline-flex" variant="ghost">
-              <a href={loginUrl}>Sign in</a>
-            </Button>
-            <Button asChild>
-              <a href={signupUrl}>
-                Get API key
-                <ArrowRight />
-              </a>
-            </Button>
-          </div>
-        </nav>
-      </header>
-
+    <MarketingShell activePage="home">
       <section className="border-b">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 md:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:py-20">
           <div className="self-center">
@@ -126,7 +80,10 @@ function MarketingHome() {
               <Terminal className="size-3.5" />
               Notification API for developers
             </Badge>
-            <Typography as="h1" className="mt-6 max-w-4xl md:text-7xl">
+            <Typography
+              as="h1"
+              className="mt-6 max-w-4xl text-5xl leading-[1.05] md:text-7xl md:leading-[1.02]"
+            >
               Realtime notifications with an API developers can trust.
             </Typography>
             <Typography as="p" variant="lead" className="mt-6 max-w-2xl">
@@ -135,7 +92,7 @@ function MarketingHome() {
             </Typography>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild className="h-12 px-6" size="lg">
-                <a href={signupUrl}>
+                <a href={marketingUrls.signup}>
                   Start building
                   <ArrowRight />
                 </a>
@@ -190,7 +147,7 @@ function MarketingHome() {
                     </div>
                     <Badge variant="secondary">{item.label}</Badge>
                   </div>
-                  <Typography as="h3" className="mt-6">
+                  <Typography as="h3" variant="heading6" className="mt-6">
                     {item.title}
                   </Typography>
                   <Typography as="p" className="mt-3 text-muted-foreground">
@@ -269,7 +226,9 @@ function MarketingHome() {
             <Typography as="p" className="font-mono text-background/60 text-xs uppercase">
               Static-first option
             </Typography>
-            <CardTitle className="mt-2 text-3xl">Astro can own the public site cleanly.</CardTitle>
+            <CardTitle className="mt-2 text-3xl leading-tight">
+              Astro can own the public site cleanly.
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6 px-0 md:grid-cols-[1fr_auto] md:items-end">
             <Typography as="p" className="max-w-2xl text-background/70">
@@ -277,7 +236,7 @@ function MarketingHome() {
               React UI components, design tokens, Tailwind, and package versions.
             </Typography>
             <Button asChild className="bg-background text-foreground hover:bg-background/90">
-              <a href={signupUrl}>
+              <a href={marketingUrls.signup}>
                 Create workspace
                 <ArrowRight />
               </a>
@@ -285,7 +244,7 @@ function MarketingHome() {
           </CardContent>
         </Card>
       </section>
-    </main>
+    </MarketingShell>
   );
 }
 
@@ -299,7 +258,7 @@ function SectionHeader({
       <Typography as="p" className="font-mono text-muted-foreground text-xs uppercase">
         {eyebrow}
       </Typography>
-      <Typography as="h2" className="mt-3 border-b-0 pb-0 md:text-4xl">
+      <Typography as="h2" variant="heading2" className="mt-3 border-b-0 pb-0">
         {title}
       </Typography>
       <Typography as="p" className="mt-4 text-muted-foreground">
