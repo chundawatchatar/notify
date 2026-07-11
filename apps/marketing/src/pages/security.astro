@@ -1,0 +1,23 @@
+---
+import "@notify/styles/app.css";
+// biome-ignore lint/correctness/noUnusedImports: Astro renders this component from the template.
+import { SecurityPage } from "../components/SecurityPage";
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<meta
+			name="description"
+			content="Learn about Notify security controls for scoped API keys, origin policy, workspace roles, audit history, and enterprise readiness."
+		/>
+		<title>Security | Notify</title>
+	</head>
+	<body>
+		<SecurityPage />
+	</body>
+</html>

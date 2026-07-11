@@ -10,16 +10,19 @@ const marketingUrls = {
 };
 
 const navItems = [
-  { label: "Platform", href: "/#platform" },
-  { label: "Architecture", href: "/#architecture" },
-  { label: "Logs", href: "/#logs" },
+  { label: "Platform", href: "/platform", page: "platform" },
+  { label: "Developers", href: "/developers", page: "developers" },
+  { label: "Security", href: "/security", page: "security" },
   { label: "Pricing", href: "/pricing", page: "pricing" },
 ] as const;
 
 function MarketingShell({
   activePage,
   children,
-}: Readonly<{ activePage: "home" | "pricing"; children: ReactNode }>) {
+}: Readonly<{
+  activePage: "developers" | "home" | "platform" | "pricing" | "security";
+  children: ReactNode;
+}>) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <MarketingHeader activePage={activePage} />
@@ -29,7 +32,11 @@ function MarketingShell({
   );
 }
 
-function MarketingHeader({ activePage }: Readonly<{ activePage: "home" | "pricing" }>) {
+function MarketingHeader({
+  activePage,
+}: Readonly<{
+  activePage: "developers" | "home" | "platform" | "pricing" | "security";
+}>) {
   return (
     <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 md:px-6">
@@ -44,7 +51,7 @@ function MarketingHeader({ activePage }: Readonly<{ activePage: "home" | "pricin
           {navItems.map((item) => (
             <a
               className={
-                "page" in item && item.page === activePage
+                item.page === activePage
                   ? "text-foreground"
                   : "transition-colors hover:text-foreground"
               }
@@ -92,13 +99,21 @@ function MarketingFooter() {
         <div className="grid grid-cols-2 gap-8 text-sm sm:grid-cols-3">
           <FooterGroup
             links={[
-              ["Platform", "/#platform"],
-              ["Architecture", "/#architecture"],
-              ["Logs", "/#logs"],
+              ["Platform", "/platform"],
+              ["Developers", "/developers"],
+              ["Security", "/security"],
+              ["Pricing", "/pricing"],
             ]}
             title="Product"
           />
-          <FooterGroup links={[["Pricing", "/pricing"]]} title="Company" />
+          <FooterGroup
+            links={[
+              ["Architecture", "/platform#architecture"],
+              ["Delivery logs", "/platform#delivery-logs"],
+              ["Ingress API", "/developers#ingress-api"],
+            ]}
+            title="Resources"
+          />
           <FooterGroup
             links={[
               ["Sign in", marketingUrls.login],

@@ -98,7 +98,7 @@ function MarketingHome() {
                 </a>
               </Button>
               <Button asChild className="h-12 px-6" size="lg" variant="outline">
-                <a href="https://docs.notify.tld">Read docs</a>
+                <a href="/developers">Read docs</a>
               </Button>
             </div>
 
@@ -132,7 +132,7 @@ function MarketingHome() {
           <SectionHeader
             eyebrow="Platform"
             title="One notification layer across API events, live sessions, and delivery logs."
-            description="The public site can stay content-focused while still proving that shared UI tokens and React components work cleanly in Astro."
+            description="The public platform is organized around the product requirements: event ingress, realtime fanout, delivery history, subscriptions, and security controls."
           />
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
