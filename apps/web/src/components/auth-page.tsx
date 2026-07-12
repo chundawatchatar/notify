@@ -301,15 +301,15 @@ function AuthShell({
           />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--secondary)/0.35)_0%,transparent_22%,transparent_70%,hsl(var(--secondary)/0.35)_100%),linear-gradient(90deg,hsl(var(--secondary)/0.5)_0%,hsl(var(--background)/0.45)_36%,transparent_76%)]" />
 
-          <a
+          <Link
             className="relative z-10 flex w-full max-w-2xl items-center gap-2 font-semibold text-base"
-            href="/"
+            to="/dashboard"
           >
             <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
               <NotifyMarkIcon className="size-4" />
             </span>
             Notify
-          </a>
+          </Link>
 
           <div className="relative z-10 flex flex-1 items-center pb-24 pt-14">
             <div className="-translate-y-6 transform-gpu">
@@ -340,12 +340,15 @@ function AuthShell({
 
         <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8">
           <div className="w-full max-w-md">
-            <a className="mb-10 flex items-center gap-2 font-semibold text-base lg:hidden" href="/">
+            <Link
+              className="mb-10 flex items-center gap-2 font-semibold text-base lg:hidden"
+              to="/dashboard"
+            >
               <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
                 <NotifyMarkIcon className="size-4" />
               </span>
               Notify
-            </a>
+            </Link>
 
             <div>
               <p className="font-mono text-muted-foreground text-xs uppercase">{eyebrow}</p>

@@ -9,8 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SubscriptionRouteImport } from './routes/subscription'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SecurityRouteImport } from './routes/security'
+import { Route as IngressRouteImport } from './routes/ingress'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AppsRouteImport } from './routes/apps'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as R404RouteImport } from './routes/404'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
@@ -19,6 +25,26 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-passw
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
 
+const SubscriptionRoute = SubscriptionRouteImport.update({
+  id: '/subscription',
+  path: '/subscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IngressRoute = IngressRouteImport.update({
+  id: '/ingress',
+  path: '/ingress',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -27,6 +53,16 @@ const DashboardRoute = DashboardRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsRoute = AppsRouteImport.update({
+  id: '/apps',
+  path: '/apps',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const R404Route = R404RouteImport.update({
@@ -69,8 +105,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/404': typeof R404Route
+  '/analytics': typeof AnalyticsRoute
+  '/apps': typeof AppsRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/ingress': typeof IngressRoute
+  '/security': typeof SecurityRoute
+  '/settings': typeof SettingsRoute
+  '/subscription': typeof SubscriptionRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -80,8 +122,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/404': typeof R404Route
+  '/analytics': typeof AnalyticsRoute
+  '/apps': typeof AppsRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/ingress': typeof IngressRoute
+  '/security': typeof SecurityRoute
+  '/settings': typeof SettingsRoute
+  '/subscription': typeof SubscriptionRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -92,8 +140,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/404': typeof R404Route
+  '/analytics': typeof AnalyticsRoute
+  '/apps': typeof AppsRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/ingress': typeof IngressRoute
+  '/security': typeof SecurityRoute
+  '/settings': typeof SettingsRoute
+  '/subscription': typeof SubscriptionRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -105,8 +159,14 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/404'
+    | '/analytics'
+    | '/apps'
     | '/auth'
     | '/dashboard'
+    | '/ingress'
+    | '/security'
+    | '/settings'
+    | '/subscription'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/reset-password'
@@ -116,8 +176,14 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/404'
+    | '/analytics'
+    | '/apps'
     | '/auth'
     | '/dashboard'
+    | '/ingress'
+    | '/security'
+    | '/settings'
+    | '/subscription'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/reset-password'
@@ -127,8 +193,14 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/404'
+    | '/analytics'
+    | '/apps'
     | '/auth'
     | '/dashboard'
+    | '/ingress'
+    | '/security'
+    | '/settings'
+    | '/subscription'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/reset-password'
@@ -139,12 +211,46 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   R404Route: typeof R404Route
+  AnalyticsRoute: typeof AnalyticsRoute
+  AppsRoute: typeof AppsRoute
   AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRoute
+  IngressRoute: typeof IngressRoute
+  SecurityRoute: typeof SecurityRoute
+  SettingsRoute: typeof SettingsRoute
+  SubscriptionRoute: typeof SubscriptionRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/subscription': {
+      id: '/subscription'
+      path: '/subscription'
+      fullPath: '/subscription'
+      preLoaderRoute: typeof SubscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ingress': {
+      id: '/ingress'
+      path: '/ingress'
+      fullPath: '/ingress'
+      preLoaderRoute: typeof IngressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -157,6 +263,20 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps': {
+      id: '/apps'
+      path: '/apps'
+      fullPath: '/apps'
+      preLoaderRoute: typeof AppsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/404': {
@@ -231,8 +351,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   R404Route: R404Route,
+  AnalyticsRoute: AnalyticsRoute,
+  AppsRoute: AppsRoute,
   AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRoute,
+  IngressRoute: IngressRoute,
+  SecurityRoute: SecurityRoute,
+  SettingsRoute: SettingsRoute,
+  SubscriptionRoute: SubscriptionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
