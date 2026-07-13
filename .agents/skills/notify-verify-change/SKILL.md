@@ -17,19 +17,19 @@ the change crosses package or runtime boundaries.
 
 ## Check Matrix
 
-| Change                          | Required checks                                           |
-| ------------------------------- | --------------------------------------------------------- |
-| Docs or agent guidance          | `pnpm format:all:check`                                   |
-| `libs/domain`                   | `pnpm domain:test`, Elixir format check                   |
-| `libs/open_api` or API contract | `pnpm api:test`, `pnpm api-client:check`                  |
-| API implementation              | `pnpm api:test`                                           |
-| `packages/ui`                   | UI test, typecheck, and build                             |
-| `apps/web`                      | web test, typecheck, and build                            |
-| `apps/marketing`                | marketing typecheck and build                             |
-| Cross-package feature           | `pnpm check`, `pnpm build`                                |
-| Phoenix release                 | `pnpm api:release`                                        |
-| Docker runtime                  | `pnpm api:image` plus container smoke test                |
-| Kubernetes                      | `kubectl kustomize deploy/kubernetes/base` and YAML parse |
+| Change                          | Required checks                                                            |
+| ------------------------------- | -------------------------------------------------------------------------- |
+| Docs or agent guidance          | `pnpm format:all:check`                                                    |
+| `libs/domain`                   | Author with `notify-backend-test`; run domain test and Elixir format check |
+| `libs/open_api` or API contract | Author with `notify-backend-test`; run API test and contract check         |
+| API implementation              | Author with `notify-backend-test`; run API test                            |
+| `packages/ui`                   | Author with `notify-frontend-test`; run UI test, typecheck, and build      |
+| `apps/web`                      | Author with `notify-frontend-test`; run web test, typecheck, and build     |
+| `apps/marketing`                | Marketing typecheck and build; test only interactive behavior              |
+| Cross-package feature           | `pnpm check`, `pnpm build`                                                 |
+| Phoenix release                 | `pnpm api:release`                                                         |
+| Docker runtime                  | `pnpm api:image` plus container smoke test                                 |
+| Kubernetes                      | `kubectl kustomize deploy/kubernetes/base` and YAML parse                  |
 
 Use package commands from `AGENTS.md`; do not invent alternate scripts when a
 repository command exists.

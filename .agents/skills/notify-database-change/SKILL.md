@@ -36,7 +36,8 @@ existing migrations and persistence code before choosing names or patterns.
    backfill separately, then remove obsolete shape in a later release.
 7. Add or update the Ecto schema and changeset without duplicating pure domain
    policy.
-8. Test constraints, changesets, tenant isolation, and relevant queries.
+8. Load `notify-backend-test` and test only the owning constraints, changesets,
+   tenant boundary, or queries required by the behavior.
 
 ## Large Changes
 

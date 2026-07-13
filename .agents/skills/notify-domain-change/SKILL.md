@@ -31,8 +31,8 @@ owning application.
    do not silently spread.
 6. Keep transport field names, JSON formatting, persistence IDs, and changesets
    outside this library.
-7. Add focused ExUnit tests for valid behavior, boundary values, and rejected
-   transitions.
+7. Load `notify-backend-test` and add focused ExUnit coverage within its test
+   budget.
 
 ## Guardrails
 

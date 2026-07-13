@@ -33,8 +33,8 @@ editing.
 5. Add the route to the existing appropriate router scope and pipeline.
 6. Return stable client-safe errors. Log internal exceptions; do not expose
    stack traces, database messages, or secrets.
-7. Add controller tests for status and response shape. Update the OpenAPI test
-   when routes or schemas change.
+7. Load `notify-backend-test` and add the smallest tests justified by the
+   behavior. Update the OpenAPI test when routes or schemas change.
 8. Run `pnpm api-client:generate`. Never hand-edit either generated contract.
 9. Update frontend helpers to import response/request types from
    `@notify/api-client`.

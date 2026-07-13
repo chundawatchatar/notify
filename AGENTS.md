@@ -61,6 +61,11 @@ commands, generated files, or deployment policy changes.
   inside the owning app.
 - For forms in the web app, use TanStack Form and Zod.
 - For server state in the web app, use TanStack Query.
+- Use `notify-backend-test` and `notify-frontend-test` to keep test coverage
+  risk-based. Do not mock internal application layers.
+- Create persisted backend test entities through shared factories. Use Faker in
+  factories for irrelevant realistic values, deterministic sequences for
+  unique fields, and explicit values for the behavior under assertion.
 - Do not hand-roll routes by editing `routeTree.gen.ts`; let TanStack Router
   generate it.
 - Do not run migrations automatically from API pod boot. Use an explicit

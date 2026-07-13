@@ -40,6 +40,15 @@ skills:
       - Framework-free logic in libs/domain
     keywords: [domain, policy, invariant, lifecycle, transition, validation, business-rule]
 
+  notify-backend-test:
+    path: .agents/skills/notify-backend-test/SKILL.md
+    intents:
+      - Focused ExUnit coverage for API, persistence, or domain behavior
+      - Factory and Faker setup for backend entities
+      - SQL Sandbox, regression, tenant-isolation, or external-boundary tests
+      - Decide the minimum backend test budget and mocking boundary
+    keywords: [backend-test, exunit, factory, faker, ex-machina, sandbox, mock, regression]
+
   notify-web-change:
     path: .agents/skills/notify-web-change/SKILL.md
     intents:
@@ -64,6 +73,15 @@ skills:
       - UI package test, export, or Storybook story
     keywords: [ui, component, primitive, radix, icon, storybook, accessibility, design-system]
 
+  notify-frontend-test:
+    path: .agents/skills/notify-frontend-test/SKILL.md
+    intents:
+      - Focused Vitest coverage for web or shared UI behavior
+      - Form, query, route, loading, error, accessibility, or regression tests
+      - Decide whether a frontend change needs no unit test
+      - Minimize component, hook, and network mocking
+    keywords: [frontend-test, vitest, component-test, interaction, fixture, mock, regression]
+
   notify-operations-change:
     path: .agents/skills/notify-operations-change/SKILL.md
     intents:
@@ -85,23 +103,39 @@ recipes:
       - notify-domain-change
       - notify-database-change
       - notify-api-change
+      - notify-backend-test
       - notify-web-change
+      - notify-frontend-test
       - notify-verify-change
 
   typed_api_feature:
-    order: [notify-api-change, notify-verify-change]
+    order: [notify-api-change, notify-backend-test, notify-verify-change]
 
   persisted_api_feature:
-    order: [notify-database-change, notify-api-change, notify-verify-change]
+    order:
+      - notify-database-change
+      - notify-api-change
+      - notify-backend-test
+      - notify-verify-change
 
   dashboard_ui_only:
-    order: [notify-web-change, notify-verify-change]
+    order: [notify-web-change, notify-frontend-test, notify-verify-change]
 
   reusable_dashboard_control:
-    order: [notify-ui-change, notify-web-change, notify-verify-change]
+    order:
+      - notify-ui-change
+      - notify-frontend-test
+      - notify-web-change
+      - notify-verify-change
 
   public_marketing_page:
     order: [notify-marketing-change, notify-verify-change]
 
   production_runtime_change:
     order: [notify-operations-change, notify-verify-change]
+
+  backend_test_change:
+    order: [notify-backend-test, notify-verify-change]
+
+  frontend_test_change:
+    order: [notify-frontend-test, notify-verify-change]

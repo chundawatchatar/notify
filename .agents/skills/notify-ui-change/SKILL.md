@@ -32,8 +32,8 @@ component and test. Search `packages/ui/src/index.ts` before adding anything.
    state changes do not shift layout.
 5. Export the public component and relevant types from
    `packages/ui/src/index.ts`.
-6. Add behavior-focused tests for accessibility, state, keyboard interaction,
-   variants, and the public export when applicable.
+6. Load `notify-frontend-test` and add only the accessibility, state, keyboard,
+   variant, or public-export coverage justified by the component contract.
 7. Add or update a Storybook story for a visual component with meaningful
    states.
 

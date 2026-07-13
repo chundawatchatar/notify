@@ -29,6 +29,8 @@ changing navigation or shared layout.
    capabilities. Mark future capabilities honestly.
 7. Ensure headings wrap naturally without fixed line heights that cause
    overlap.
+8. Load `notify-frontend-test` only when the page adds interaction or fixes a
+   behavioral regression. Do not unit-test static marketing copy or spacing.
 
 ## Visual Guardrails
 

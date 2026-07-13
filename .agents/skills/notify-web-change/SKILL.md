@@ -30,7 +30,8 @@ helper.
 7. Type API helpers with `@notify/api-client`; do not redefine server response
    interfaces locally.
 8. Provide loading, empty, error, disabled, and success states where the flow
-   needs them.
+   needs them. Load `notify-frontend-test` for behavior or regression coverage;
+   it may choose no new unit test for static composition.
 
 ## UI Guardrails
 
