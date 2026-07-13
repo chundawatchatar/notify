@@ -6,26 +6,37 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
+import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { AuthProvider, createAuthClient } from "@/lib/auth";
 import { blur, change, cleanup, click, render, waitForText } from "@/test/render";
-import { CompleteSignupForm, SignupForm } from "./auth-page";
+import { server } from "@/test/server";
+import { CompleteSignupForm, LoginForm, SignupForm } from "./auth-page";
+
+const originalLocks = navigator.locks;
+const apiBaseUrl = "http://localhost:4100";
 
 afterEach(() => {
   cleanup();
+  Object.defineProperty(navigator, "locks", {
+    configurable: true,
+    value: originalLocks,
+  });
   vi.unstubAllGlobals();
 });
 
-describe("signup form", () => {
+describe("authentication forms", () => {
   it("starts email verification and keeps the response enumeration-safe", async () => {
     expect.hasAssertions();
+    let submittedEmail: string | undefined;
 
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(JSON.stringify({ status: "verification_sent" }), {
-        headers: { "content-type": "application/json" },
-        status: 202,
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/signup`, async ({ request }) => {
+        const body = (await request.json()) as { email?: string };
+        submittedEmail = body.email;
+        return HttpResponse.json({ status: "verification_sent" }, { status: 202 });
       }),
     );
-    vi.stubGlobal("fetch", fetchMock);
 
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
     const container = render(
@@ -43,11 +54,32 @@ describe("signup form", () => {
     click(submit as HTMLButtonElement);
     await waitForText(container, "If this email can be registered");
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:4100/api/auth/signup",
-      expect.objectContaining({ method: "POST" }),
-    );
+    expect(submittedEmail).toBe("Owner@Example.com");
     expect(container.textContent).toContain("owner@example.com");
+  });
+
+  it("does not apply signup password-length rules during login", () => {
+    expect.hasAssertions();
+    installBrowserCoordination();
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/refresh`, () =>
+        HttpResponse.json(
+          { errors: { code: "invalid_session", detail: "Authentication is required." } },
+          { status: 401 },
+        ),
+      ),
+    );
+
+    const container = renderLogin();
+    const password = container.querySelector<HTMLInputElement>(
+      'input[autocomplete="current-password"]',
+    );
+
+    expect(password).toBeInstanceOf(HTMLInputElement);
+    change(password as HTMLInputElement, "short");
+    blur(password as HTMLInputElement);
+
+    expect(container.textContent).not.toContain("Password must be at least 8 characters.");
   });
 
   it("validates passwords on blur and requires a matching confirmation", async () => {
@@ -97,4 +129,43 @@ function renderCompleteSignup() {
       <RouterProvider router={router} />
     </QueryClientProvider>,
   );
+}
+
+function renderLogin() {
+  const rootRoute = createRootRoute();
+  const loginRoute = createRoute({
+    component: LoginForm,
+    getParentRoute: () => rootRoute,
+    path: "/auth/login",
+  });
+  const router = createRouter({
+    history: createMemoryHistory({ initialEntries: ["/auth/login"] }),
+    routeTree: rootRoute.addChildren([loginRoute]),
+  });
+  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+
+  return render(
+    <AuthProvider client={createAuthClient()}>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </AuthProvider>,
+  );
+}
+
+function installBrowserCoordination() {
+  Object.defineProperty(navigator, "locks", {
+    configurable: true,
+    value: {
+      request: async <Result,>(_name: string, callback: () => Promise<Result>) => callback(),
+    },
+  });
+
+  class BroadcastChannelMock {
+    onmessage: ((event: MessageEvent) => void) | null = null;
+    close() {}
+    postMessage() {}
+  }
+
+  vi.stubGlobal("BroadcastChannel", BroadcastChannelMock);
 }

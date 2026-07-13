@@ -1,19 +1,22 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { HttpResponse, http } from "msw";
+import { describe, expect, it } from "vitest";
+import { server } from "@/test/server";
 import { ApiRequestError, login, startSignup } from "./api-client";
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
+const apiBaseUrl = "http://localhost:4100";
 
 describe("auth API client", () => {
   it("sends session credentials and preserves structured validation errors", async () => {
     expect.hasAssertions();
+    let loginCredentials: RequestCredentials | undefined;
 
-    const fetchMock = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(jsonResponse(authResponse()))
-      .mockResolvedValueOnce(
-        jsonResponse(
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/login`, ({ request }) => {
+        loginCredentials = request.credentials;
+        return HttpResponse.json(authResponse());
+      }),
+      http.post(`${apiBaseUrl}/api/auth/signup`, () =>
+        HttpResponse.json(
           {
             errors: {
               code: "validation_failed",
@@ -21,18 +24,13 @@ describe("auth API client", () => {
               fields: { email: ["has invalid format"] },
             },
           },
-          422,
+          { status: 422 },
         ),
-      );
-    vi.stubGlobal("fetch", fetchMock);
+      ),
+    );
 
     await login({ email: "owner@example.com", password: "correct-password", remember: false });
-
-    expect(fetchMock).toHaveBeenNthCalledWith(
-      1,
-      "http://localhost:4100/api/auth/login",
-      expect.objectContaining({ credentials: "include", method: "POST" }),
-    );
+    expect(loginCredentials).toBe("include");
 
     const error = await startSignup({ email: "invalid" }).catch((reason: unknown) => reason);
     expect(error).toBeInstanceOf(ApiRequestError);
@@ -53,11 +51,4 @@ function authResponse() {
     user: { email: "owner@example.com", id: "3dc20706-9944-4743-8121-c0429c622c0b" },
     workspace: { id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4", name: "Acme Cloud" },
   };
-}
-
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    headers: { "content-type": "application/json" },
-    status,
-  });
 }

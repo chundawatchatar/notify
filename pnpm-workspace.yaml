@@ -28,6 +28,7 @@ catalog:
   jsdom: 29.1.1
   lint-staged: 17.0.8
   lucide-react: 1.23.0
+  msw: 2.15.0
   nx: 23.0.1
   oxfmt: 0.58.0
   oxlint: 1.73.0
@@ -45,6 +46,7 @@ catalog:
   zod: 4.4.3
 allowBuilds:
   esbuild: true
+  msw: false
   nx: true
 minimumReleaseAgeExclude:
   - "@biomejs/biome@2.5.3"

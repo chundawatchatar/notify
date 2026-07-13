@@ -1,8 +1,11 @@
+import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, click, render, waitFor, waitForText } from "@/test/render";
+import { server } from "@/test/server";
 import { AuthProvider, createAuthClient, useAuth } from "./auth";
 
 const originalLocks = navigator.locks;
+const apiBaseUrl = "http://localhost:4100";
 
 afterEach(() => {
   cleanup();
@@ -17,12 +20,15 @@ describe("authentication session", () => {
   it("restores the principal and clears it only after logout succeeds", async () => {
     expect.hasAssertions();
     installBrowserCoordination();
+    let logoutCredentials: RequestCredentials | undefined;
 
-    const fetchMock = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(jsonResponse(authResponse()))
-      .mockResolvedValueOnce(new Response(null, { status: 204 }));
-    vi.stubGlobal("fetch", fetchMock);
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/refresh`, () => HttpResponse.json(authResponse())),
+      http.delete(`${apiBaseUrl}/api/auth/session`, ({ request }) => {
+        logoutCredentials = request.credentials;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
 
     const container = render(
       <AuthProvider client={createAuthClient()}>
@@ -34,11 +40,7 @@ describe("authentication session", () => {
     click(container.querySelector("button") as HTMLButtonElement);
     await waitForText(container, "anonymous");
 
-    expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
-      "http://localhost:4100/api/auth/session",
-      expect.objectContaining({ credentials: "include", method: "DELETE" }),
-    );
+    expect(logoutCredentials).toBe("include");
   });
 
   it("serializes refresh rotation across provider instances", async () => {
@@ -46,14 +48,18 @@ describe("authentication session", () => {
     const coordination = installBrowserCoordination();
     let activeRequests = 0;
     let maximumActiveRequests = 0;
-    const fetchMock = vi.fn<typeof fetch>().mockImplementation(async () => {
-      activeRequests += 1;
-      maximumActiveRequests = Math.max(maximumActiveRequests, activeRequests);
-      await Promise.resolve();
-      activeRequests -= 1;
-      return jsonResponse(authResponse());
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    let refreshRequests = 0;
+
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/refresh`, async () => {
+        refreshRequests += 1;
+        activeRequests += 1;
+        maximumActiveRequests = Math.max(maximumActiveRequests, activeRequests);
+        await Promise.resolve();
+        activeRequests -= 1;
+        return HttpResponse.json(authResponse());
+      }),
+    );
 
     const container = render(
       <>
@@ -74,7 +80,7 @@ describe("authentication session", () => {
       "both providers to authenticate",
     );
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(refreshRequests).toBe(2);
     expect(coordination.request).toHaveBeenCalledTimes(2);
     expect(maximumActiveRequests).toBe(1);
   });
@@ -132,11 +138,4 @@ function authResponse() {
     user: { email: "owner@example.com", id: "3dc20706-9944-4743-8121-c0429c622c0b" },
     workspace: { id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4", name: "Acme Cloud" },
   };
-}
-
-function jsonResponse(body: unknown) {
-  return new Response(JSON.stringify(body), {
-    headers: { "content-type": "application/json" },
-    status: 200,
-  });
 }

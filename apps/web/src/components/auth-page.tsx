@@ -27,6 +27,7 @@ import {
 type ProductRoute = "/" | "/dashboard" | WorkspaceSectionPath;
 
 const emailSchema = z.email("Enter a valid work email.").max(160, "Email is too long.");
+const loginPasswordSchema = z.string().min(1, "Enter your password.");
 const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters.")
@@ -117,8 +118,8 @@ function LoginForm({
       <form.Field
         name="password"
         validators={{
-          onBlur: ({ value }) => zodError(passwordSchema, value),
-          onSubmit: ({ value }) => zodError(passwordSchema, value),
+          onBlur: ({ value }) => zodError(loginPasswordSchema, value),
+          onSubmit: ({ value }) => zodError(loginPasswordSchema, value),
         }}
       >
         {(field) => (

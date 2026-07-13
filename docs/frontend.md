@@ -179,6 +179,23 @@ Do not edit generated schema files by hand. Update Phoenix OpenAPI schemas and
 operations first, regenerate the spec, then regenerate the TypeScript types.
 `pnpm api-client:check` verifies that both generated contract files are current.
 
+Browser transport is centralized in:
+
+```text
+apps/web/src/lib/http-client.ts
+```
+
+Use its typed `get`, `post`, `put`, `patch`, and `delete` helpers instead of
+calling `fetch` from endpoint modules or components. Keep endpoint-specific
+paths and generated request and response types in `api-client.ts`. The transport
+retries bounded transient failures for idempotent requests. It does not retry
+`POST` or `PATCH` by default because repeating a non-idempotent mutation can
+duplicate work.
+
+Web client tests use the shared MSW server in `apps/web/src/test/server.ts`.
+Register request handlers per test and keep unhandled requests as errors. Test
+endpoint helpers through that boundary instead of replacing `fetch` with a mock.
+
 Browser API calls use `VITE_API_URL`, which defaults to `http://localhost:4100`.
 The API accepts the local dashboard origin by default. Set `CORS_ORIGINS` to a
 comma-separated allowlist for deployed browser origins; wildcard origins are not
