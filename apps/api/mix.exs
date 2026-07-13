@@ -46,7 +46,7 @@ defmodule Api.MixProject do
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_metrics_prometheus_core, "~> 1.2"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.26"},
+      {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:cors_plug, "~> 3.0"},
       {:open_api_spex, "~> 3.22"},
