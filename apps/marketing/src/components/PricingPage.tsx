@@ -159,8 +159,8 @@ function PricingPage() {
               ))}
               <div className="rounded-sm border bg-secondary/35 p-4">
                 <div className="flex items-start gap-3">
-                  <span className="grid size-9 place-items-center rounded-sm bg-background">
-                    <KeyRound className="size-4 text-muted-foreground" />
+                  <span className="grid size-9 place-items-center rounded-sm bg-accent text-accent-foreground">
+                    <KeyRound className="size-4" />
                   </span>
                   <div>
                     <Typography as="p" className="font-medium text-sm">
@@ -202,7 +202,7 @@ function PricingPage() {
             return (
               <Card key={group.title} className="bg-background">
                 <CardHeader>
-                  <span className="grid size-10 place-items-center rounded-sm border bg-secondary">
+                  <span className="grid size-10 place-items-center rounded-sm border border-accent-foreground/15 bg-accent text-accent-foreground">
                     <Icon className="size-4" />
                   </span>
                   <CardTitle>{group.title}</CardTitle>
@@ -272,7 +272,7 @@ function PricingCard({
   return (
     <Card className={plan.highlighted ? "relative border-primary shadow-sm" : "relative shadow-sm"}>
       {plan.highlighted ? (
-        <Badge className="absolute top-4 right-4" variant="info">
+        <Badge className="absolute top-4 right-4" variant="secondary">
           Most popular
         </Badge>
       ) : null}
@@ -295,7 +295,7 @@ function PricingCard({
         <ul className="grid gap-3">
           {plan.features.map((feature) => (
             <li className="flex items-start gap-2 text-sm" key={feature}>
-              <Check className="mt-0.5 size-4 text-emerald-600" />
+              <Check className="mt-0.5 size-4 text-accent-foreground" />
               <span>{feature}</span>
             </li>
           ))}

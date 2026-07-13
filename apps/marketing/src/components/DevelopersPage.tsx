@@ -76,17 +76,17 @@ function DevelopersPage() {
             title="A compact API for backend-triggered notifications."
           />
 
-          <Card className="overflow-hidden bg-[#0f1115] text-white">
-            <div className="flex items-center justify-between border-white/10 border-b px-4 py-3">
+          <Card className="overflow-hidden bg-foreground text-background">
+            <div className="flex items-center justify-between border-background/10 border-b px-4 py-3">
               <div className="flex items-center gap-2">
-                <span className="grid size-7 place-items-center rounded-sm border border-white/10 bg-white/5">
-                  <Code2 className="size-4 text-emerald-300" />
+                <span className="grid size-7 place-items-center rounded-sm border border-background/10 bg-background/5">
+                  <Code2 className="size-4 text-accent" />
                 </span>
                 <div>
-                  <Typography as="p" className="font-medium text-sm text-white">
+                  <Typography as="p" className="font-medium text-background text-sm">
                     publish.ts
                   </Typography>
-                  <Typography as="p" className="text-white/45 text-xs">
+                  <Typography as="p" className="text-background/45 text-xs">
                     typed notification event
                   </Typography>
                 </div>
@@ -97,11 +97,11 @@ function DevelopersPage() {
               <code>
                 {codeLines.map((line, index) => (
                   <span className="block" key={`${line}-${index}`}>
-                    <span className="mr-5 select-none text-white/25">
+                    <span className="mr-5 select-none text-background/25">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <span
-                      className={line.startsWith("await") ? "text-emerald-300" : "text-white/82"}
+                      className={line.startsWith("await") ? "text-accent" : "text-background/82"}
                     >
                       {line || " "}
                     </span>

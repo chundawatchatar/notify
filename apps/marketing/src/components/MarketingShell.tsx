@@ -41,7 +41,7 @@ function MarketingHeader({
     <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 md:px-6">
         <a className="flex items-center gap-2 font-semibold text-base" href="/">
-          <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
+          <span className="grid size-8 place-items-center rounded-sm border border-primary bg-primary text-primary-foreground">
             <NotifyMarkIcon className="size-4" />
           </span>
           Notify
@@ -52,8 +52,8 @@ function MarketingHeader({
             <a
               className={
                 item.page === activePage
-                  ? "text-foreground"
-                  : "transition-colors hover:text-foreground"
+                  ? "font-medium text-primary"
+                  : "transition-colors hover:text-primary"
               }
               href={item.href}
               key={item.href}
@@ -64,10 +64,10 @@ function MarketingHeader({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild className="hidden sm:inline-flex" variant="ghost">
+          <Button asChild className="hidden sm:inline-flex" size="sm" variant="ghost">
             <a href={marketingUrls.login}>Sign in</a>
           </Button>
-          <Button asChild>
+          <Button asChild size="sm">
             <a href={marketingUrls.signup}>
               Get API key
               <ArrowRight />
@@ -81,11 +81,11 @@ function MarketingHeader({
 
 function MarketingFooter() {
   return (
-    <footer className="border-t bg-secondary/25">
+    <footer className="border-t bg-secondary/40">
       <div className="mx-auto grid max-w-7xl gap-8 px-5 py-10 md:grid-cols-[1fr_auto] md:px-6">
         <div>
           <a className="flex w-fit items-center gap-2 font-semibold" href="/">
-            <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
+            <span className="grid size-8 place-items-center rounded-sm border border-primary bg-primary text-primary-foreground">
               <NotifyMarkIcon className="size-4" />
             </span>
             Notify

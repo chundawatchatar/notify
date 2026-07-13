@@ -34,7 +34,7 @@ function SectionIntro({
 }: Readonly<{ description: string; eyebrow: string; title: string }>) {
   return (
     <div className="max-w-3xl">
-      <Typography as="p" className="font-mono text-muted-foreground text-xs uppercase">
+      <Typography as="p" className="font-mono text-primary text-xs uppercase">
         {eyebrow}
       </Typography>
       <Typography as="h2" variant="heading2" className="mt-3">
@@ -57,7 +57,7 @@ function FeatureCard({
     <Card>
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
-          <span className="grid size-10 place-items-center rounded-sm border bg-secondary">
+          <span className="grid size-10 place-items-center rounded-sm border border-accent-foreground/15 bg-accent text-accent-foreground">
             <Icon className="size-4" />
           </span>
           {label ? <Badge variant="secondary">{label}</Badge> : null}

@@ -76,7 +76,7 @@ function MarketingHome() {
       <section className="border-b">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 md:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:py-20">
           <div className="self-center">
-            <Badge>
+            <Badge variant="secondary">
               <Terminal className="size-3.5" />
               Notification API for developers
             </Badge>
@@ -142,7 +142,7 @@ function MarketingHome() {
               return (
                 <Card className="p-5" key={item.title}>
                   <div className="flex items-start justify-between gap-4">
-                    <div className="grid size-9 place-items-center rounded-sm border bg-secondary/55">
+                    <div className="grid size-9 place-items-center rounded-sm border border-accent-foreground/15 bg-accent text-accent-foreground">
                       <Icon className="size-4" />
                     </div>
                     <Badge variant="secondary">{item.label}</Badge>
@@ -206,7 +206,7 @@ function MarketingHome() {
 
                 return (
                   <Card className="flex-row items-center gap-3 px-4 py-3" key={item.label}>
-                    <Icon className="size-4" />
+                    <Icon className="size-4 text-primary" />
                     <Typography as="p" className="font-medium">
                       {item.label}
                     </Typography>
@@ -255,7 +255,7 @@ function SectionHeader({
 }: Readonly<{ description: string; eyebrow: string; title: string }>) {
   return (
     <div className="max-w-3xl">
-      <Typography as="p" className="font-mono text-muted-foreground text-xs uppercase">
+      <Typography as="p" className="font-mono text-primary text-xs uppercase">
         {eyebrow}
       </Typography>
       <Typography as="h2" variant="heading2" className="mt-3 border-b-0 pb-0">
@@ -270,17 +270,17 @@ function SectionHeader({
 
 function DeveloperPanel() {
   return (
-    <Card className="overflow-hidden bg-[#0f1115] text-white">
-      <div className="flex items-center justify-between border-white/10 border-b px-4 py-3">
+    <Card className="overflow-hidden bg-foreground text-background">
+      <div className="flex items-center justify-between border-background/10 border-b px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="grid size-7 place-items-center rounded-sm border border-white/10 bg-white/5">
-            <Braces className="size-4 text-emerald-300" />
+          <div className="grid size-7 place-items-center rounded-sm border border-background/10 bg-background/5">
+            <Braces className="size-4 text-accent" />
           </div>
           <div>
-            <Typography as="p" className="font-medium text-sm text-white">
+            <Typography as="p" className="font-medium text-background text-sm">
               publish.ts
             </Typography>
-            <Typography as="p" className="text-white/45 text-xs">
+            <Typography as="p" className="text-background/45 text-xs">
               typed notification event
             </Typography>
           </div>
@@ -292,10 +292,10 @@ function DeveloperPanel() {
         <code>
           {codeLines.map((line, index) => (
             <span className="block" key={`${line}-${index}`}>
-              <span className="mr-5 select-none text-white/25">
+              <span className="mr-5 select-none text-background/25">
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <span className={line.startsWith("await") ? "text-emerald-300" : "text-white/82"}>
+              <span className={line.startsWith("await") ? "text-accent" : "text-background/82"}>
                 {line || " "}
               </span>
             </span>
