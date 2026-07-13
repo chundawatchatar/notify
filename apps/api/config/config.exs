@@ -11,7 +11,9 @@ config :api,
   cors_origins: ["http://localhost:3100"],
   environment: config_env(),
   ecto_repos: [Api.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  metrics_enabled: true,
+  metrics_token: nil
 
 # Configures the endpoint
 config :api, ApiWeb.Endpoint,

@@ -2,48 +2,79 @@ defmodule ApiWeb.HealthController do
   use ApiWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
+  require Logger
+
   alias Api.Repo
-  alias NotifyOpenApi.Schemas.HealthResponse
+  alias NotifyOpenApi.Schemas.{LivenessResponse, ReadinessResponse}
 
   tags ["system"]
 
-  operation :show,
-    summary: "Read API health",
-    operation_id: "getApiHealth",
-    description: "Returns service metadata and dependency readiness checks.",
+  operation :live,
+    summary: "Read API liveness",
+    operation_id: "getApiLiveness",
+    description: "Reports whether the API process is running and able to serve requests.",
     responses: [
-      ok: {"Healthy response", "application/json", HealthResponse},
-      service_unavailable: {"Degraded response", "application/json", HealthResponse}
+      ok: {"Live response", "application/json", LivenessResponse}
     ]
 
-  def show(conn, _params) do
-    database = database_status()
-    ready? = database.ready
+  operation :ready,
+    summary: "Read API readiness",
+    operation_id: "getApiReadiness",
+    description: "Reports whether the API and its required dependencies can serve traffic.",
+    responses: [
+      ok: {"Ready response", "application/json", ReadinessResponse},
+      service_unavailable: {"Not ready response", "application/json", ReadinessResponse}
+    ]
 
-    status = if ready?, do: :ok, else: :service_unavailable
+  def live(conn, _params) do
+    json(conn, %{
+      status: "ok",
+      service: service_info()
+    })
+  end
+
+  def ready(conn, _params) do
+    database_ready? = database_ready?()
+
+    status = if database_ready?, do: :ok, else: :service_unavailable
 
     conn
     |> put_status(status)
     |> json(%{
-      status: if(ready?, do: "ok", else: "degraded"),
+      status: if(database_ready?, do: "ok", else: "degraded"),
       service: service_info(),
       checks: %{
-        database: database
+        database: %{
+          ready: database_ready?
+        }
       }
     })
   end
 
-  defp database_status do
+  defp database_ready? do
     case Repo.query("SELECT 1", [], timeout: 1_000) do
       {:ok, _result} ->
-        %{ready: true}
+        true
 
       {:error, error} ->
-        %{ready: false, error: Exception.message(error)}
+        log_database_failure(error)
+        false
     end
   rescue
-    error in DBConnection.ConnectionError ->
-      %{ready: false, error: Exception.message(error)}
+    error ->
+      log_database_failure(error)
+      false
+  catch
+    kind, reason ->
+      Logger.warning(
+        "Database readiness check failed: #{Exception.format(kind, reason, __STACKTRACE__)}"
+      )
+
+      false
+  end
+
+  defp log_database_failure(error) do
+    Logger.warning("Database readiness check failed: #{Exception.message(error)}")
   end
 
   defp service_info do

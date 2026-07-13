@@ -51,6 +51,8 @@ pnpm api
 pnpm api:deps
 pnpm api:setup
 pnpm api:compile
+pnpm api:release
+pnpm api:image
 pnpm api:openapi
 pnpm api:test
 pnpm api-client:generate
@@ -93,6 +95,11 @@ directory:
 
 Redis integration and persistence adapters will be added in future specs.
 Elixir and Mix are required before running the `api:*` and `domain:*` scripts.
+
+Production API deployment uses a Phoenix release built by
+`apps/api/Dockerfile`. The same immutable image runs the API server and the
+explicit migration job. See `docs/operations.md` and
+`docs/database-migrations.md`.
 
 ## Packages
 

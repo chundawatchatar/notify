@@ -1,7 +1,13 @@
 # GitHub Workflow Plan
 
-This document describes the GitHub workflow we want before adding the actual
-`.github` configuration. It is intentionally a plan, not an implementation.
+This document describes the GitHub workflow planned for after the MVP is ready.
+No GitHub Actions workflow files are committed during the current product and
+architecture phase. Until CI is enabled, contributors run the repository's
+verification commands locally when preparing changes.
+
+Repository and environment settings such as branch protection, approvals,
+registries, and Kubernetes credentials must be configured in GitHub before the
+planned workflows can be enabled.
 
 The shape is inspired by mature release automation patterns: PR checks,
 protected integration branches, release tracking issues, release blockers,
@@ -43,10 +49,13 @@ Trigger: `pull_request` targeting `develop`.
 
 Normal PRs should run affected checks wherever possible so feedback is fast:
 
-- run affected lint
-- run affected typecheck
-- run affected tests
-- run affected builds
+- run lint
+- run typecheck
+- run tests
+- run builds
+
+Start with the full checks for reliability. Move these jobs to Nx affected
+commands when repository size makes the full suite too slow in CI.
 
 Required PR rules:
 
@@ -157,7 +166,7 @@ Expected behavior:
 - create/update a GitHub deployment for the `staging` environment
 - update the release tracking issue with deployment progress
 - run staging smoke checks:
-  - `GET /api/health`
+  - `GET /api/health/ready`
   - `GET /api/version`
   - web app responds successfully
 
@@ -295,7 +304,7 @@ Expected behavior:
 1. Create/update GitHub deployment for `production`.
 2. Deploy API and web to production.
 3. Run production smoke checks:
-   - `GET /api/health`
+   - `GET /api/health/ready`
    - `GET /api/version`
    - web app responds successfully
 4. Tag the production commit as `vYYYYMMDD.N`.

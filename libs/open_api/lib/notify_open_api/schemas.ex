@@ -30,8 +30,7 @@ defmodule NotifyOpenApi.Schemas do
       description: "Database readiness check result.",
       type: :object,
       properties: %{
-        ready: %Schema{type: :boolean, example: true},
-        error: %Schema{type: :string, nullable: true, example: "connection not available"}
+        ready: %Schema{type: :boolean, example: true}
       },
       required: [:ready],
       example: %{
@@ -40,11 +39,11 @@ defmodule NotifyOpenApi.Schemas do
     })
   end
 
-  defmodule HealthChecks do
+  defmodule ReadinessChecks do
     require OpenApiSpex
 
     OpenApiSpex.schema(%{
-      title: "HealthChecks",
+      title: "ReadinessChecks",
       description: "API dependency readiness checks.",
       type: :object,
       properties: %{
@@ -59,17 +58,40 @@ defmodule NotifyOpenApi.Schemas do
     })
   end
 
-  defmodule HealthResponse do
+  defmodule LivenessResponse do
     require OpenApiSpex
 
     OpenApiSpex.schema(%{
-      title: "HealthResponse",
-      description: "API health response.",
+      title: "LivenessResponse",
+      description: "API process liveness response.",
+      type: :object,
+      properties: %{
+        status: %Schema{type: :string, enum: ["ok"], example: "ok"},
+        service: ServiceInfo
+      },
+      required: [:status, :service],
+      example: %{
+        "status" => "ok",
+        "service" => %{
+          "name" => "notify-api",
+          "version" => "0.1.0",
+          "environment" => "dev"
+        }
+      }
+    })
+  end
+
+  defmodule ReadinessResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ReadinessResponse",
+      description: "API dependency readiness response.",
       type: :object,
       properties: %{
         status: %Schema{type: :string, enum: ["ok", "degraded"], example: "ok"},
         service: ServiceInfo,
-        checks: HealthChecks
+        checks: ReadinessChecks
       },
       required: [:status, :service, :checks],
       example: %{

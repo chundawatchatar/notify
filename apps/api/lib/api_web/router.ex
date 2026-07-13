@@ -9,7 +9,8 @@ defmodule ApiWeb.Router do
   scope "/api", ApiWeb do
     pipe_through :api
 
-    get "/health", HealthController, :show
+    get "/health/live", HealthController, :live
+    get "/health/ready", HealthController, :ready
     get "/version", VersionController, :show
   end
 
@@ -18,4 +19,6 @@ defmodule ApiWeb.Router do
 
     get "/openapi", OpenApiSpex.Plug.RenderSpec, []
   end
+
+  get "/metrics", ApiWeb.MetricsController, :show
 end

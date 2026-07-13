@@ -5,7 +5,7 @@ defmodule Api.MixProject do
     [
       app: :api,
       version: "0.1.0",
-      elixir: "~> 1.15",
+      elixir: "~> 1.20",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -42,8 +42,9 @@ defmodule Api.MixProject do
       {:phoenix, "~> 1.8.0"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
-      {:postgrex, ">= 0.0.0"},
+      {:postgrex, "~> 0.22.3"},
       {:telemetry_metrics, "~> 1.0"},
+      {:telemetry_metrics_prometheus_core, "~> 1.2"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.26"},
       {:jason, "~> 1.2"},
@@ -51,6 +52,7 @@ defmodule Api.MixProject do
       {:open_api_spex, "~> 3.22"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
+      {:plug, "~> 1.20.3"},
       {:domain, path: "../../libs/domain"},
       {:notify_open_api, path: "../../libs/open_api"}
     ]

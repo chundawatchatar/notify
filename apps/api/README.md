@@ -19,8 +19,11 @@ development database before running `pnpm api`.
 
 ## Endpoints
 
-- `GET /api/health`: service information and readiness checks.
+- `GET /api/health/live`: process liveness for restart decisions.
+- `GET /api/health/ready`: database readiness for traffic routing.
 - `GET /api/version`: API service version.
+- `GET /api/openapi`: generated OpenAPI contract.
+- `GET /metrics`: optional Prometheus scrape protected by a bearer token in production.
 
 ## Learn more
 

@@ -15,15 +15,17 @@ type JsonResponse<
   ? Body
   : never;
 
-type ApiHealthResponse = JsonResponse<"getApiHealth", 200>;
+type ApiLivenessResponse = JsonResponse<"getApiLiveness", 200>;
+type ApiReadinessResponse = JsonResponse<"getApiReadiness", 200>;
 type ApiVersionResponse = JsonResponse<"getApiVersion", 200>;
 
 export type {
-  ApiHealthResponse,
+  ApiLivenessResponse,
   ApiOperation,
   ApiOperationId,
   ApiOperations,
   ApiPath,
   ApiPaths,
+  ApiReadinessResponse,
   ApiVersionResponse,
 };

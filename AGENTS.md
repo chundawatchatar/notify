@@ -36,6 +36,7 @@ domain library.
 - `docs/product-map.md`: product modules and intended flows.
 - `docs/database.md`: database ownership, migrations, and safety rules.
 - `docs/development.md`: local setup and runtime versions.
+- `docs/operations.md`: releases, health probes, metrics, and Kubernetes deployment.
 
 ## Core Rules
 
@@ -67,6 +68,8 @@ pnpm --filter @notify/marketing build
 pnpm --filter @notify/ui test
 pnpm api-client:generate
 pnpm api:test
+pnpm api:release
+pnpm api:image
 pnpm domain:test
 ```
 

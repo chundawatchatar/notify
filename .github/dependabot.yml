@@ -1,0 +1,36 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: docker
+    directory: /apps/api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      javascript-production:
+        dependency-type: production
+      javascript-development:
+        dependency-type: development
+
+  - package-ecosystem: mix
+    directory: /apps/api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: mix
+    directory: /libs/open_api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10

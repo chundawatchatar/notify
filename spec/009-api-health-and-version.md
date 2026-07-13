@@ -1,16 +1,17 @@
 # API Health And Version
 
-Add minimal API readiness endpoints before introducing auth or notification
+Add minimal API operational endpoints before introducing auth or notification
 domain persistence.
 
 ## Decision
 
-- Add `GET /api/health` as the operational health endpoint.
-- Keep service information in `/api/health`, including app name, version,
-  environment, and database readiness.
-- Return HTTP 200 when the API and database are ready.
-- Return HTTP 503 with the same response shape when the API is running but the
-  database check fails.
+- Add `GET /api/health/live` as the process liveness endpoint without external
+  dependency checks.
+- Add `GET /api/health/ready` as the traffic-readiness endpoint, including app
+  name, version, environment, and database readiness.
+- Return HTTP 200 from readiness when the API and database are ready.
+- Return HTTP 503 with the same readiness response shape when the API is
+  running but the database check fails.
 - Add `GET /api/version` as a lightweight version endpoint for clients and
   tooling that do not need readiness details.
 - Keep this task infrastructure-focused. Do not add auth, users,
@@ -20,7 +21,8 @@ domain persistence.
 
 - Add a Phoenix health controller.
 - Add a Phoenix version controller.
-- Wire `/api/health` and `/api/version` in the API router.
+- Wire `/api/health/live`, `/api/health/ready`, and `/api/version` in the API
+  router.
 - Add controller tests for successful JSON responses.
 - Update API documentation with the new endpoints.
 - Make the API test target load `.env` so local database port overrides are
@@ -32,7 +34,9 @@ domain persistence.
 
 ## Status
 
-- Added `GET /api/health` with service information and database readiness.
+- Added `GET /api/health/live` for process liveness.
+- Added `GET /api/health/ready` with service information and database
+  readiness.
 - Added `GET /api/version` with lightweight API version information.
 - Added controller tests for both endpoints.
 - Updated API documentation with the new endpoints.

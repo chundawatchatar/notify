@@ -1,4 +1,4 @@
-import type { ApiHealthResponse, ApiVersionResponse } from "@notify/api-client";
+import type { ApiReadinessResponse, ApiVersionResponse } from "@notify/api-client";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4100";
 
@@ -16,12 +16,12 @@ async function getJson<ResponseBody>(path: string): Promise<ResponseBody> {
   return response.json() as Promise<ResponseBody>;
 }
 
-function getApiHealth() {
-  return getJson<ApiHealthResponse>("/api/health");
+function getApiReadiness() {
+  return getJson<ApiReadinessResponse>("/api/health/ready");
 }
 
 function getApiVersion() {
   return getJson<ApiVersionResponse>("/api/version");
 }
 
-export { getApiHealth, getApiVersion };
+export { getApiReadiness, getApiVersion };

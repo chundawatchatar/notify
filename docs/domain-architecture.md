@@ -121,7 +121,7 @@ Responsibilities:
 Current health endpoints:
 
 ```text
-GET https://api.notify.tld/api/health
+GET https://api.notify.tld/api/health/ready
 GET https://api.notify.tld/api/version
 ```
 

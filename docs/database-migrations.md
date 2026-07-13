@@ -81,26 +81,30 @@ deployment step.
 
 ## Release Runner
 
-Before production deployment, add an API release module such as:
+The production migration runner is implemented in:
 
 ```text
 apps/api/lib/api/release.ex
 ```
 
-That module should start the minimum applications required for Ecto and run:
+It starts the minimum applications required for Ecto and runs:
 
 ```elixir
 Ecto.Migrator.run(Api.Repo, :up, all: true)
 ```
 
-The Kubernetes job can then execute:
+The release image exposes this through:
 
 ```sh
-bin/api eval "Api.Release.migrate()"
+/app/bin/migrate
 ```
 
 This keeps runtime migration execution separate from API startup while keeping
 migration ownership inside `apps/api`.
+
+`deploy/kubernetes/migration-job.yaml` is the generic Job template. Replace its
+image with the same immutable tag or digest used by the Deployment, create the
+Job, wait for completion, and only then roll out the API pods.
 
 ## Migration Safety Rules
 

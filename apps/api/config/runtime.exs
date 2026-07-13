@@ -30,6 +30,15 @@ if cors_origins = System.get_env("CORS_ORIGINS") do
   config :api, cors_origins: origins
 end
 
+if metrics_enabled = System.get_env("METRICS_ENABLED") do
+  config :api, metrics_enabled: String.downcase(metrics_enabled) in ~w(true 1)
+end
+
+if metrics_token = System.get_env("METRICS_TOKEN") do
+  token = String.trim(metrics_token)
+  config :api, metrics_token: if(token == "", do: nil, else: token)
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -64,6 +73,25 @@ if config_env() == :prod do
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :api, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+
+  metrics_enabled =
+    System.get_env("METRICS_ENABLED", "false")
+    |> String.downcase()
+    |> then(&(&1 in ~w(true 1)))
+
+  metrics_token =
+    case System.get_env("METRICS_TOKEN") do
+      nil -> nil
+      token -> String.trim(token)
+    end
+
+  if metrics_enabled and metrics_token in [nil, ""] do
+    raise "METRICS_TOKEN must be set when METRICS_ENABLED is true in production"
+  end
+
+  config :api,
+    metrics_enabled: metrics_enabled,
+    metrics_token: metrics_token
 
   config :api, ApiWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],

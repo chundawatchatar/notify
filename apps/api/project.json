@@ -47,6 +47,13 @@
         "cwd": "apps/api"
       }
     },
+    "release": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "MIX_ENV=prod mix release --overwrite",
+        "cwd": "apps/api"
+      }
+    },
     "test": {
       "executor": "nx:run-commands",
       "options": {

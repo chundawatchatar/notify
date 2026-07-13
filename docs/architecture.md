@@ -86,3 +86,16 @@ When adding a feature, decide ownership first:
 - Pure business rule: `libs/domain`.
 - Reusable Elixir OpenAPI schema: `libs/open_api`.
 - Database shape: `apps/api/priv/repo/migrations`.
+
+## Runtime Delivery
+
+The API ships as one Phoenix release image built from `apps/api/Dockerfile`.
+Kubernetes deployment templates live under `deploy/kubernetes`.
+
+The image has two explicit entry points:
+
+- `/app/bin/server`: starts the API server.
+- `/app/bin/migrate`: runs all pending Ecto migrations and exits.
+
+API pods never run migrations during startup. A deployment pipeline must run
+the migration Job with the exact immutable image that will be rolled out.

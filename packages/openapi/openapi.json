@@ -8,13 +8,6 @@
           "ready": true
         },
         "properties": {
-          "error": {
-            "example": "connection not available",
-            "nullable": true,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
           "ready": {
             "example": true,
             "type": "boolean",
@@ -28,7 +21,35 @@
         "x-struct": "Elixir.NotifyOpenApi.Schemas.DatabaseCheck",
         "x-validate": null
       },
-      "HealthChecks": {
+      "LivenessResponse": {
+        "description": "API process liveness response.",
+        "example": {
+          "service": {
+            "environment": "dev",
+            "name": "notify-api",
+            "version": "0.1.0"
+          },
+          "status": "ok"
+        },
+        "properties": {
+          "service": {
+            "$ref": "#/components/schemas/ServiceInfo"
+          },
+          "status": {
+            "enum": ["ok"],
+            "example": "ok",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["status", "service"],
+        "title": "LivenessResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.LivenessResponse",
+        "x-validate": null
+      },
+      "ReadinessChecks": {
         "description": "API dependency readiness checks.",
         "example": {
           "database": {
@@ -41,13 +62,13 @@
           }
         },
         "required": ["database"],
-        "title": "HealthChecks",
+        "title": "ReadinessChecks",
         "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.Schemas.HealthChecks",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessChecks",
         "x-validate": null
       },
-      "HealthResponse": {
-        "description": "API health response.",
+      "ReadinessResponse": {
+        "description": "API dependency readiness response.",
         "example": {
           "checks": {
             "database": {
@@ -63,7 +84,7 @@
         },
         "properties": {
           "checks": {
-            "$ref": "#/components/schemas/HealthChecks"
+            "$ref": "#/components/schemas/ReadinessChecks"
           },
           "service": {
             "$ref": "#/components/schemas/ServiceInfo"
@@ -77,9 +98,9 @@
           }
         },
         "required": ["status", "service", "checks"],
-        "title": "HealthResponse",
+        "title": "ReadinessResponse",
         "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.Schemas.HealthResponse",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessResponse",
         "x-validate": null
       },
       "ServiceInfo": {
@@ -149,35 +170,57 @@
   },
   "openapi": "3.0.0",
   "paths": {
-    "/api/health": {
+    "/api/health/live": {
       "get": {
         "callbacks": {},
-        "description": "Returns service metadata and dependency readiness checks.",
-        "operationId": "getApiHealth",
+        "description": "Reports whether the API process is running and able to serve requests.",
+        "operationId": "getApiLiveness",
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
+                  "$ref": "#/components/schemas/LivenessResponse"
                 }
               }
             },
-            "description": "Healthy response"
+            "description": "Live response"
+          }
+        },
+        "summary": "Read API liveness",
+        "tags": ["system"]
+      }
+    },
+    "/api/health/ready": {
+      "get": {
+        "callbacks": {},
+        "description": "Reports whether the API and its required dependencies can serve traffic.",
+        "operationId": "getApiReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            },
+            "description": "Ready response"
           },
           "503": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
+                  "$ref": "#/components/schemas/ReadinessResponse"
                 }
               }
             },
-            "description": "Degraded response"
+            "description": "Not ready response"
           }
         },
-        "summary": "Read API health",
+        "summary": "Read API readiness",
         "tags": ["system"]
       }
     },

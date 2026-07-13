@@ -5,7 +5,7 @@ defmodule NotifyOpenApi.MixProject do
     [
       app: :notify_open_api,
       version: "0.1.0",
-      elixir: "~> 1.17",
+      elixir: "~> 1.20",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]

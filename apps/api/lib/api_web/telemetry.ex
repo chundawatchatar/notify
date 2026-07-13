@@ -8,86 +8,80 @@ defmodule ApiWeb.Telemetry do
 
   @impl true
   def init(_arg) do
-    children = [
-      # Telemetry poller will execute the given period measurements
-      # every 10_000ms. Learn more here: https://hexdocs.pm/telemetry_metrics
-      {:telemetry_poller, measurements: periodic_measurements(), period: 10_000}
-      # Add reporters as children of your supervision tree.
-      # {Telemetry.Metrics.ConsoleReporter, metrics: metrics()}
-    ]
+    children =
+      [
+        {:telemetry_poller, measurements: periodic_measurements(), period: 10_000}
+      ] ++ metrics_reporter_children()
 
     Supervisor.init(children, strategy: :one_for_one)
   end
 
   def metrics do
     [
-      # Phoenix Metrics
-      summary("phoenix.endpoint.start.system_time",
-        unit: {:native, :millisecond}
+      counter("phoenix.endpoint.stop.count"),
+      distribution("phoenix.endpoint.stop.duration.seconds",
+        event_name: [:phoenix, :endpoint, :stop],
+        measurement: :duration,
+        unit: {:native, :second},
+        reporter_options: [buckets: duration_buckets()]
       ),
-      summary("phoenix.endpoint.stop.duration",
-        unit: {:native, :millisecond}
-      ),
-      summary("phoenix.router_dispatch.start.system_time",
+      distribution("phoenix.router_dispatch.stop.duration.seconds",
+        event_name: [:phoenix, :router_dispatch, :stop],
+        measurement: :duration,
         tags: [:route],
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: duration_buckets()]
       ),
-      summary("phoenix.router_dispatch.exception.duration",
-        tags: [:route],
-        unit: {:native, :millisecond}
+      counter("phoenix.router_dispatch.exception.count",
+        event_name: [:phoenix, :router_dispatch, :exception],
+        tags: [:route]
       ),
-      summary("phoenix.router_dispatch.stop.duration",
-        tags: [:route],
-        unit: {:native, :millisecond}
+      distribution("api.repo.query.total_time.seconds",
+        event_name: [:api, :repo, :query],
+        measurement: :total_time,
+        unit: {:native, :second},
+        reporter_options: [buckets: database_duration_buckets()]
       ),
-      summary("phoenix.socket_connected.duration",
-        unit: {:native, :millisecond}
+      distribution("api.repo.query.query_time.seconds",
+        event_name: [:api, :repo, :query],
+        measurement: :query_time,
+        unit: {:native, :second},
+        reporter_options: [buckets: database_duration_buckets()]
       ),
-      sum("phoenix.socket_drain.count"),
-      summary("phoenix.channel_joined.duration",
-        unit: {:native, :millisecond}
+      distribution("api.repo.query.queue_time.seconds",
+        event_name: [:api, :repo, :query],
+        measurement: :queue_time,
+        unit: {:native, :second},
+        reporter_options: [buckets: database_duration_buckets()]
       ),
-      summary("phoenix.channel_handled_in.duration",
-        tags: [:event],
-        unit: {:native, :millisecond}
+      last_value("vm.memory.total.bytes",
+        event_name: [:vm, :memory],
+        measurement: :total,
+        unit: :byte
       ),
-
-      # Database Metrics
-      summary("api.repo.query.total_time",
-        unit: {:native, :millisecond},
-        description: "The sum of the other measurements"
-      ),
-      summary("api.repo.query.decode_time",
-        unit: {:native, :millisecond},
-        description: "The time spent decoding the data received from the database"
-      ),
-      summary("api.repo.query.query_time",
-        unit: {:native, :millisecond},
-        description: "The time spent executing the query"
-      ),
-      summary("api.repo.query.queue_time",
-        unit: {:native, :millisecond},
-        description: "The time spent waiting for a database connection"
-      ),
-      summary("api.repo.query.idle_time",
-        unit: {:native, :millisecond},
-        description:
-          "The time the connection spent waiting before being checked out for the query"
-      ),
-
-      # VM Metrics
-      summary("vm.memory.total", unit: {:byte, :kilobyte}),
-      summary("vm.total_run_queue_lengths.total"),
-      summary("vm.total_run_queue_lengths.cpu"),
-      summary("vm.total_run_queue_lengths.io")
+      last_value("vm.total_run_queue_lengths.total"),
+      last_value("vm.total_run_queue_lengths.cpu"),
+      last_value("vm.total_run_queue_lengths.io")
     ]
   end
 
+  defp metrics_reporter_children do
+    if Application.get_env(:api, :metrics_enabled, false) do
+      [
+        {TelemetryMetricsPrometheus.Core,
+         metrics: metrics(), name: :api_prometheus_metrics, start_async: false}
+      ]
+    else
+      []
+    end
+  end
+
+  defp duration_buckets, do: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5]
+
+  defp database_duration_buckets,
+    do: [0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1]
+
   defp periodic_measurements do
-    [
-      # A module, function and arguments to be invoked periodically.
-      # This function must call :telemetry.execute/3 and a metric must be added above.
-      # {ApiWeb, :count_users, []}
-    ]
+    []
   end
 end

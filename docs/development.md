@@ -34,6 +34,8 @@ pnpm docker:up
 pnpm dev:all
 pnpm api:setup
 pnpm api
+pnpm api:release
+pnpm api:image
 pnpm check
 pnpm build
 pnpm web
@@ -60,3 +62,12 @@ Runtime versions are pinned in `.mise.toml`:
 
 `.nvmrc` remains available as a Node-only fallback, but mise is the preferred
 setup path for full-stack development.
+
+## Operational Endpoints
+
+- `GET /api/health/live`: API process liveness.
+- `GET /api/health/ready`: PostgreSQL readiness.
+- `GET /metrics`: Prometheus metrics when `METRICS_ENABLED=true`.
+
+Local metrics do not require a token. Production metrics are disabled by
+default and require `METRICS_TOKEN` when enabled.

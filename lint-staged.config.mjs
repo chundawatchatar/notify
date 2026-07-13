@@ -5,7 +5,7 @@ const sourceFiles = "*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,json,jsonc,css,md,mdx,yml,
 const scriptFiles = "*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}";
 const elixirFiles = "*.{ex,exs}";
 const generatedFiles = ["/src/routeTree.gen.ts"];
-const elixirProjects = ["apps/api", "libs/domain"];
+const elixirProjects = ["apps/api", "libs/domain", "libs/open_api"];
 
 const quote = (file) => JSON.stringify(file);
 const withoutGeneratedFiles = (files) =>
