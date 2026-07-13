@@ -47,6 +47,7 @@ export { Checkbox } from "./components/checkbox";
 export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/collapsible";
 export type { SidebarNavItemProps } from "./components/dashboard";
 export {
+  SidebarNavIcon,
   SidebarNavItem,
   SidebarNavLabel,
   StatCard,

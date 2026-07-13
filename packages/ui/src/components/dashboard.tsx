@@ -10,6 +10,19 @@ type SidebarNavItemProps = React.ComponentProps<"a"> & {
   collapsed?: boolean;
 };
 
+function SidebarNavIcon({ className, ...props }: React.ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="sidebar-nav-icon"
+      className={cn(
+        "grid size-7 shrink-0 place-items-center rounded-md bg-muted/80 text-muted-foreground transition-[background-color,color,box-shadow,transform] duration-300 group-hover/sidebar-item:translate-x-0.5 group-hover/sidebar-item:bg-background group-hover/sidebar-item:text-primary group-hover/sidebar-item:shadow-xs group-data-[active=true]/sidebar-item:translate-x-0.5 group-data-[active=true]/sidebar-item:bg-background group-data-[active=true]/sidebar-item:text-primary group-data-[active=true]/sidebar-item:shadow-xs [&_svg]:size-4 [&_svg]:transition-transform [&_svg]:duration-300 group-hover/sidebar-item:[&_svg]:scale-110 group-data-[active=true]/sidebar-item:[&_svg]:scale-110",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
 function SidebarNavItem({
   active = false,
   asChild = false,
@@ -25,10 +38,10 @@ function SidebarNavItem({
       data-collapsed={collapsed}
       data-slot="sidebar-nav-item"
       className={cn(
-        "group/sidebar-item flex h-10 items-center gap-3 overflow-hidden rounded-sm px-3 text-sm transition-[background-color,color,gap,padding] duration-300 ease-out data-[collapsed=true]:justify-center data-[collapsed=true]:gap-0 data-[collapsed=true]:px-0",
+        "group/sidebar-item relative flex h-11 items-center gap-2.5 overflow-hidden rounded-md px-2 font-medium text-sm outline-none transition-[background-color,color,gap,padding,box-shadow] duration-200 ease-out before:absolute before:top-3 before:bottom-3 before:left-0 before:w-0.5 before:rounded-r-full before:bg-primary before:opacity-0 before:transition-opacity hover:before:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/60 data-[active=true]:before:opacity-100 data-[collapsed=true]:justify-center data-[collapsed=true]:gap-0 data-[collapsed=true]:px-0",
         active
-          ? "bg-secondary font-medium text-foreground"
-          : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
+          ? "bg-secondary text-foreground shadow-xs"
+          : "text-foreground/75 hover:bg-secondary hover:text-foreground hover:shadow-xs",
         className,
       )}
       {...props}
@@ -100,4 +113,4 @@ function UsageBar({
 }
 
 export type { SidebarNavItemProps };
-export { SidebarNavItem, SidebarNavLabel, StatCard, StatusLine, UsageBar };
+export { SidebarNavIcon, SidebarNavItem, SidebarNavLabel, StatCard, StatusLine, UsageBar };

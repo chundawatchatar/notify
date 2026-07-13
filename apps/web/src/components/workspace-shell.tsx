@@ -21,9 +21,20 @@ import {
   DropdownMenuTrigger,
   Input,
   NotifyMarkIcon,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SidebarNavIcon,
   SidebarNavItem,
   SidebarNavLabel,
   Switch,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@notify/ui";
 import { Link } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
@@ -33,6 +44,7 @@ import {
   CreditCard,
   LayoutDashboard,
   LogOut,
+  Menu,
   Pin,
   RadioTower,
   Search,
@@ -69,6 +81,8 @@ type WorkspaceNavItem = {
   label: string;
 };
 
+type ThemeMode = "light" | "dark";
+
 const workspaceNavItems: WorkspaceNavItem[] = [
   { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { id: "apps", label: "Notification apps", href: "/apps", icon: BellRing },
@@ -85,25 +99,28 @@ function WorkspaceShell({
 }: Readonly<{ activeItem: WorkspaceNavId; children: ReactNode }>) {
   const [sidebarPinned, setSidebarPinned] = useState(true);
   const [sidebarHovered, setSidebarHovered] = useState(false);
+  const { setThemeMode, theme } = useWorkspaceTheme();
   const sidebarExpanded = sidebarPinned || sidebarHovered;
 
   return (
-    <AppShell>
-      <AppShellLayout collapsed={!sidebarPinned}>
-        <WorkspaceSidebar
-          activeItem={activeItem}
-          expanded={sidebarExpanded}
-          onHoveredChange={setSidebarHovered}
-          onPinnedChange={setSidebarPinned}
-          pinned={sidebarPinned}
-        />
+    <TooltipProvider delayDuration={300}>
+      <AppShell>
+        <AppShellLayout collapsed={!sidebarPinned}>
+          <WorkspaceSidebar
+            activeItem={activeItem}
+            expanded={sidebarExpanded}
+            onHoveredChange={setSidebarHovered}
+            onPinnedChange={setSidebarPinned}
+            pinned={sidebarPinned}
+          />
 
-        <AppShellMain>
-          <WorkspaceHeader />
-          <AppShellContent>{children}</AppShellContent>
-        </AppShellMain>
-      </AppShellLayout>
-    </AppShell>
+          <AppShellMain>
+            <WorkspaceHeader activeItem={activeItem} onThemeChange={setThemeMode} theme={theme} />
+            <AppShellContent>{children}</AppShellContent>
+          </AppShellMain>
+        </AppShellLayout>
+      </AppShell>
+    </TooltipProvider>
   );
 }
 
@@ -175,53 +192,49 @@ function WorkspaceSidebar({
         </div>
         <div className="-translate-y-1/2 absolute top-1/2 right-4 grid size-8 place-items-center">
           {pinned ? (
-            <Button
-              aria-label="Collapse sidebar"
-              className="size-8 shrink-0"
-              onClick={() => onPinnedChange(false)}
-              size="icon"
-              type="button"
-              variant="ghost"
-            >
-              <X className="size-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  aria-label="Collapse sidebar"
+                  className="size-8 shrink-0"
+                  onClick={() => onPinnedChange(false)}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <X className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>
+                Collapse sidebar
+              </TooltipContent>
+            </Tooltip>
           ) : expanded ? (
-            <Button
-              aria-label="Pin sidebar open"
-              className="size-8 shrink-0"
-              onClick={() => {
-                onPinnedChange(true);
-                onHoveredChange(false);
-              }}
-              size="icon"
-              type="button"
-              variant="ghost"
-            >
-              <Pin className="size-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  aria-label="Pin sidebar open"
+                  className="size-8 shrink-0"
+                  onClick={() => {
+                    onPinnedChange(true);
+                    onHoveredChange(false);
+                  }}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <Pin className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>
+                Pin sidebar open
+              </TooltipContent>
+            </Tooltip>
           ) : null}
         </div>
       </AppShellBrand>
 
-      <AppShellNav>
-        {workspaceNavItems.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <SidebarNavItem
-              active={activeItem === item.id}
-              asChild
-              collapsed={!expanded}
-              key={item.id}
-            >
-              <Link aria-label={expanded ? undefined : item.label} to={item.href}>
-                <Icon className="size-4" />
-                <SidebarNavLabel>{item.label}</SidebarNavLabel>
-              </Link>
-            </SidebarNavItem>
-          );
-        })}
-      </AppShellNav>
+      <WorkspaceNavigation activeItem={activeItem} expanded={expanded} />
 
       <AppShellSidebarFooter>
         <WorkspaceSidebarFooterControls expanded={expanded} />
@@ -230,12 +243,110 @@ function WorkspaceSidebar({
   );
 }
 
-function WorkspaceThemeButton({
-  className,
-  label,
-}: Readonly<{ className?: string; label?: "full" | "short" }>) {
-  const switchId = useId();
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+function WorkspaceNavigation({
+  activeItem,
+  expanded,
+  onNavigate,
+}: Readonly<{
+  activeItem: WorkspaceNavId;
+  expanded: boolean;
+  onNavigate?: () => void;
+}>) {
+  return (
+    <AppShellNav className="py-3">
+      {workspaceNavItems.map((item) => {
+        const Icon = item.icon;
+        const active = activeItem === item.id;
+
+        return (
+          <SidebarNavItem active={active} asChild collapsed={!expanded} key={item.id}>
+            <Link
+              aria-current={active ? "page" : undefined}
+              aria-label={expanded ? undefined : item.label}
+              onClick={onNavigate}
+              to={item.href}
+            >
+              <SidebarNavIcon>
+                <Icon />
+              </SidebarNavIcon>
+              <SidebarNavLabel>{item.label}</SidebarNavLabel>
+            </Link>
+          </SidebarNavItem>
+        );
+      })}
+    </AppShellNav>
+  );
+}
+
+function WorkspaceMobileNavigation({
+  activeItem,
+  onThemeChange,
+  theme,
+}: Readonly<{
+  activeItem: WorkspaceNavId;
+  onThemeChange: (theme: ThemeMode) => void;
+  theme: ThemeMode;
+}>) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+    const closeOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setOpen(false);
+      }
+    };
+
+    desktopQuery.addEventListener("change", closeOnDesktop);
+    return () => desktopQuery.removeEventListener("change", closeOnDesktop);
+  }, []);
+
+  return (
+    <Sheet onOpenChange={setOpen} open={open}>
+      <SheetTrigger asChild>
+        <Button
+          aria-label="Open navigation"
+          className="shrink-0 lg:hidden"
+          size="icon"
+          variant="ghost"
+        >
+          <Menu />
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="w-[min(20rem,calc(100vw-2rem))] gap-0 p-0 sm:max-w-xs" side="left">
+        <SheetHeader className="h-16 flex-row items-center gap-3 border-b px-4 py-0 pr-14">
+          <span className="grid size-8 shrink-0 place-items-center rounded-sm border bg-foreground text-background">
+            <NotifyMarkIcon className="size-4" />
+          </span>
+          <div className="min-w-0 text-left">
+            <SheetTitle>Notify</SheetTitle>
+            <SheetDescription className="sr-only">Workspace navigation</SheetDescription>
+            <p className="truncate text-muted-foreground text-xs">Acme workspace</p>
+          </div>
+        </SheetHeader>
+
+        <WorkspaceNavigation activeItem={activeItem} expanded onNavigate={() => setOpen(false)} />
+
+        <AppShellSidebarFooter>
+          <WorkspaceThemeButton
+            className="mb-2 flex w-full justify-between rounded-md shadow-none"
+            label="full"
+            onThemeChange={onThemeChange}
+            theme={theme}
+          />
+          <WorkspaceSidebarFooterControls
+            expanded
+            menuSide="top"
+            onNavigate={() => setOpen(false)}
+          />
+        </AppShellSidebarFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function useWorkspaceTheme() {
+  const [theme, setTheme] = useState<ThemeMode>("light");
 
   useEffect(() => {
     const storedTheme = window.localStorage.getItem("notify-theme");
@@ -246,11 +357,27 @@ function WorkspaceThemeButton({
     document.documentElement.classList.toggle("dark", nextTheme === "dark");
   }, []);
 
-  function setThemeMode(nextTheme: "dark" | "light") {
+  function setThemeMode(nextTheme: ThemeMode) {
     setTheme(nextTheme);
     window.localStorage.setItem("notify-theme", nextTheme);
     document.documentElement.classList.toggle("dark", nextTheme === "dark");
   }
+
+  return { setThemeMode, theme };
+}
+
+function WorkspaceThemeButton({
+  className,
+  label,
+  onThemeChange,
+  theme,
+}: Readonly<{
+  className?: string;
+  label?: "full" | "short";
+  onThemeChange: (theme: ThemeMode) => void;
+  theme: ThemeMode;
+}>) {
+  const switchId = useId();
 
   const nextThemeLabel = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
   const isDark = theme === "dark";
@@ -268,7 +395,7 @@ function WorkspaceThemeButton({
         aria-label={nextThemeLabel}
         checked={isDark}
         id={switchId}
-        onCheckedChange={(checked) => setThemeMode(checked ? "dark" : "light")}
+        onCheckedChange={(checked) => onThemeChange(checked ? "dark" : "light")}
       />
       <label className="cursor-pointer font-medium text-sm" htmlFor={switchId}>
         {label === "full" ? visibleLabel : shortLabel}
@@ -277,7 +404,11 @@ function WorkspaceThemeButton({
   );
 }
 
-function WorkspaceSidebarFooterControls({ expanded }: Readonly<{ expanded: boolean }>) {
+function WorkspaceSidebarFooterControls({
+  expanded,
+  menuSide = "right",
+  onNavigate,
+}: Readonly<{ expanded: boolean; menuSide?: "right" | "top"; onNavigate?: () => void }>) {
   return (
     <div className={expanded ? "grid gap-2" : "grid justify-items-center gap-2"}>
       <DropdownMenu>
@@ -306,7 +437,7 @@ function WorkspaceSidebarFooterControls({ expanded }: Readonly<{ expanded: boole
             ) : null}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56" side="right">
+        <DropdownMenuContent align="start" className="w-56" side={menuSide}>
           <DropdownMenuLabel>
             <div className="flex items-center gap-3">
               <Avatar>
@@ -324,7 +455,7 @@ function WorkspaceSidebarFooterControls({ expanded }: Readonly<{ expanded: boole
             Profile
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link to="/settings">
+            <Link onClick={onNavigate} to="/settings">
               <Settings />
               Settings
             </Link>
@@ -348,15 +479,33 @@ function WorkspaceSidebarFooterControls({ expanded }: Readonly<{ expanded: boole
   );
 }
 
-function WorkspaceHeader() {
+function WorkspaceHeader({
+  activeItem,
+  onThemeChange,
+  theme,
+}: Readonly<{
+  activeItem: WorkspaceNavId;
+  onThemeChange: (theme: ThemeMode) => void;
+  theme: ThemeMode;
+}>) {
   return (
     <AppShellHeader>
       <AppShellHeaderInner>
+        <WorkspaceMobileNavigation
+          activeItem={activeItem}
+          onThemeChange={onThemeChange}
+          theme={theme}
+        />
         <div className="relative flex-1 md:max-w-md">
           <Search className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 size-4 text-muted-foreground" />
           <Input className="pl-9" placeholder="Search apps, recipients, events" />
         </div>
-        <WorkspaceThemeButton className="hidden md:inline-flex" label="short" />
+        <WorkspaceThemeButton
+          className="hidden md:inline-flex"
+          label="short"
+          onThemeChange={onThemeChange}
+          theme={theme}
+        />
       </AppShellHeaderInner>
     </AppShellHeader>
   );
