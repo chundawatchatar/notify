@@ -13,6 +13,7 @@ describe("public api", () => {
     expect(ui.StatCard).toBeTypeOf("function");
     expect(ui.GoogleMarkIcon).toBeTypeOf("function");
     expect(ui.NotifyMarkIcon).toBeTypeOf("function");
+    expect(ui.PasswordInput).toBeTypeOf("function");
     expect(ui.Sheet).toBeTypeOf("function");
     expect(ui.NavigationMenu).toBeTypeOf("function");
     expect(ui.RadioGroup).toBeTypeOf("function");

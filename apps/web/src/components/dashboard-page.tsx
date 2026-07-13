@@ -22,6 +22,7 @@ import {
 } from "@notify/ui";
 import { Link } from "@tanstack/react-router";
 import { Activity, ArrowUpRight, KeyRound, Plus } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 import { WorkspacePageHeader, WorkspaceShell } from "./workspace-shell";
 
 const summaryMetrics = [
@@ -121,19 +122,21 @@ const activityItems = [
 ];
 
 function DashboardPage() {
+  const auth = useAuth();
+
   return (
     <WorkspaceShell activeItem="dashboard">
       <WorkspacePageHeader
         actions={
           <>
             <Button asChild variant="outline">
-              <Link to="/security">
+              <Link params={{ section: "security" }} to="/$section">
                 <KeyRound />
                 API keys
               </Link>
             </Button>
             <Button asChild>
-              <Link to="/apps">
+              <Link params={{ section: "apps" }} to="/$section">
                 <Plus />
                 New app
               </Link>
@@ -143,7 +146,7 @@ function DashboardPage() {
         badges={
           <>
             <Badge variant="success">Production healthy</Badge>
-            <Badge variant="secondary">Acme workspace</Badge>
+            <Badge variant="secondary">{auth.principal?.workspace.name ?? "Workspace"}</Badge>
           </>
         }
         description="Manage notification apps, monitor ingress traffic, track delivery analytics, and keep subscription usage under control."
@@ -176,7 +179,9 @@ function DashboardPage() {
                 </CardDescription>
               </div>
               <Button asChild size="sm" variant="outline">
-                <Link to="/apps">View all</Link>
+                <Link params={{ section: "apps" }} to="/$section">
+                  View all
+                </Link>
               </Button>
             </div>
           </CardHeader>
@@ -230,7 +235,7 @@ function DashboardPage() {
               <StatusLine label="Rate limit" value="72% available" />
             </div>
             <Button asChild className="w-full" variant="outline">
-              <Link to="/ingress">
+              <Link params={{ section: "ingress" }} to="/$section">
                 <ArrowUpRight />
                 Open API settings
               </Link>
@@ -255,7 +260,9 @@ function DashboardPage() {
                 <p className="text-muted-foreground text-sm">Renews Aug 1, 2026</p>
               </div>
               <Button asChild size="sm" variant="secondary">
-                <Link to="/subscription">Billing</Link>
+                <Link params={{ section: "subscription" }} to="/$section">
+                  Billing
+                </Link>
               </Button>
             </div>
           </CardContent>

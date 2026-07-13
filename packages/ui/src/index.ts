@@ -99,6 +99,8 @@ export {
   NavigationMenuViewport,
   navigationMenuTriggerStyle,
 } from "./components/navigation-menu";
+export type { PasswordInputProps } from "./components/password-input";
+export { PasswordInput } from "./components/password-input";
 export {
   Popover,
   PopoverAnchor,

@@ -10,6 +10,7 @@ Routes:
 - `/auth`
 - `/auth/login`
 - `/auth/signup`
+- `/auth/verify-email`
 - `/auth/forgot-password`
 - `/auth/reset-password`
 
@@ -19,9 +20,8 @@ Responsibilities:
 - verified signup atomically creates the account, workspace, and owner membership
 - sign in with a short-lived access JWT and rotating refresh session
 - current-account lookup and logout
-- Google login UI
-- forgot password
-- future reset password flow
+- protected dashboard session restoration and logout
+- future Google login and password recovery flows
 
 Current backend endpoints:
 

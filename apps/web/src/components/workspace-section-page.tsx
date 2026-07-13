@@ -29,10 +29,9 @@ import {
   SlidersHorizontal,
   Webhook,
 } from "lucide-react";
-import type { WorkspaceNavId } from "./workspace-shell";
+import type { WorkspaceSectionId } from "@/lib/workspace-sections";
 import { WorkspacePageHeader, WorkspaceShell } from "./workspace-shell";
 
-type WorkspaceSectionId = Exclude<WorkspaceNavId, "dashboard">;
 type LabelValueRow = readonly [label: string, value: string];
 type BadgeTone = "default" | "info" | "success" | "warning";
 

@@ -10,7 +10,7 @@ import Config
 config :api,
   auth_jwt_secret: "notify-local-jwt-secret-change-before-production",
   cors_origins: ["http://localhost:3100"],
-  dev_email_outbox_dir: Path.expand("../../../tmp/dev-emails", __DIR__),
+  dev_email_outbox_dir: Path.expand("../../../.tmp/dev-emails", __DIR__),
   environment: config_env(),
   ecto_repos: [Api.Repo],
   generators: [timestamp_type: :utc_datetime],

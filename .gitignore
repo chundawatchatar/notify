@@ -8,6 +8,7 @@ dist/
 build/
 coverage/
 storybook-static/
+.tmp/
 tmp/
 
 # TanStack Start / Vinxi outputs

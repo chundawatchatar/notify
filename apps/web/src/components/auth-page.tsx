@@ -1,4 +1,4 @@
-import { Button, Checkbox, GoogleMarkIcon, Input, Label, NotifyMarkIcon } from "@notify/ui";
+import { Button, Checkbox, Input, Label, NotifyMarkIcon, PasswordInput } from "@notify/ui";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -7,107 +7,80 @@ import {
   ArrowRight,
   Database,
   KeyRound,
-  Mail,
+  MailCheck,
   RadioTower,
   Server,
   ShieldCheck,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { z } from "zod";
+import { ApiRequestError, completeSignup, resendVerification, startSignup } from "@/lib/api-client";
+import { useAuth } from "@/lib/auth";
+import type { SignupVerificationState } from "@/lib/signup-verification";
+import {
+  isWorkspaceSectionPath,
+  type WorkspaceSectionPath,
+  workspaceSectionFromPath,
+} from "@/lib/workspace-sections";
 
-type AuthMode = "forgot-password" | "login" | "signup";
-type AuthValues = {
-  email: string;
-  password: string;
-  remember: boolean;
-  workspaceName: string;
-  acceptTerms: boolean;
-};
+type ProductRoute = "/" | "/dashboard" | WorkspaceSectionPath;
 
-const emailSchema = z.email("Enter a valid work email.");
-const passwordSchema = z.string().min(8, "Password must be at least 8 characters.");
-const workspaceNameSchema = z.string().min(2, "Workspace name must be at least 2 characters.");
+const emailSchema = z.email("Enter a valid work email.").max(160, "Email is too long.");
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters.")
+  .max(72, "Password must be at most 72 characters.");
+const workspaceNameSchema = z
+  .string()
+  .min(2, "Workspace name must be at least 2 characters.")
+  .max(100, "Workspace name must be at most 100 characters.");
 const acceptTermsSchema = z.literal(true, "Accept the terms to create a workspace.");
 
-const defaultAuthValues: AuthValues = {
-  email: "",
-  password: "",
-  remember: true,
-  workspaceName: "",
-  acceptTerms: false,
-};
-
-function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
+function LoginForm({
+  accountCreated = false,
+  redirectTo = "/dashboard",
+  sessionExpired = false,
+}: Readonly<{ accountCreated?: boolean; redirectTo?: ProductRoute; sessionExpired?: boolean }>) {
   const navigate = useNavigate();
-  const isForgotPassword = mode === "forgot-password";
+  const auth = useAuth();
+  const mutation = useMutation({
+    mutationFn: auth.signIn,
+    onSuccess: async () => {
+      if (isWorkspaceSectionPath(redirectTo)) {
+        await navigate({
+          params: { section: workspaceSectionFromPath(redirectTo) },
+          replace: true,
+          to: "/$section",
+        });
+        return;
+      }
 
-  const submitMutation = useMutation({
-    mutationFn: async (values: AuthValues) => {
-      await wait(700);
-
-      return {
-        email: values.email,
-        message: authSuccessMessage(mode),
-      };
+      await navigate({ to: redirectTo, replace: true });
     },
   });
-
-  const googleMutation = useMutation({
-    mutationFn: async () => {
-      await wait(500);
-
-      return "Google OAuth handoff is ready for backend wiring.";
-    },
-  });
-
   const form = useForm({
-    defaultValues: defaultAuthValues,
+    defaultValues: { email: "", password: "", remember: false },
     onSubmit: async ({ value }) => {
-      googleMutation.reset();
-      await submitMutation.mutateAsync(value);
+      mutation.reset();
 
-      if (!isForgotPassword) {
-        await navigate({ to: "/dashboard" });
+      try {
+        await mutation.mutateAsync(value);
+      } catch {
+        // The mutation renders the client-safe API error below.
       }
     },
   });
+  const unsupported = auth.status === "unsupported";
 
   return (
-    <form
-      className="grid gap-5"
-      onSubmit={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        void form.handleSubmit();
-      }}
-    >
-      {isForgotPassword ? null : (
-        <>
-          <Button
-            className="h-11 w-full"
-            disabled={googleMutation.isPending || submitMutation.isPending}
-            onClick={() => {
-              submitMutation.reset();
-              googleMutation.mutate(undefined, {
-                onSuccess: () => {
-                  void navigate({ to: "/dashboard" });
-                },
-              });
-            }}
-            type="button"
-            variant="outline"
-          >
-            <GoogleMarkIcon className="size-4" />
-            {googleMutation.isPending ? "Connecting to Google" : "Continue with Google"}
-          </Button>
-
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-muted-foreground text-xs">or</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-        </>
-      )}
+    <form className="grid gap-5" onSubmit={formSubmitHandler(form.handleSubmit)}>
+      {accountCreated ? (
+        <SuccessMessage message="Your account and workspace are ready. Sign in to continue." />
+      ) : null}
+      {sessionExpired ? (
+        <ErrorMessage message="Your session expired. Sign in again to continue." />
+      ) : null}
 
       <form.Field
         name="email"
@@ -118,16 +91,21 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
       >
         {(field) => (
           <FormField
-            error={firstFieldError(field.state.meta.errors)}
+            error={
+              apiFieldError(mutation.error, "email") ?? firstFieldError(field.state.meta.errors)
+            }
             inputId={field.name}
             label="Email"
           >
             <Input
-              aria-invalid={!field.state.meta.isValid}
+              autoComplete="email"
               id={field.name}
               name={field.name}
               onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
+              onChange={(event) => {
+                mutation.reset();
+                field.handleChange(event.target.value);
+              }}
               placeholder="you@company.com"
               type="email"
               value={field.state.value}
@@ -136,139 +114,386 @@ function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
         )}
       </form.Field>
 
-      {isForgotPassword ? null : (
-        <form.Field
-          name="password"
-          validators={{
-            onChange: ({ value }) => zodError(passwordSchema, value),
-            onSubmit: ({ value }) => zodError(passwordSchema, value),
-          }}
-        >
-          {(field) => (
-            <FormField
-              action={
-                mode === "login" ? (
-                  <Link
-                    className="text-muted-foreground text-sm hover:text-foreground"
-                    to="/auth/forgot-password"
-                  >
-                    Forgot password?
-                  </Link>
-                ) : null
-              }
-              error={firstFieldError(field.state.meta.errors)}
-              inputId={field.name}
-              label="Password"
-            >
-              <Input
-                aria-invalid={!field.state.meta.isValid}
-                id={field.name}
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                placeholder="Enter password"
-                type="password"
-                value={field.state.value}
-              />
-            </FormField>
-          )}
-        </form.Field>
-      )}
+      <form.Field
+        name="password"
+        validators={{
+          onBlur: ({ value }) => zodError(passwordSchema, value),
+          onSubmit: ({ value }) => zodError(passwordSchema, value),
+        }}
+      >
+        {(field) => (
+          <FormField
+            action={<span className="text-muted-foreground text-xs">Recovery coming soon</span>}
+            error={
+              apiFieldError(mutation.error, "password") ?? firstFieldError(field.state.meta.errors)
+            }
+            inputId={field.name}
+            label="Password"
+          >
+            <PasswordInput
+              autoComplete="current-password"
+              id={field.name}
+              name={field.name}
+              onBlur={field.handleBlur}
+              onChange={(event) => {
+                mutation.reset();
+                field.handleChange(event.target.value);
+              }}
+              placeholder="Enter password"
+              value={field.state.value}
+            />
+          </FormField>
+        )}
+      </form.Field>
 
-      {mode === "signup" ? (
-        <form.Field
-          name="workspaceName"
-          validators={{
-            onChange: ({ value }) => zodError(workspaceNameSchema, value),
-            onSubmit: ({ value }) => zodError(workspaceNameSchema, value),
-          }}
-        >
-          {(field) => (
-            <FormField
-              error={firstFieldError(field.state.meta.errors)}
-              inputId={field.name}
-              label="Workspace name"
-            >
-              <Input
-                aria-invalid={!field.state.meta.isValid}
-                id={field.name}
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                placeholder="Acme Cloud"
-                value={field.state.value}
-              />
-            </FormField>
-          )}
-        </form.Field>
-      ) : null}
+      <form.Field name="remember">
+        {(field) => (
+          <Label className="flex items-start gap-3 text-sm" htmlFor="login-remember">
+            <Checkbox
+              checked={field.state.value}
+              className="mt-0.5"
+              id="login-remember"
+              onCheckedChange={(value) => field.handleChange(value === true)}
+            />
+            <span className="text-muted-foreground">Keep me signed in for 30 days.</span>
+          </Label>
+        )}
+      </form.Field>
 
-      {isForgotPassword ? null : (
-        <form.Field
-          name={mode === "login" ? "remember" : "acceptTerms"}
-          validators={
-            mode === "signup"
-              ? {
-                  onChange: ({ value }) => zodError(acceptTermsSchema, value),
-                  onSubmit: ({ value }) => zodError(acceptTermsSchema, value),
-                }
-              : undefined
-          }
-        >
-          {(field) => {
-            const checkboxId = `${mode}-${field.name}`;
-
-            return (
-              <div className="grid gap-2">
-                <Label className="flex items-start gap-3 text-sm" htmlFor={checkboxId}>
-                  <Checkbox
-                    aria-invalid={!field.state.meta.isValid}
-                    checked={field.state.value}
-                    className="mt-0.5"
-                    id={checkboxId}
-                    onCheckedChange={(value) => field.handleChange(value === true)}
-                  />
-                  <span className="text-muted-foreground">
-                    {mode === "login"
-                      ? "Keep me signed in on this device."
-                      : "I agree to Notify's terms and operational data policy."}
-                  </span>
-                </Label>
-                <FieldError message={firstFieldError(field.state.meta.errors)} />
-              </div>
-            );
-          }}
-        </form.Field>
-      )}
-
-      <form.Subscribe
-        selector={(state) => [state.canSubmit, state.isSubmitting]}
-        children={([canSubmit, isSubmitting]) => (
+      <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+        {([canSubmit, isSubmitting]) => (
           <Button
             className="h-11 w-full"
-            disabled={!canSubmit || isSubmitting || submitMutation.isPending}
+            disabled={!canSubmit || isSubmitting || mutation.isPending || unsupported}
             type="submit"
           >
-            {submitButtonLabel(mode, submitMutation.isPending)}
-            {isForgotPassword ? <Mail /> : <ArrowRight />}
+            {mutation.isPending ? "Signing in" : "Sign in"}
+            <ArrowRight />
           </Button>
         )}
-      />
+      </form.Subscribe>
 
-      <MutationMessage
-        error={submitMutation.error ?? googleMutation.error}
-        message={submitMutation.data?.message ?? googleMutation.data}
-      />
-
-      {isForgotPassword ? (
-        <Button asChild className="w-full" variant="ghost">
-          <Link to="/auth/login">
-            <ArrowLeft />
-            Back to sign in
-          </Link>
-        </Button>
-      ) : null}
+      {unsupported ? <ErrorMessage message={auth.error ?? "This browser is unsupported."} /> : null}
+      <MutationMessage error={mutation.error} />
     </form>
+  );
+}
+
+function SignupForm() {
+  const [sentEmail, setSentEmail] = useState<string>();
+  const mutation = useMutation({ mutationFn: startSignup });
+  const resendMutation = useMutation({ mutationFn: resendVerification });
+  const form = useForm({
+    defaultValues: { email: "" },
+    onSubmit: async ({ value }) => {
+      mutation.reset();
+
+      try {
+        await mutation.mutateAsync(value);
+        setSentEmail(value.email.trim().toLowerCase());
+      } catch {
+        // The mutation renders the client-safe API error below.
+      }
+    },
+  });
+
+  if (sentEmail) {
+    return (
+      <div className="grid gap-5">
+        <SuccessMessage message="If this email can be registered, a verification link is on its way." />
+        <p className="text-muted-foreground text-sm">
+          Check <span className="font-medium text-foreground">{sentEmail}</span>. The link expires
+          in 24 hours and can be used once.
+        </p>
+        <Button
+          disabled={resendMutation.isPending}
+          onClick={() => resendMutation.mutate({ email: sentEmail })}
+          type="button"
+          variant="outline"
+        >
+          <MailCheck />
+          {resendMutation.isPending ? "Sending again" : "Resend verification email"}
+        </Button>
+        <Button
+          onClick={() => {
+            mutation.reset();
+            resendMutation.reset();
+            setSentEmail(undefined);
+          }}
+          type="button"
+          variant="ghost"
+        >
+          Use a different email
+        </Button>
+        {resendMutation.isSuccess ? (
+          <SuccessMessage message="Verification email requested." />
+        ) : null}
+        <MutationMessage error={resendMutation.error} />
+      </div>
+    );
+  }
+
+  return (
+    <form className="grid gap-5" onSubmit={formSubmitHandler(form.handleSubmit)}>
+      <form.Field
+        name="email"
+        validators={{
+          onChange: ({ value }) => zodError(emailSchema, value),
+          onSubmit: ({ value }) => zodError(emailSchema, value),
+        }}
+      >
+        {(field) => (
+          <FormField
+            error={
+              apiFieldError(mutation.error, "email") ?? firstFieldError(field.state.meta.errors)
+            }
+            inputId={field.name}
+            label="Work email"
+          >
+            <Input
+              autoComplete="email"
+              id={field.name}
+              name={field.name}
+              onBlur={field.handleBlur}
+              onChange={(event) => {
+                mutation.reset();
+                field.handleChange(event.target.value);
+              }}
+              placeholder="you@company.com"
+              type="email"
+              value={field.state.value}
+            />
+          </FormField>
+        )}
+      </form.Field>
+
+      <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+        {([canSubmit, isSubmitting]) => (
+          <Button
+            className="h-11 w-full"
+            disabled={!canSubmit || isSubmitting || mutation.isPending}
+            type="submit"
+          >
+            {mutation.isPending ? "Sending verification" : "Continue with email"}
+            <ArrowRight />
+          </Button>
+        )}
+      </form.Subscribe>
+
+      <MutationMessage error={mutation.error} />
+    </form>
+  );
+}
+
+function VerifyEmailFlow({
+  onComplete,
+  verification,
+}: Readonly<{ onComplete?: () => void; verification?: SignupVerificationState }>) {
+  if (verification?.status === "confirmed") {
+    return <CompleteSignupForm onComplete={onComplete} signupToken={verification.signupToken} />;
+  }
+
+  return (
+    <div className="grid gap-4">
+      <ErrorMessage
+        message={verification?.error ?? "This verification link is invalid or expired."}
+      />
+      <Button asChild className="w-full" variant="outline">
+        <Link to="/auth/signup">Request a new verification link</Link>
+      </Button>
+    </div>
+  );
+}
+
+function CompleteSignupForm({
+  onComplete,
+  signupToken,
+}: Readonly<{ onComplete?: () => void; signupToken: string }>) {
+  const navigate = useNavigate();
+  const mutation = useMutation({
+    mutationFn: completeSignup,
+    onSuccess: async () => {
+      onComplete?.();
+      await navigate({ to: "/auth/login", search: { created: true }, replace: true });
+    },
+  });
+  const form = useForm({
+    defaultValues: {
+      acceptTerms: false,
+      confirmPassword: "",
+      password: "",
+      workspaceName: "",
+    },
+    onSubmit: async ({ value }) => {
+      mutation.reset();
+
+      try {
+        await mutation.mutateAsync({
+          accept_terms: value.acceptTerms as true,
+          password: value.password,
+          signup_token: signupToken,
+          workspace_name: value.workspaceName,
+        });
+      } catch {
+        // The mutation renders the client-safe API error below.
+      }
+    },
+  });
+
+  return (
+    <form className="grid gap-5" onSubmit={formSubmitHandler(form.handleSubmit)}>
+      <form.Field
+        name="workspaceName"
+        validators={{
+          onChange: ({ value }) => zodError(workspaceNameSchema, value),
+          onSubmit: ({ value }) => zodError(workspaceNameSchema, value),
+        }}
+      >
+        {(field) => (
+          <FormField
+            error={
+              apiFieldError(mutation.error, "workspace_name") ??
+              firstFieldError(field.state.meta.errors)
+            }
+            inputId={field.name}
+            label="Workspace name"
+          >
+            <Input
+              autoComplete="organization"
+              id={field.name}
+              onBlur={field.handleBlur}
+              onChange={(event) => {
+                mutation.reset();
+                field.handleChange(event.target.value);
+              }}
+              placeholder="Acme Cloud"
+              value={field.state.value}
+            />
+          </FormField>
+        )}
+      </form.Field>
+
+      <form.Field
+        name="password"
+        validators={{
+          onBlur: ({ value }) => zodError(passwordSchema, value),
+          onSubmit: ({ value }) => zodError(passwordSchema, value),
+        }}
+      >
+        {(field) => (
+          <FormField
+            error={
+              apiFieldError(mutation.error, "password") ?? firstFieldError(field.state.meta.errors)
+            }
+            inputId={field.name}
+            label="Password"
+          >
+            <PasswordInput
+              autoComplete="new-password"
+              id={field.name}
+              name={field.name}
+              onBlur={field.handleBlur}
+              onChange={(event) => {
+                mutation.reset();
+                field.handleChange(event.target.value);
+              }}
+              placeholder="Create a password"
+              value={field.state.value}
+            />
+          </FormField>
+        )}
+      </form.Field>
+
+      <form.Field
+        name="confirmPassword"
+        validators={{
+          onBlur: ({ fieldApi, value }) =>
+            passwordConfirmationError(value, fieldApi.form.getFieldValue("password")),
+          onSubmit: ({ fieldApi, value }) =>
+            passwordConfirmationError(value, fieldApi.form.getFieldValue("password")),
+        }}
+      >
+        {(field) => (
+          <FormField
+            error={firstFieldError(field.state.meta.errors)}
+            inputId={field.name}
+            label="Confirm password"
+          >
+            <PasswordInput
+              autoComplete="new-password"
+              id={field.name}
+              name={field.name}
+              onBlur={field.handleBlur}
+              onChange={(event) => {
+                mutation.reset();
+                field.handleChange(event.target.value);
+              }}
+              placeholder="Enter password again"
+              value={field.state.value}
+            />
+          </FormField>
+        )}
+      </form.Field>
+
+      <form.Field
+        name="acceptTerms"
+        validators={{
+          onChange: ({ value }) => zodError(acceptTermsSchema, value),
+          onSubmit: ({ value }) => zodError(acceptTermsSchema, value),
+        }}
+      >
+        {(field) => (
+          <div className="grid gap-2">
+            <Label className="flex items-start gap-3 text-sm" htmlFor="signup-terms">
+              <Checkbox
+                checked={field.state.value}
+                className="mt-0.5"
+                id="signup-terms"
+                onCheckedChange={(value) => field.handleChange(value === true)}
+              />
+              <span className="text-muted-foreground">
+                I agree to Notify&apos;s terms and operational data policy.
+              </span>
+            </Label>
+            <FieldError
+              message={
+                apiFieldError(mutation.error, "accept_terms") ??
+                firstFieldError(field.state.meta.errors)
+              }
+            />
+          </div>
+        )}
+      </form.Field>
+
+      <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+        {([canSubmit, isSubmitting]) => (
+          <Button
+            className="h-11 w-full"
+            disabled={!canSubmit || isSubmitting || mutation.isPending}
+            type="submit"
+          >
+            {mutation.isPending ? "Creating workspace" : "Create workspace"}
+            <ArrowRight />
+          </Button>
+        )}
+      </form.Subscribe>
+
+      <MutationMessage error={mutation.error} />
+    </form>
+  );
+}
+
+function RecoveryUnavailable() {
+  return (
+    <div className="grid gap-4">
+      <StatusPanel message="Password recovery is not available yet. Contact support if you are locked out of an existing account." />
+      <Button asChild className="w-full" variant="outline">
+        <Link to="/auth/login">
+          <ArrowLeft />
+          Back to sign in
+        </Link>
+      </Button>
+    </div>
   );
 }
 
@@ -284,7 +509,7 @@ function AuthShell({
   children: ReactNode;
   eyebrow: string;
   footerAction: string;
-  footerHref: string;
+  footerHref: "/auth/login" | "/auth/signup";
   footerLabel: string;
   subtitle: string;
   title: string;
@@ -300,16 +525,7 @@ function AuthShell({
             src="/auth-notification-bg.png"
           />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--secondary)/0.35)_0%,transparent_22%,transparent_70%,hsl(var(--secondary)/0.35)_100%),linear-gradient(90deg,hsl(var(--secondary)/0.5)_0%,hsl(var(--background)/0.45)_36%,transparent_76%)]" />
-
-          <Link
-            className="relative z-10 flex w-full max-w-2xl items-center gap-2 font-semibold text-base"
-            to="/dashboard"
-          >
-            <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
-              <NotifyMarkIcon className="size-4" />
-            </span>
-            Notify
-          </Link>
+          <BrandLink className="relative z-10" />
 
           <div className="relative z-10 flex flex-1 items-center pb-24 pt-14">
             <div className="-translate-y-6 transform-gpu">
@@ -322,42 +538,17 @@ function AuthShell({
                 health from one focused workspace.
               </p>
               <AuthBackendGraphic />
-              <div className="mt-10 grid max-w-lg grid-cols-3 border-y">
-                {[
-                  ["Apps", "12"],
-                  ["Events", "48k"],
-                  ["Uptime", "99.9%"],
-                ].map(([label, value]) => (
-                  <div className="border-r py-4 last:border-r-0" key={label}>
-                    <p className="text-muted-foreground text-xs">{label}</p>
-                    <p className="mt-1 font-semibold text-2xl">{value}</p>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </section>
 
         <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8">
           <div className="w-full max-w-md">
-            <Link
-              className="mb-10 flex items-center gap-2 font-semibold text-base lg:hidden"
-              to="/dashboard"
-            >
-              <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
-                <NotifyMarkIcon className="size-4" />
-              </span>
-              Notify
-            </Link>
-
-            <div>
-              <p className="font-mono text-muted-foreground text-xs uppercase">{eyebrow}</p>
-              <h2 className="mt-3 font-semibold text-3xl tracking-normal">{title}</h2>
-              <p className="mt-3 text-muted-foreground">{subtitle}</p>
-            </div>
-
+            <BrandLink className="mb-10 lg:hidden" />
+            <p className="font-mono text-muted-foreground text-xs uppercase">{eyebrow}</p>
+            <h2 className="mt-3 font-semibold text-3xl tracking-normal">{title}</h2>
+            <p className="mt-3 text-muted-foreground">{subtitle}</p>
             <div className="mt-8">{children}</div>
-
             <p className="mt-8 text-center text-muted-foreground text-sm">
               {footerLabel}{" "}
               <Link className="font-medium text-foreground hover:underline" to={footerHref}>
@@ -371,48 +562,33 @@ function AuthShell({
   );
 }
 
+function BrandLink({ className }: Readonly<{ className?: string }>) {
+  return (
+    <Link className={`flex items-center gap-2 font-semibold text-base ${className ?? ""}`} to="/">
+      <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
+        <NotifyMarkIcon className="size-4" />
+      </span>
+      Notify
+    </Link>
+  );
+}
+
 function AuthBackendGraphic() {
   return (
     <div
       aria-hidden="true"
       className="mt-8 max-w-lg rounded-sm border bg-background/70 p-4 shadow-sm"
     >
-      <div className="grid gap-3">
-        <div className="flex items-center gap-3">
-          <GraphicNode icon={<Server className="size-4" />} label="Backend event" />
-          <GraphicConnector />
-          <GraphicNode icon={<KeyRound className="size-4" />} label="Scoped key" />
-          <GraphicConnector />
-          <GraphicNode icon={<RadioTower className="size-4" />} label="Fanout" />
-        </div>
-
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-          <div className="rounded-sm border bg-secondary/35 p-3">
-            <div className="flex items-center gap-2">
-              <span className="grid size-7 place-items-center rounded-sm bg-background">
-                <ShieldCheck className="size-4 text-muted-foreground" />
-              </span>
-              <div>
-                <p className="font-medium text-sm">Policy checked</p>
-                <p className="text-muted-foreground text-xs">workspace limits active</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="h-px w-8 bg-border" />
-
-          <div className="rounded-sm border bg-secondary/35 p-3">
-            <div className="flex items-center gap-2">
-              <span className="grid size-7 place-items-center rounded-sm bg-background">
-                <Database className="size-4 text-muted-foreground" />
-              </span>
-              <div>
-                <p className="font-medium text-sm">Delivery logged</p>
-                <p className="text-muted-foreground text-xs">99.9% uptime trail</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="flex items-center gap-3">
+        <GraphicNode icon={<Server className="size-4" />} label="Backend event" />
+        <ArrowRight className="size-3 shrink-0 text-muted-foreground" />
+        <GraphicNode icon={<KeyRound className="size-4" />} label="Scoped key" />
+        <ArrowRight className="size-3 shrink-0 text-muted-foreground" />
+        <GraphicNode icon={<RadioTower className="size-4" />} label="Fanout" />
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <GraphicNode icon={<ShieldCheck className="size-4" />} label="Policy checked" />
+        <GraphicNode icon={<Database className="size-4" />} label="Delivery logged" />
       </div>
     </div>
   );
@@ -427,15 +603,6 @@ function GraphicNode({ icon, label }: Readonly<{ icon: ReactNode; label: string 
         </span>
         <p className="truncate font-medium text-xs">{label}</p>
       </div>
-    </div>
-  );
-}
-
-function GraphicConnector() {
-  return (
-    <div className="flex w-8 shrink-0 items-center">
-      <div className="h-px flex-1 bg-border" />
-      <ArrowRight className="size-3 text-muted-foreground" />
     </div>
   );
 }
@@ -466,91 +633,96 @@ function FormField({
 }
 
 function FieldError({ message }: Readonly<{ message?: string }>) {
-  if (!message) {
-    return null;
-  }
-
-  return (
+  return message ? (
     <p className="text-destructive text-sm" role="alert">
+      {message}
+    </p>
+  ) : null;
+}
+
+function MutationMessage({ error }: Readonly<{ error: unknown }>) {
+  return error ? <ErrorMessage message={requestErrorMessage(error)} /> : null;
+}
+
+function ErrorMessage({ message }: Readonly<{ message: string }>) {
+  return (
+    <p
+      className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-destructive text-sm"
+      role="alert"
+    >
       {message}
     </p>
   );
 }
 
-function MutationMessage({ error, message }: Readonly<{ error: Error | null; message?: string }>) {
-  if (error) {
-    return (
-      <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-destructive text-sm">
-        {error.message}
-      </p>
-    );
-  }
-
-  if (!message) {
-    return null;
-  }
-
+function SuccessMessage({ message }: Readonly<{ message: string }>) {
   return (
-    <p className="rounded-md border border-emerald-600/30 bg-emerald-600/10 px-3 py-2 text-emerald-700 text-sm">
+    <p
+      className="rounded-md border border-emerald-600/30 bg-emerald-600/10 px-3 py-2 text-emerald-700 text-sm"
+      role="status"
+    >
       {message}
     </p>
   );
+}
+
+function StatusPanel({ message }: Readonly<{ message: string }>) {
+  return (
+    <p className="rounded-md border bg-secondary/35 px-4 py-3 text-muted-foreground text-sm">
+      {message}
+    </p>
+  );
+}
+
+function apiFieldError(error: unknown, field: string) {
+  return error instanceof ApiRequestError ? error.fields?.[field]?.[0] : undefined;
+}
+
+function requestErrorMessage(
+  error: unknown,
+  fallback = "Unable to complete the request. Try again.",
+) {
+  return error instanceof Error ? error.message : fallback;
 }
 
 function firstFieldError(errors: unknown[]) {
   const [error] = errors;
 
-  if (!error) {
-    return undefined;
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
+  if (!error) return undefined;
+  if (typeof error === "string") return error;
   if (typeof error === "object" && error !== null && "message" in error) {
     return String(error.message);
   }
-
   return String(error);
 }
 
 function zodError(schema: z.ZodType, value: unknown) {
   const result = schema.safeParse(value);
-
-  if (result.success) {
-    return undefined;
-  }
-
-  return result.error.issues[0]?.message ?? "Invalid value.";
+  return result.success ? undefined : (result.error.issues[0]?.message ?? "Invalid value.");
 }
 
-function authSuccessMessage(mode: AuthMode) {
-  if (mode === "forgot-password") {
-    return "If an account exists for this email, password reset instructions will be sent.";
+function passwordConfirmationError(value: string, password: string) {
+  if (!value) {
+    return "Confirm your password.";
   }
 
-  if (mode === "login") {
-    return "Sign-in form is validated and ready for the API.";
-  }
-
-  return "Signup form is validated and ready to create a workspace.";
+  return value === password ? undefined : "Passwords do not match.";
 }
 
-function submitButtonLabel(mode: AuthMode, pending: boolean) {
-  if (mode === "forgot-password") {
-    return pending ? "Sending reset link" : "Send reset link";
-  }
-
-  if (mode === "login") {
-    return pending ? "Signing in" : "Sign in";
-  }
-
-  return pending ? "Creating workspace" : "Create workspace";
+function formSubmitHandler(handleSubmit: () => Promise<void>) {
+  return (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    void handleSubmit();
+  };
 }
 
-function wait(milliseconds: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
-}
-
-export { AuthForm, AuthShell };
+export type { ProductRoute };
+export {
+  AuthShell,
+  CompleteSignupForm,
+  LoginForm,
+  RecoveryUnavailable,
+  SignupForm,
+  VerifyEmailFlow,
+};

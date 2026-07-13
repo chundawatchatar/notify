@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { cleanup, render } from "../test/render";
+import { cleanup, click, render } from "../test/render";
 import { Alert, AlertDescription, AlertTitle } from "./alert";
 import { Avatar, AvatarBadge, AvatarFallback, AvatarGroup, AvatarGroupCount } from "./avatar";
 import { Badge } from "./badge";
@@ -25,6 +25,7 @@ import {
 } from "./card";
 import { Input } from "./input";
 import { Label } from "./label";
+import { PasswordInput } from "./password-input";
 import { Progress } from "./progress";
 import { ScrollArea, ScrollBar } from "./scroll-area";
 import { Separator } from "./separator";
@@ -119,6 +120,22 @@ describe("primitive components", () => {
     expect(container.querySelector("label")?.getAttribute("for")).toBe("workspace");
     expect(container.querySelector("input")?.getAttribute("placeholder")).toBe("Acme Cloud");
     expect(container.querySelector("textarea")?.getAttribute("data-slot")).toBe("textarea");
+  });
+
+  it("shows and hides a password with an accessible toggle", () => {
+    expect.hasAssertions();
+
+    const container = render(<PasswordInput aria-label="Password" defaultValue="secret-value" />);
+    const input = container.querySelector("input");
+    const toggle = container.querySelector('button[aria-label="Show password"]');
+
+    expect(input?.getAttribute("type")).toBe("password");
+    expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+
+    click(toggle as HTMLButtonElement);
+
+    expect(input?.getAttribute("type")).toBe("text");
+    expect(container.querySelector('button[aria-label="Hide password"]')).not.toBeNull();
   });
 
   it("renders table structure inside a responsive wrapper", () => {

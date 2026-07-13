@@ -1,11 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { AuthProvider } from "@/lib/auth";
+import type { RouterContext } from "@/lib/router-context";
 
 import "@notify/styles/app.css";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     links: [
       {
@@ -35,12 +37,15 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const { auth } = Route.useRouteContext();
   const [queryClient] = useState(() => new QueryClient());
 
   return (
     <RootDocument>
       <QueryClientProvider client={queryClient}>
-        <Outlet />
+        <AuthProvider client={auth}>
+          <Outlet />
+        </AuthProvider>
       </QueryClientProvider>
     </RootDocument>
   );

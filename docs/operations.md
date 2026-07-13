@@ -92,10 +92,10 @@ rate limiting and production email delivery are installed, authentication must
 not be publicly exposed.
 
 In development, verification messages are written as `.eml` files under
-`tmp/dev-emails`. The adapter logs the recipient and absolute file path, but
-keeps the raw verification link in the file. `tmp/` is gitignored. Override the
-location with `DEV_EMAIL_OUTBOX_DIR` when needed. Do not enable this adapter in
-production.
+`.tmp/dev-emails`. The adapter logs the recipient and absolute file path, but
+keeps the raw verification link in the file. `.tmp/` is gitignored. Override
+the location with `DEV_EMAIL_OUTBOX_DIR` when needed. Do not enable this adapter
+in production.
 
 ## CI Policy
 
