@@ -53,6 +53,8 @@ defmodule Api.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:plug, "~> 1.20.3"},
+      {:argon2_elixir, "~> 4.1"},
+      {:joken, "~> 2.6"},
       {:ex_machina, "~> 2.8.0", only: :test},
       {:faker, "~> 0.19.0", only: :test},
       {:domain, path: "../../libs/domain"},

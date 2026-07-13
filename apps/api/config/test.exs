@@ -1,5 +1,9 @@
 import Config
 
+config :api, verification_email_adapter: Api.Accounts.VerificationEmail.TestAdapter
+
+config :argon2_elixir, t_cost: 1, m_cost: 8
+
 postgres_hostname = System.get_env("POSTGRES_HOST", "localhost")
 postgres_port = System.get_env("POSTGRES_PORT", "15432")
 postgres_username = System.get_env("POSTGRES_USER", "notify")

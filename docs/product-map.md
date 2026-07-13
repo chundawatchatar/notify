@@ -15,11 +15,27 @@ Routes:
 
 Responsibilities:
 
-- sign in
-- sign up
+- email ownership verification before collecting the password
+- verified signup atomically creates the account, workspace, and owner membership
+- sign in with a short-lived access JWT and rotating refresh session
+- current-account lookup and logout
 - Google login UI
 - forgot password
 - future reset password flow
+
+Current backend endpoints:
+
+- `POST /api/auth/signup`
+- `POST /api/auth/signup/complete`
+- `POST /api/auth/email-verification/resend`
+- `POST /api/auth/email-verification/confirm`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `GET /api/auth/me`
+- `DELETE /api/auth/session`
+
+Google OAuth, password reset, multi-workspace selection, and auth rate limiting
+are deferred. Rate limiting is required before public production exposure.
 
 ## Dashboard
 

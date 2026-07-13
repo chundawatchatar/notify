@@ -73,6 +73,29 @@ web route/component
 Pure business decisions should be extracted into `libs/domain` when they can be
 used without framework dependencies.
 
+## Dashboard Authentication
+
+Dashboard authentication is owned by `apps/api` and uses two credentials:
+
+- a 15-minute JWT sent as `Authorization: Bearer <token>`;
+- a rotating opaque refresh token stored in an HttpOnly cookie scoped to
+  `api.notify.tld` under `/api/auth`.
+
+The API persists the refresh-token digest and active workspace membership. It
+checks the session record on every protected request so logout, expiry, or
+membership removal revokes access immediately. Browser refresh and logout calls
+must include credentials and originate from the configured dashboard origin.
+
+Email/password signup verifies ownership before creating an account. The API
+stores a hashed, expiring signup challenge and exchanges the email link for a
+15-minute, one-time signup-completion credential. Completing signup atomically
+creates the confirmed user, one workspace, and its owner membership. This keeps
+an unverified request from reserving another person's email. No session is
+created until the user signs in.
+
+Google OAuth, password recovery, multi-workspace selection, and authentication
+rate limiting remain deferred.
+
 ## Adding New Features
 
 When adding a feature, decide ownership first:

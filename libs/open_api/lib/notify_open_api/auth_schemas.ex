@@ -1,0 +1,264 @@
+defmodule NotifyOpenApi.AuthSchemas do
+  alias OpenApiSpex.Schema
+
+  defmodule SignupRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "SignupRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        email: %Schema{
+          type: :string,
+          format: :email,
+          maxLength: 160,
+          example: "owner@example.com"
+        }
+      },
+      required: [:email]
+    })
+  end
+
+  defmodule CompleteSignupRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "CompleteSignupRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        signup_token: %Schema{
+          type: :string,
+          minLength: 1,
+          description: "Short-lived credential issued after email verification."
+        },
+        password: %Schema{type: :string, format: :password, minLength: 8, maxLength: 72},
+        workspace_name: %Schema{
+          type: :string,
+          minLength: 2,
+          maxLength: 100,
+          example: "Acme Cloud"
+        },
+        accept_terms: %Schema{type: :boolean, enum: [true], example: true}
+      },
+      required: [:signup_token, :password, :workspace_name, :accept_terms]
+    })
+  end
+
+  defmodule LoginRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "LoginRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        email: %Schema{
+          type: :string,
+          format: :email,
+          maxLength: 160,
+          example: "owner@example.com"
+        },
+        password: %Schema{type: :string, format: :password, minLength: 8, maxLength: 72},
+        remember: %Schema{type: :boolean, default: false, example: true}
+      },
+      required: [:email, :password]
+    })
+  end
+
+  defmodule ResendVerificationRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ResendVerificationRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        email: %Schema{
+          type: :string,
+          format: :email,
+          maxLength: 160,
+          example: "owner@example.com"
+        }
+      },
+      required: [:email]
+    })
+  end
+
+  defmodule ConfirmEmailRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ConfirmEmailRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        token: %Schema{type: :string, minLength: 1, example: "verification-token"}
+      },
+      required: [:token]
+    })
+  end
+
+  defmodule StatusResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "AuthStatusResponse",
+      type: :object,
+      properties: %{
+        status: %Schema{
+          type: :string,
+          enum: ["verification_sent"],
+          example: "verification_sent"
+        }
+      },
+      required: [:status]
+    })
+  end
+
+  defmodule SignupTokenResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "SignupTokenResponse",
+      type: :object,
+      properties: %{
+        signup_token: %Schema{
+          type: :string,
+          description: "One-time credential for completing the verified signup."
+        },
+        expires_in: %Schema{type: :integer, minimum: 1, example: 900}
+      },
+      required: [:signup_token, :expires_in]
+    })
+  end
+
+  defmodule SignupCompletionResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "SignupCompletionResponse",
+      type: :object,
+      properties: %{
+        status: %Schema{type: :string, enum: ["account_created"], example: "account_created"}
+      },
+      required: [:status]
+    })
+  end
+
+  defmodule UserSummary do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "AuthUser",
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, format: :uuid},
+        email: %Schema{type: :string, format: :email, example: "owner@example.com"}
+      },
+      required: [:id, :email]
+    })
+  end
+
+  defmodule WorkspaceSummary do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "AuthWorkspace",
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, format: :uuid},
+        name: %Schema{type: :string, example: "Acme Cloud"}
+      },
+      required: [:id, :name]
+    })
+  end
+
+  defmodule MeResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "CurrentUserResponse",
+      type: :object,
+      properties: %{
+        user: UserSummary,
+        workspace: WorkspaceSummary,
+        role: %Schema{type: :string, enum: ["owner"], example: "owner"}
+      },
+      required: [:user, :workspace, :role]
+    })
+  end
+
+  defmodule AuthResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "AuthResponse",
+      type: :object,
+      properties: %{
+        access_token: %Schema{type: :string, description: "Short-lived JWT access token."},
+        token_type: %Schema{type: :string, enum: ["Bearer"], example: "Bearer"},
+        expires_in: %Schema{type: :integer, minimum: 1, example: 900},
+        user: UserSummary,
+        workspace: WorkspaceSummary,
+        role: %Schema{type: :string, enum: ["owner"], example: "owner"}
+      },
+      required: [:access_token, :token_type, :expires_in, :user, :workspace, :role]
+    })
+  end
+
+  defmodule ErrorDetails do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ErrorDetails",
+      type: :object,
+      properties: %{
+        code: %Schema{type: :string, example: "invalid_credentials"},
+        detail: %Schema{type: :string, example: "Email or password is invalid."}
+      },
+      required: [:code, :detail]
+    })
+  end
+
+  defmodule ErrorResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ErrorResponse",
+      type: :object,
+      properties: %{errors: ErrorDetails},
+      required: [:errors]
+    })
+  end
+
+  defmodule ValidationErrorDetails do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ValidationErrorDetails",
+      type: :object,
+      properties: %{
+        code: %Schema{type: :string, enum: ["validation_failed"]},
+        detail: %Schema{type: :string},
+        fields: %Schema{
+          type: :object,
+          additionalProperties: %Schema{type: :array, items: %Schema{type: :string}}
+        }
+      },
+      required: [:code, :detail, :fields]
+    })
+  end
+
+  defmodule ValidationErrorResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ValidationErrorResponse",
+      type: :object,
+      properties: %{errors: ValidationErrorDetails},
+      required: [:errors]
+    })
+  end
+end

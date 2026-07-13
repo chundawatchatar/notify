@@ -175,13 +175,18 @@ cross-subdomain cookies.
 
 Recommended approach:
 
-- Dashboard session cookie is scoped to `app.notify.tld`.
+- Dashboard access uses a short-lived bearer JWT issued by `api.notify.tld`.
+- Dashboard refresh uses a rotating HttpOnly cookie scoped to
+  `api.notify.tld/api/auth`; the API stores only its digest.
 - API keys authenticate customer backend requests to `api.notify.tld`.
 - Short-lived socket tokens authenticate clients to `live.notify.tld`.
 - Avoid setting cookies on `.notify.tld` unless a clear cross-subdomain use case
   exists.
 
-This keeps marketing, dashboard, API, and realtime boundaries cleaner.
+The dashboard sends refresh requests with credentials from the exact allowed
+app origin. Protected API requests also validate the persisted session and
+workspace membership named by the JWT. This keeps marketing, dashboard, API,
+and realtime boundaries clean while supporting immediate revocation.
 
 ## CORS And Origins
 

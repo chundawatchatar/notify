@@ -39,7 +39,51 @@ if metrics_token = System.get_env("METRICS_TOKEN") do
   config :api, metrics_token: if(token == "", do: nil, else: token)
 end
 
+if web_app_url = System.get_env("WEB_APP_URL") do
+  config :api, web_app_url: String.trim_trailing(web_app_url, "/")
+end
+
+if auth_jwt_secret = System.get_env("AUTH_JWT_SECRET") do
+  config :api, auth_jwt_secret: auth_jwt_secret
+end
+
+if dev_email_outbox_dir = System.get_env("DEV_EMAIL_OUTBOX_DIR") do
+  config :api, dev_email_outbox_dir: Path.expand(dev_email_outbox_dir)
+end
+
 if config_env() == :prod do
+  auth_jwt_secret =
+    System.get_env("AUTH_JWT_SECRET") ||
+      raise "AUTH_JWT_SECRET must be set in production"
+
+  if byte_size(auth_jwt_secret) < 32 do
+    raise "AUTH_JWT_SECRET must contain at least 32 bytes"
+  end
+
+  web_app_url =
+    System.get_env("WEB_APP_URL") ||
+      raise "WEB_APP_URL must be set in production"
+
+  cors_origins =
+    System.get_env("CORS_ORIGINS") ||
+      raise "CORS_ORIGINS must be set in production"
+
+  allowed_origins =
+    cors_origins
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+
+  if allowed_origins == [] do
+    raise "CORS_ORIGINS must contain at least one exact origin"
+  end
+
+  normalized_web_app_url = String.trim_trailing(web_app_url, "/")
+
+  if normalized_web_app_url not in allowed_origins do
+    raise "CORS_ORIGINS must include WEB_APP_URL for authenticated browser requests"
+  end
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """
@@ -90,8 +134,11 @@ if config_env() == :prod do
   end
 
   config :api,
+    auth_jwt_secret: auth_jwt_secret,
+    cors_origins: allowed_origins,
     metrics_enabled: metrics_enabled,
-    metrics_token: metrics_token
+    metrics_token: metrics_token,
+    web_app_url: normalized_web_app_url
 
   config :api, ApiWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],

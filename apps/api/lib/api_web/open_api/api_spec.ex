@@ -3,7 +3,7 @@ defmodule ApiWeb.OpenApi.ApiSpec do
 
   alias ApiWeb.Endpoint
   alias ApiWeb.Router
-  alias OpenApiSpex.{Info, OpenApi, Paths, Server}
+  alias OpenApiSpex.{Components, Info, OpenApi, Paths, SecurityScheme, Server}
 
   @impl OpenApiSpex.OpenApi
   def spec do
@@ -14,6 +14,16 @@ defmodule ApiWeb.OpenApi.ApiSpec do
       info: %Info{
         title: "Notify API",
         version: app_version()
+      },
+      components: %Components{
+        securitySchemes: %{
+          "bearerAuth" => %SecurityScheme{
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+            description: "Short-lived Notify dashboard access token."
+          }
+        }
       },
       paths: Paths.from_router(Router)
     }

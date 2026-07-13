@@ -91,6 +91,18 @@ The API accepts the local dashboard origin by default. Set `CORS_ORIGINS` to a
 comma-separated allowlist for deployed browser origins; wildcard origins are not
 allowed for authenticated routes.
 
+Authentication helpers must keep the access JWT in frontend-managed memory,
+send it with the `Authorization` header, and use `credentials: "include"` for
+login, refresh, and logout so the API-scoped HttpOnly refresh cookie is sent.
+Refresh attempts must be single-flighted across tabs because replaying a rotated
+credential revokes the session.
+
+Signup is email-first. The signup page starts the flow with only an email. The
+verification route exchanges the emailed token for a 15-minute signup token,
+then collects the password, workspace name, and terms acceptance and calls the
+signup-completion endpoint. The dashboard must not persist either verification
+credential in browser storage.
+
 ## Shared UI
 
 Use `@notify/ui` before creating app-local components. Add a component to

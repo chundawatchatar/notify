@@ -8,12 +8,16 @@
 import Config
 
 config :api,
+  auth_jwt_secret: "notify-local-jwt-secret-change-before-production",
   cors_origins: ["http://localhost:3100"],
+  dev_email_outbox_dir: Path.expand("../../../tmp/dev-emails", __DIR__),
   environment: config_env(),
   ecto_repos: [Api.Repo],
   generators: [timestamp_type: :utc_datetime],
   metrics_enabled: true,
-  metrics_token: nil
+  metrics_token: nil,
+  verification_email_adapter: Api.Accounts.VerificationEmail.DevAdapter,
+  web_app_url: "http://localhost:3100"
 
 # Configures the endpoint
 config :api, ApiWeb.Endpoint,

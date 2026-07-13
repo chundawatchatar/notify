@@ -34,7 +34,13 @@ provide the production runtime values, including:
 - `SECRET_KEY_BASE`
 - `PHX_HOST`
 - `CORS_ORIGINS`
+- `AUTH_JWT_SECRET`, containing at least 32 random bytes
+- `WEB_APP_URL`, used to build verification links
 - `metrics-token`
+
+`CORS_ORIGINS` must contain exact comma-separated origins and must include
+`WEB_APP_URL`. Cookie-mutating authentication requests are rejected unless
+their `Origin` header matches one of these configured origins.
 
 Do not commit real secret values. Before creating resources, replace the image
 in both the Deployment and `deploy/kubernetes/migration-job.yaml` with the same
@@ -73,6 +79,23 @@ Authorization: Bearer <METRICS_TOKEN>
 
 Keep `/metrics` internal to the cluster even when bearer authentication is
 enabled. Do not route it through the public ingress.
+
+## Authentication Runtime
+
+`AUTH_JWT_SECRET` signs 15-minute dashboard access tokens and must remain in the
+runtime Secret. Rotating it invalidates issued access JWTs; persisted refresh
+sessions can still issue new JWTs with the new key.
+
+The built-in production verification-email adapter is intentionally disabled.
+Configure a real provider implementation before exposing signup. Until auth
+rate limiting and production email delivery are installed, authentication must
+not be publicly exposed.
+
+In development, verification messages are written as `.eml` files under
+`tmp/dev-emails`. The adapter logs the recipient and absolute file path, but
+keeps the raw verification link in the file. `tmp/` is gitignored. Override the
+location with `DEV_EMAIL_OUTBOX_DIR` when needed. Do not enable this adapter in
+production.
 
 ## CI Policy
 

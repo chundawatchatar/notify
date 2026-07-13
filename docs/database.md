@@ -76,12 +76,26 @@ Use expand-contract migrations for production:
 Avoid destructive migrations in the same release that introduces replacement
 code.
 
-## Initial Product Tables
+## Current Authentication Tables
 
-Likely first tables:
+- `signup_challenges`: normalized email, hashed email-verification and
+  signup-completion credentials, expiries, verification time, and consumption
+  time. A resend replaces the existing challenge for that email.
+- `users`: normalized unique login identity, Argon2 password hash, email
+  confirmation, terms acceptance, and latest successful login time.
+- `workspaces`: tenant boundary created during signup.
+- `workspace_memberships`: user-to-workspace role, initially only `owner`.
+- `auth_sessions`: membership-scoped refresh digest, expiry, and revocation.
 
-- workspaces
-- users
+All authentication IDs use UUIDs. Raw refresh, verification, and signup
+completion credentials are never persisted. Signup does not create a user until
+the email has been verified. The verified completion transaction creates the
+user, workspace, and owner membership together.
+
+## Expected Product Tables
+
+Likely next tables:
+
 - notification_apps
 - trusted_origins
 - api_keys

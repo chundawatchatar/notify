@@ -2,6 +2,186 @@
   "components": {
     "responses": {},
     "schemas": {
+      "AuthResponse": {
+        "properties": {
+          "access_token": {
+            "description": "Short-lived JWT access token.",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "expires_in": {
+            "example": 900,
+            "minimum": 1,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "role": {
+            "enum": ["owner"],
+            "example": "owner",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "token_type": {
+            "enum": ["Bearer"],
+            "example": "Bearer",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUser"
+          },
+          "workspace": {
+            "$ref": "#/components/schemas/AuthWorkspace"
+          }
+        },
+        "required": ["access_token", "token_type", "expires_in", "user", "workspace", "role"],
+        "title": "AuthResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.AuthResponse",
+        "x-validate": null
+      },
+      "AuthStatusResponse": {
+        "properties": {
+          "status": {
+            "enum": ["verification_sent"],
+            "example": "verification_sent",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["status"],
+        "title": "AuthStatusResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.StatusResponse",
+        "x-validate": null
+      },
+      "AuthUser": {
+        "properties": {
+          "email": {
+            "example": "owner@example.com",
+            "format": "email",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "email"],
+        "title": "AuthUser",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.UserSummary",
+        "x-validate": null
+      },
+      "AuthWorkspace": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "Acme Cloud",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "name"],
+        "title": "AuthWorkspace",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceSummary",
+        "x-validate": null
+      },
+      "CompleteSignupRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "accept_terms": {
+            "enum": [true],
+            "example": true,
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "password": {
+            "format": "password",
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "signup_token": {
+            "description": "Short-lived credential issued after email verification.",
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "workspace_name": {
+            "example": "Acme Cloud",
+            "maxLength": 100,
+            "minLength": 2,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["signup_token", "password", "workspace_name", "accept_terms"],
+        "title": "CompleteSignupRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.CompleteSignupRequest",
+        "x-validate": null
+      },
+      "ConfirmEmailRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "example": "verification-token",
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["token"],
+        "title": "ConfirmEmailRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ConfirmEmailRequest",
+        "x-validate": null
+      },
+      "CurrentUserResponse": {
+        "properties": {
+          "role": {
+            "enum": ["owner"],
+            "example": "owner",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUser"
+          },
+          "workspace": {
+            "$ref": "#/components/schemas/AuthWorkspace"
+          }
+        },
+        "required": ["user", "workspace", "role"],
+        "title": "CurrentUserResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.MeResponse",
+        "x-validate": null
+      },
       "DatabaseCheck": {
         "description": "Database readiness check result.",
         "example": {
@@ -19,6 +199,39 @@
         "title": "DatabaseCheck",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.Schemas.DatabaseCheck",
+        "x-validate": null
+      },
+      "ErrorDetails": {
+        "properties": {
+          "code": {
+            "example": "invalid_credentials",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "detail": {
+            "example": "Email or password is invalid.",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["code", "detail"],
+        "title": "ErrorDetails",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ErrorDetails",
+        "x-validate": null
+      },
+      "ErrorResponse": {
+        "properties": {
+          "errors": {
+            "$ref": "#/components/schemas/ErrorDetails"
+          }
+        },
+        "required": ["errors"],
+        "title": "ErrorResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ErrorResponse",
         "x-validate": null
       },
       "LivenessResponse": {
@@ -47,6 +260,39 @@
         "title": "LivenessResponse",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.Schemas.LivenessResponse",
+        "x-validate": null
+      },
+      "LoginRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "example": "owner@example.com",
+            "format": "email",
+            "maxLength": 160,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "password": {
+            "format": "password",
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "remember": {
+            "default": false,
+            "example": true,
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["email", "password"],
+        "title": "LoginRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.LoginRequest",
         "x-validate": null
       },
       "ReadinessChecks": {
@@ -103,6 +349,24 @@
         "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessResponse",
         "x-validate": null
       },
+      "ResendVerificationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "example": "owner@example.com",
+            "format": "email",
+            "maxLength": 160,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["email"],
+        "title": "ResendVerificationRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ResendVerificationRequest",
+        "x-validate": null
+      },
       "ServiceInfo": {
         "description": "API service metadata.",
         "example": {
@@ -136,6 +400,109 @@
         "x-struct": "Elixir.NotifyOpenApi.Schemas.ServiceInfo",
         "x-validate": null
       },
+      "SignupCompletionResponse": {
+        "properties": {
+          "status": {
+            "enum": ["account_created"],
+            "example": "account_created",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["status"],
+        "title": "SignupCompletionResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupCompletionResponse",
+        "x-validate": null
+      },
+      "SignupRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "example": "owner@example.com",
+            "format": "email",
+            "maxLength": 160,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["email"],
+        "title": "SignupRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupRequest",
+        "x-validate": null
+      },
+      "SignupTokenResponse": {
+        "properties": {
+          "expires_in": {
+            "example": 900,
+            "minimum": 1,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "signup_token": {
+            "description": "One-time credential for completing the verified signup.",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["signup_token", "expires_in"],
+        "title": "SignupTokenResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupTokenResponse",
+        "x-validate": null
+      },
+      "ValidationErrorDetails": {
+        "properties": {
+          "code": {
+            "enum": ["validation_failed"],
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "detail": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "fields": {
+            "additionalProperties": {
+              "items": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "type": "array",
+              "x-struct": null,
+              "x-validate": null
+            },
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["code", "detail", "fields"],
+        "title": "ValidationErrorDetails",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ValidationErrorDetails",
+        "x-validate": null
+      },
+      "ValidationErrorResponse": {
+        "properties": {
+          "errors": {
+            "$ref": "#/components/schemas/ValidationErrorDetails"
+          }
+        },
+        "required": ["errors"],
+        "title": "ValidationErrorResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ValidationErrorResponse",
+        "x-validate": null
+      },
       "VersionResponse": {
         "description": "API version response.",
         "example": {
@@ -162,6 +529,14 @@
         "x-struct": "Elixir.NotifyOpenApi.Schemas.VersionResponse",
         "x-validate": null
       }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "description": "Short-lived Notify dashboard access token.",
+        "scheme": "bearer",
+        "type": "http"
+      }
     }
   },
   "info": {
@@ -170,6 +545,405 @@
   },
   "openapi": "3.0.0",
   "paths": {
+    "/api/auth/email-verification/confirm": {
+      "post": {
+        "callbacks": {},
+        "operationId": "confirmEmail",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmEmailRequest"
+              }
+            }
+          },
+          "description": "Email verification token",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupTokenResponse"
+                }
+              }
+            },
+            "description": "Email verified for signup completion"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Token invalid or expired"
+          }
+        },
+        "summary": "Confirm an account email",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/email-verification/resend": {
+      "post": {
+        "callbacks": {},
+        "operationId": "resendEmailVerification",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendVerificationRequest"
+              }
+            }
+          },
+          "description": "Email verification request",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthStatusResponse"
+                }
+              }
+            },
+            "description": "Verification request accepted"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Verification delivery failed"
+          }
+        },
+        "summary": "Resend email verification instructions",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "callbacks": {},
+        "operationId": "login",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "description": "Login credentials",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "Authenticated session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Rotating HttpOnly refresh-token cookie",
+                "schema": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Credentials invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Email not verified or origin rejected"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Sign in with email and password",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "callbacks": {},
+        "operationId": "getCurrentUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponse"
+                }
+              }
+            },
+            "description": "Authenticated principal"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read the authenticated account and workspace",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "callbacks": {},
+        "operationId": "refreshSession",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "Refreshed session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Rotated HttpOnly refresh-token cookie",
+                "schema": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Refresh credential invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          }
+        },
+        "summary": "Rotate a refresh credential",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/session": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Session revoked"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          }
+        },
+        "security": [
+          {},
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Sign out and revoke the current session",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "callbacks": {},
+        "operationId": "signup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequest"
+              }
+            }
+          },
+          "description": "Signup email",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthStatusResponse"
+                }
+              }
+            },
+            "description": "Verification request accepted"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Verification delivery failed"
+          }
+        },
+        "summary": "Start email-first signup",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/signup/complete": {
+      "post": {
+        "callbacks": {},
+        "operationId": "completeSignup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteSignupRequest"
+              }
+            }
+          },
+          "description": "Verified signup details",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupCompletionResponse"
+                }
+              }
+            },
+            "description": "Account and owner workspace created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Signup token invalid or expired"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Email already registered"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Complete a verified signup",
+        "tags": ["authentication"]
+      }
+    },
     "/api/health/live": {
       "get": {
         "callbacks": {},
