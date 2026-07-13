@@ -6,7 +6,7 @@ function AppShell({ className, ...props }: React.ComponentProps<"main">) {
   return (
     <main
       data-slot="app-shell"
-      className={cn("min-h-screen bg-secondary/20 text-foreground", className)}
+      className={cn("h-dvh overflow-hidden bg-secondary/20 text-foreground", className)}
       {...props}
     />
   );
@@ -22,7 +22,7 @@ function AppShellLayout({ className, collapsed = false, ...props }: CollapsibleS
       data-collapsed={collapsed}
       data-slot="app-shell-layout"
       className={cn(
-        "grid min-h-screen transition-[grid-template-columns] duration-300 ease-out lg:grid-cols-[248px_1fr] data-[collapsed=true]:lg:grid-cols-[80px_1fr]",
+        "grid h-full min-h-0 transition-[grid-template-columns] duration-300 ease-out lg:grid-cols-[248px_1fr] data-[collapsed=true]:lg:grid-cols-[80px_1fr]",
         className,
       )}
       {...props}
@@ -42,7 +42,7 @@ function AppShellSidebar({
       data-expanded={expanded}
       data-slot="app-shell-sidebar"
       className={cn(
-        "relative z-30 hidden w-20 overflow-hidden border-r bg-background transition-[width,box-shadow] duration-300 ease-out data-[expanded=true]:w-[248px] lg:flex lg:flex-col",
+        "relative z-30 hidden h-full min-h-0 w-20 overflow-hidden border-r bg-background transition-[width,box-shadow] duration-300 ease-out data-[expanded=true]:w-[248px] lg:flex lg:flex-col",
         className,
       )}
       {...props}
@@ -64,7 +64,10 @@ function AppShellNav({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
       data-slot="app-shell-nav"
-      className={cn("grid gap-1 px-3 py-4 transition-[padding] duration-300 ease-out", className)}
+      className={cn(
+        "grid min-h-0 flex-1 content-start gap-1 overflow-y-auto px-3 py-4 transition-[padding] duration-300 ease-out",
+        className,
+      )}
       {...props}
     />
   );
@@ -72,16 +75,18 @@ function AppShellNav({ className, ...props }: React.ComponentProps<"nav">) {
 
 function AppShellSidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div
-      data-slot="app-shell-sidebar-footer"
-      className={cn("mt-auto border-t p-3", className)}
-      {...props}
-    />
+    <div data-slot="app-shell-sidebar-footer" className={cn("mt-auto p-3", className)} {...props} />
   );
 }
 
 function AppShellMain({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="app-shell-main" className={cn("min-w-0", className)} {...props} />;
+  return (
+    <div
+      data-slot="app-shell-main"
+      className={cn("min-h-0 min-w-0 overflow-y-auto", className)}
+      {...props}
+    />
+  );
 }
 
 function AppShellHeader({ className, ...props }: React.ComponentProps<"header">) {
