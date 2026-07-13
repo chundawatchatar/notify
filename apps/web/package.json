@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@notify/api-client": "workspace:*",
     "@notify/styles": "workspace:*",
     "@notify/ui": "workspace:*",
     "@tanstack/react-form": "catalog:",

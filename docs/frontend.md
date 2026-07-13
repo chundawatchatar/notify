@@ -7,6 +7,9 @@ and shared UI package.
 
 - `apps/web`: TanStack Start dashboard app for authenticated users.
 - `apps/marketing`: Astro public marketing website.
+- `packages/openapi`: generated OpenAPI JSON contract from the backend.
+- `packages/api-client`: generated TypeScript API contract types from the
+  OpenAPI package.
 - `packages/ui`: shared React UI component library.
 - `packages/styles`: shared Tailwind theme and tokens.
 
@@ -48,8 +51,45 @@ apps/web/src/components/workspace-section-page.tsx
 - Use TanStack Form for form state.
 - Use Zod for validation schemas.
 - Use TanStack Query for server state, mutations, loading, and cache behavior.
+- Use `@notify/api-client` generated types for API request and response shapes.
 - Keep API request helpers separate from presentational components when real
   API wiring is added.
+
+## API Type Safety
+
+The backend OpenAPI spec is generated from Phoenix controller specs and shared
+Elixir schemas in `libs/open_api`:
+
+```sh
+pnpm api:openapi
+```
+
+The frontend contract package is regenerated from that spec:
+
+```sh
+pnpm api-client:generate
+```
+
+Generated OpenAPI JSON lives in:
+
+```text
+packages/openapi/openapi.json
+```
+
+Generated TypeScript lives in:
+
+```text
+packages/api-client/src/generated/schema.ts
+```
+
+Do not edit generated schema files by hand. Update Phoenix OpenAPI schemas and
+operations first, regenerate the spec, then regenerate the TypeScript types.
+`pnpm api-client:check` verifies that both generated contract files are current.
+
+Browser API calls use `VITE_API_URL`, which defaults to `http://localhost:4100`.
+The API accepts the local dashboard origin by default. Set `CORS_ORIGINS` to a
+comma-separated allowlist for deployed browser origins; wildcard origins are not
+allowed for authenticated routes.
 
 ## Shared UI
 

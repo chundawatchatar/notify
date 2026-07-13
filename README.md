@@ -51,7 +51,9 @@ pnpm api
 pnpm api:deps
 pnpm api:setup
 pnpm api:compile
+pnpm api:openapi
 pnpm api:test
+pnpm api-client:generate
 pnpm elixir:check
 pnpm domain:compile
 pnpm domain:test
@@ -85,6 +87,8 @@ directory:
 
 - `libs/domain`: framework-free domain library for notification business
   contracts.
+- `libs/open_api`: framework-free OpenAPI schema library shared by the API
+  contract.
 - `apps/api`: Phoenix API-only backend application linked to `libs/domain`.
 
 Redis integration and persistence adapters will be added in future specs.
@@ -94,6 +98,9 @@ Elixir and Mix are required before running the `api:*` and `domain:*` scripts.
 
 - `@notify/common`: shared TypeScript types and interfaces for notification
   domain contracts.
+- `@notify/openapi`: generated OpenAPI JSON contract from the Phoenix API.
+- `@notify/api-client`: generated TypeScript API contract types from
+  `@notify/openapi`.
 - `@notify/ui`: shared React UI library built with Vite, Tailwind CSS,
   shadcn-compatible conventions, Radix primitives, and Vitest setup.
 - `@notify/styles`: shared Tailwind CSS theme, design tokens, and base styles.

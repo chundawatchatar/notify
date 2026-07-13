@@ -20,7 +20,11 @@ domain library.
   developer, and security pages.
 - `apps/storybook`: Storybook for shared UI previews.
 - `libs/domain`: framework-free Elixir business domain library.
+- `libs/open_api`: framework-free Elixir OpenAPI schema library.
 - `packages/ui`: shared React UI components and primitives.
+- `packages/openapi`: generated backend OpenAPI JSON contract.
+- `packages/api-client`: generated TypeScript API contract types from the
+  OpenAPI package.
 - `packages/styles`: shared Tailwind theme and base styles.
 - `packages/common`: shared TypeScript domain contracts.
 - `docs`: project architecture and implementation guidance.
@@ -61,6 +65,7 @@ pnpm --filter @notify/web typecheck
 pnpm --filter @notify/web build
 pnpm --filter @notify/marketing build
 pnpm --filter @notify/ui test
+pnpm api-client:generate
 pnpm api:test
 pnpm domain:test
 ```

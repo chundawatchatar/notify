@@ -20,6 +20,16 @@ if System.get_env("PHX_SERVER") do
   config :api, ApiWeb.Endpoint, server: true
 end
 
+if cors_origins = System.get_env("CORS_ORIGINS") do
+  origins =
+    cors_origins
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+
+  config :api, cors_origins: origins
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

@@ -1,0 +1,44 @@
+{
+  "name": "@notify/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "generate": "openapi-typescript ../openapi/openapi.json -o src/generated/schema.ts && biome format --write src/generated/schema.ts",
+    "lint": "oxlint . --no-error-on-unmatched-pattern && biome check .",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ]
+      },
+      "test": {
+        "outputs": [
+          "{projectRoot}/coverage"
+        ]
+      }
+    }
+  }
+}

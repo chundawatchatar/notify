@@ -3,7 +3,7 @@
   "name": "@notify/api",
   "projectType": "application",
   "sourceRoot": "apps/api/lib",
-  "implicitDependencies": ["@notify/domain"],
+  "implicitDependencies": ["@notify/domain", "@notify/open-api"],
   "targets": {
     "deps": {
       "executor": "nx:run-commands",
@@ -30,6 +30,13 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "sh ../../tools/with-env.sh mix setup",
+        "cwd": "apps/api"
+      }
+    },
+    "openapi": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix openapi.spec.json --spec ApiWeb.OpenApi.ApiSpec --pretty=true ../../packages/openapi/openapi.json",
         "cwd": "apps/api"
       }
     },

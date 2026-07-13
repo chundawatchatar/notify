@@ -1,0 +1,43 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "@notify/open-api",
+  "projectType": "library",
+  "sourceRoot": "libs/open_api/lib",
+  "targets": {
+    "deps": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix deps.get",
+        "cwd": "libs/open_api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix compile",
+        "cwd": "libs/open_api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix test",
+        "cwd": "libs/open_api"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix format --check-formatted",
+        "cwd": "libs/open_api"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mix format",
+        "cwd": "libs/open_api"
+      }
+    }
+  }
+}

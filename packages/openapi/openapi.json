@@ -1,0 +1,215 @@
+{
+  "components": {
+    "responses": {},
+    "schemas": {
+      "DatabaseCheck": {
+        "description": "Database readiness check result.",
+        "example": {
+          "ready": true
+        },
+        "properties": {
+          "error": {
+            "example": "connection not available",
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "ready": {
+            "example": true,
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["ready"],
+        "title": "DatabaseCheck",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.DatabaseCheck",
+        "x-validate": null
+      },
+      "HealthChecks": {
+        "description": "API dependency readiness checks.",
+        "example": {
+          "database": {
+            "ready": true
+          }
+        },
+        "properties": {
+          "database": {
+            "$ref": "#/components/schemas/DatabaseCheck"
+          }
+        },
+        "required": ["database"],
+        "title": "HealthChecks",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.HealthChecks",
+        "x-validate": null
+      },
+      "HealthResponse": {
+        "description": "API health response.",
+        "example": {
+          "checks": {
+            "database": {
+              "ready": true
+            }
+          },
+          "service": {
+            "environment": "dev",
+            "name": "notify-api",
+            "version": "0.1.0"
+          },
+          "status": "ok"
+        },
+        "properties": {
+          "checks": {
+            "$ref": "#/components/schemas/HealthChecks"
+          },
+          "service": {
+            "$ref": "#/components/schemas/ServiceInfo"
+          },
+          "status": {
+            "enum": ["ok", "degraded"],
+            "example": "ok",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["status", "service", "checks"],
+        "title": "HealthResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.HealthResponse",
+        "x-validate": null
+      },
+      "ServiceInfo": {
+        "description": "API service metadata.",
+        "example": {
+          "environment": "dev",
+          "name": "notify-api",
+          "version": "0.1.0"
+        },
+        "properties": {
+          "environment": {
+            "example": "dev",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "notify-api",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "version": {
+            "example": "0.1.0",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["name", "version", "environment"],
+        "title": "ServiceInfo",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.ServiceInfo",
+        "x-validate": null
+      },
+      "VersionResponse": {
+        "description": "API version response.",
+        "example": {
+          "name": "notify-api",
+          "version": "0.1.0"
+        },
+        "properties": {
+          "name": {
+            "example": "notify-api",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "version": {
+            "example": "0.1.0",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["name", "version"],
+        "title": "VersionResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.VersionResponse",
+        "x-validate": null
+      }
+    }
+  },
+  "info": {
+    "title": "Notify API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "callbacks": {},
+        "description": "Returns service metadata and dependency readiness checks.",
+        "operationId": "getApiHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Healthy response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Degraded response"
+          }
+        },
+        "summary": "Read API health",
+        "tags": ["system"]
+      }
+    },
+    "/api/version": {
+      "get": {
+        "callbacks": {},
+        "description": "Returns the API service name and application version.",
+        "operationId": "getApiVersion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            },
+            "description": "Version response"
+          }
+        },
+        "summary": "Read API version",
+        "tags": ["system"]
+      }
+    }
+  },
+  "security": [],
+  "servers": [
+    {
+      "url": "http://localhost:4100",
+      "variables": {}
+    }
+  ],
+  "tags": []
+}

@@ -6,6 +6,7 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "paths": {
       "@/*": ["./src/*"],
+      "@notify/api-client": ["../../packages/api-client/src/index.ts"],
       "@notify/ui": ["../../packages/ui/src/index.ts"]
     },
     "types": ["node", "vite/client", "vitest/globals"],

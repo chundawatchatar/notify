@@ -29,6 +29,9 @@ subdomain layout.
 Phoenix, Ecto, or a database connection. Do not put Phoenix controllers, Repo
 calls, or migrations there.
 
+`libs/open_api` is for framework-free OpenAPI schema modules. The API app still
+owns routes, controllers, operation specs, and OpenAPI JSON generation.
+
 ## Frontend Boundary
 
 `apps/web` is the authenticated dashboard. It owns product routes and page-level
@@ -49,6 +52,11 @@ link into the dashboard for signup and login.
 `packages/ui` contains shared React UI primitives and components. It should not
 contain page-specific product behavior.
 
+`packages/openapi` contains the generated OpenAPI JSON contract from the
+backend. `packages/api-client` contains generated TypeScript API contract types
+from that OpenAPI package. Frontend API helpers should use `@notify/api-client`
+for request and response shapes.
+
 ## Data Flow
 
 Target flow for product features:
@@ -56,6 +64,7 @@ Target flow for product features:
 ```text
 web route/component
   -> TanStack Query/Form layer
+  -> @notify/api-client generated contract types
   -> API endpoint in apps/api
   -> Ecto schema or use case
   -> PostgreSQL/Redis
@@ -71,6 +80,9 @@ When adding a feature, decide ownership first:
 - Page-only UI: `apps/web`.
 - Public website content: `apps/marketing`.
 - Shared UI primitive: `packages/ui`.
+- Generated OpenAPI contract: `packages/openapi`.
+- Generated API contract type: `packages/api-client`.
 - HTTP/API behavior: `apps/api`.
 - Pure business rule: `libs/domain`.
+- Reusable Elixir OpenAPI schema: `libs/open_api`.
 - Database shape: `apps/api/priv/repo/migrations`.

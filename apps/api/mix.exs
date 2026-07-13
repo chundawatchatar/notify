@@ -47,9 +47,12 @@ defmodule Api.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.26"},
       {:jason, "~> 1.2"},
+      {:cors_plug, "~> 3.0"},
+      {:open_api_spex, "~> 3.22"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      {:domain, path: "../../libs/domain"}
+      {:domain, path: "../../libs/domain"},
+      {:notify_open_api, path: "../../libs/open_api"}
     ]
   end
 

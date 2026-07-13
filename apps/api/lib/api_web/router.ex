@@ -3,6 +3,7 @@ defmodule ApiWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug OpenApiSpex.Plug.PutApiSpec, module: ApiWeb.OpenApi.ApiSpec
   end
 
   scope "/api", ApiWeb do
@@ -10,5 +11,11 @@ defmodule ApiWeb.Router do
 
     get "/health", HealthController, :show
     get "/version", VersionController, :show
+  end
+
+  scope "/api" do
+    pipe_through :api
+
+    get "/openapi", OpenApiSpex.Plug.RenderSpec, []
   end
 end

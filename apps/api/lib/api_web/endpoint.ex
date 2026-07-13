@@ -18,5 +18,10 @@ defmodule ApiWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
+  plug CORSPlug, origin: &__MODULE__.cors_origins/0, credentials: false
   plug ApiWeb.Router
+
+  def cors_origins do
+    Application.fetch_env!(:api, :cors_origins)
+  end
 end
