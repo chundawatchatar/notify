@@ -61,6 +61,13 @@
         "cwd": "apps/api"
       }
     },
+    "test-setup": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh ../../tools/with-env.sh env MIX_ENV=test mix test.setup",
+        "cwd": "apps/api"
+      }
+    },
     "lint": {
       "executor": "nx:run-commands",
       "options": {

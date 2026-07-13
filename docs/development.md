@@ -47,9 +47,40 @@ Use `pnpm docker:down` to stop local services without deleting volumes. Use
 `pnpm docker:clean` only when you intentionally want to delete local service
 data.
 
-If another local process already uses one of those ports, update the matching
-port in `.env`, then restart services with `pnpm docker:down` and
-`pnpm docker:up`. API tests load `.env` through the Nx test target.
+If another local process already uses one of those ports, update the related
+values in `.env`, then restart services with `pnpm docker:down` and
+`pnpm docker:up`:
+
+- Changing `API_PORT` also requires updating `VITE_API_URL`.
+- Changing `WEB_PORT` also requires updating `PUBLIC_WEB_APP_URL` and
+  `CORS_ORIGINS`.
+
+`DATABASE_URL` is used by production releases and container migration commands.
+Local development and API tests use the `POSTGRES_*` values. API tests load
+`.env` through the Nx test target.
+
+## API Test Database
+
+Prepare and run API integration tests with the existing local PostgreSQL
+container:
+
+```sh
+pnpm docker:up
+pnpm api:test:setup
+pnpm api:test
+```
+
+Development and test databases share one PostgreSQL container but use separate
+databases. `pnpm api:test:setup` creates and migrates `notify_api_test` without
+loading development seeds.
+
+Use `Api.DataCase` for schema, changeset, query, and transaction tests. Use
+`ApiWeb.ConnCase` for HTTP tests that may also access PostgreSQL. Both test
+cases run each test in the SQL Sandbox, so database changes are rolled back
+after every test.
+
+Factories create test data per test. Do not use seeds to create test data. Add
+an entity factory only alongside its corresponding real Ecto schema.
 
 ## Runtime Versions
 

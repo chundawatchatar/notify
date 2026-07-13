@@ -43,15 +43,15 @@ Test it once at the lowest owning layer, then test only integration wiring above
 
 Do not build persisted Ecto entities repeatedly inside individual tests.
 
-When the first persisted entity is introduced:
+`Api.Factory`, ExMachina, and Faker are already configured for API tests.
+Importing `Api.DataCase` or `ApiWeb.ConnCase` imports `Api.Factory`.
 
-1. Add compatible `ex_machina` and `faker` dependencies with `only: :test`.
-2. Create `apps/api/test/support/factory.ex` using `ExMachina.Ecto` and
-   `Api.Repo`.
-3. Import `Api.Factory` from `Api.DataCase` and `ApiWeb.ConnCase`.
-4. Create valid defaults in one factory per entity and compose associations
+When a real persisted entity is introduced:
+
+1. Add a factory function only for that schema.
+2. Create valid defaults and compose associations
    through factories.
-5. Use `build`, `insert`, `params_for`, and explicit overrides from tests.
+3. Use `build`, `insert`, `params_for`, and explicit overrides from tests.
 
 ExMachina creates and persists entities; Faker supplies realistic field values.
 Use Faker inside factories for fields that are irrelevant to the
@@ -60,8 +60,9 @@ sequences for unique indexed values to avoid random collisions. Always provide
 the value explicitly when the test asserts it or when it defines the scenario.
 Do not assert against whichever random value Faker happened to generate.
 
-Until persisted entities exist, do not add unused factory dependencies. Small
-pure domain values may use a local test builder when repetition appears.
+Use `build` within factory definitions to construct associations. Until a
+corresponding real schema exists, do not add an entity factory. Small pure domain
+values may use a local test builder when repetition appears.
 
 ## Mocking Policy
 

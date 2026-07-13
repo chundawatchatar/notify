@@ -4,4 +4,4 @@ set -e
 HOOK_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 . "$HOOK_DIR/use-node"
 
-pnpm prepush
+run_pnpm prepush

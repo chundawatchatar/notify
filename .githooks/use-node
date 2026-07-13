@@ -1,9 +1,24 @@
-export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+run_pnpm() {
+  if command -v mise >/dev/null 2>&1; then
+    mise exec -- pnpm "$@"
+    return
+  fi
 
-if [ ! -s "$NVM_DIR/nvm.sh" ]; then
-  echo "nvm is required for Git hooks. Install nvm or set NVM_DIR." >&2
-  exit 1
-fi
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
-. "$NVM_DIR/nvm.sh"
-nvm use --silent >/dev/null
+  if [ -s "$NVM_DIR/nvm.sh" ]; then
+    . "$NVM_DIR/nvm.sh"
+    nvm use --silent >/dev/null
+    pnpm "$@"
+    return
+  fi
+
+  if command -v node >/dev/null 2>&1 && command -v pnpm >/dev/null 2>&1; then
+    pnpm "$@"
+    return
+  fi
+
+  echo "No supported Node.js toolchain is available for Git hooks." >&2
+  echo "Install mise and run: mise x -- pnpm setup" >&2
+  return 1
+}

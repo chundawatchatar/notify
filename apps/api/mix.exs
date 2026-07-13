@@ -53,6 +53,8 @@ defmodule Api.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:plug, "~> 1.20.3"},
+      {:ex_machina, "~> 2.8.0", only: :test},
+      {:faker, "~> 0.19.0", only: :test},
       {:domain, path: "../../libs/domain"},
       {:notify_open_api, path: "../../libs/open_api"}
     ]
@@ -69,7 +71,8 @@ defmodule Api.MixProject do
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "test.setup": ["ecto.create --quiet", "ecto.migrate --quiet"],
+      test: ["test.setup", "test"],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end

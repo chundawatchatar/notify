@@ -54,6 +54,7 @@ pnpm api:compile
 pnpm api:release
 pnpm api:image
 pnpm api:openapi
+pnpm api:test:setup
 pnpm api:test
 pnpm api-client:generate
 pnpm elixir:check
@@ -64,6 +65,14 @@ pnpm web
 pnpm marketing
 pnpm nx show projects
 pnpm graph
+```
+
+Prepare and run API integration tests with the existing PostgreSQL container:
+
+```sh
+pnpm docker:up
+pnpm api:test:setup
+pnpm api:test
 ```
 
 ## Local Infrastructure

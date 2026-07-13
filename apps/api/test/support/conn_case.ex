@@ -28,6 +28,7 @@ defmodule ApiWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import ApiWeb.ConnCase
+      import Api.Factory
     end
   end
 

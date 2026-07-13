@@ -33,6 +33,7 @@
     "api:image": "docker build -f apps/api/Dockerfile -t notify-api:local .",
     "api:openapi": "nx run @notify/api:openapi && biome format --write packages/openapi/openapi.json",
     "api:test": "nx run @notify/api:test",
+    "api:test:setup": "nx run @notify/api:test-setup",
     "api:format": "nx run @notify/api:format",
     "domain:compile": "nx run @notify/domain:build",
     "domain:test": "nx run @notify/domain:test",
