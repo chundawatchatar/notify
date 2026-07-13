@@ -38,6 +38,18 @@ domain library.
 - `docs/development.md`: local setup and runtime versions.
 - `docs/operations.md`: releases, health probes, metrics, and Kubernetes deployment.
 
+## Universal AI Playbooks
+
+Project playbooks use plain Markdown and YAML under `.agents/skills`; they do
+not require a vendor-specific agent or manifest. When a task matches a
+repeatable workflow, read `.agents/skills/index.yaml` and load only the smallest
+matching playbook set. An agent without native skill discovery must open the
+selected `SKILL.md` files directly. Follow recipe order for cross-boundary work
+and include `notify-verify-change` before reporting completion or committing.
+
+Keep playbook instructions and the index current when repository ownership,
+commands, generated files, or deployment policy changes.
+
 ## Core Rules
 
 - Prefer existing patterns before adding new abstractions.

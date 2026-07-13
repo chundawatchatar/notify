@@ -1,0 +1,107 @@
+version: 1
+purpose: Route Notify repository tasks to the smallest useful skill set.
+
+format:
+  entrypoint: AGENTS.md
+  router: .agents/skills/index.yaml
+  playbook_pattern: .agents/skills/<name>/SKILL.md
+  requirements: none
+  compatibility: Plain Markdown and YAML; no vendor-specific manifest is required.
+
+selection_rules:
+  - Match the requested outcome, not only the file name.
+  - Load every skill needed for a cross-boundary change in recipe order.
+  - Do not load all skills by default.
+  - Use notify-verify-change before reporting completion or committing.
+  - If native skill discovery is unavailable, open each selected SKILL.md directly.
+
+skills:
+  notify-api-change:
+    path: .agents/skills/notify-api-change/SKILL.md
+    intents:
+      - Phoenix endpoint, route, controller, or JSON behavior
+      - OpenAPI schema, operation ID, or generated API type
+      - Frontend API helper tied to a backend contract
+    keywords: [api, endpoint, route, controller, openapi, request, response, api-client]
+
+  notify-database-change:
+    path: .agents/skills/notify-database-change/SKILL.md
+    intents:
+      - Ecto schema, changeset, Repo query, or persistence adapter
+      - Migration, table, column, constraint, index, seed, or backfill
+      - Tenant-aware database design
+    keywords: [database, ecto, repo, migration, table, column, index, backfill]
+
+  notify-domain-change:
+    path: .agents/skills/notify-domain-change/SKILL.md
+    intents:
+      - Pure business rule or invariant
+      - Domain type, validation, lifecycle, or transition
+      - Framework-free logic in libs/domain
+    keywords: [domain, policy, invariant, lifecycle, transition, validation, business-rule]
+
+  notify-web-change:
+    path: .agents/skills/notify-web-change/SKILL.md
+    intents:
+      - Authenticated dashboard or authentication UI
+      - TanStack route, form, query, mutation, or API integration
+      - Product navigation and interactive app behavior
+    keywords: [web, dashboard, auth, tanstack, form, zod, query, route, workspace]
+
+  notify-marketing-change:
+    path: .agents/skills/notify-marketing-change/SKILL.md
+    intents:
+      - Public Astro route or marketing React component
+      - Homepage, platform, developers, security, or pricing content
+      - Marketing header, footer, navigation, or dashboard links
+    keywords: [marketing, astro, homepage, pricing, platform, developers, public-site]
+
+  notify-ui-change:
+    path: .agents/skills/notify-ui-change/SKILL.md
+    intents:
+      - Reusable component or primitive in packages/ui
+      - Shared control, icon, overlay, navigation, or accessibility behavior
+      - UI package test, export, or Storybook story
+    keywords: [ui, component, primitive, radix, icon, storybook, accessibility, design-system]
+
+  notify-operations-change:
+    path: .agents/skills/notify-operations-change/SKILL.md
+    intents:
+      - Phoenix release or Docker runtime
+      - Kubernetes deployment, service, probe, migration Job, or Secret
+      - Metrics, runtime configuration, rollout, or future CI/CD
+    keywords: [operations, release, docker, kubernetes, migration-job, health, metrics, deploy]
+
+  notify-verify-change:
+    path: .agents/skills/notify-verify-change/SKILL.md
+    intents:
+      - Test, lint, typecheck, build, audit, or generated drift check
+      - Final verification, review, precommit decision, or commit preparation
+    keywords: [verify, test, lint, typecheck, build, review, check, commit]
+
+recipes:
+  end_to_end_product_feature:
+    order:
+      - notify-domain-change
+      - notify-database-change
+      - notify-api-change
+      - notify-web-change
+      - notify-verify-change
+
+  typed_api_feature:
+    order: [notify-api-change, notify-verify-change]
+
+  persisted_api_feature:
+    order: [notify-database-change, notify-api-change, notify-verify-change]
+
+  dashboard_ui_only:
+    order: [notify-web-change, notify-verify-change]
+
+  reusable_dashboard_control:
+    order: [notify-ui-change, notify-web-change, notify-verify-change]
+
+  public_marketing_page:
+    order: [notify-marketing-change, notify-verify-change]
+
+  production_runtime_change:
+    order: [notify-operations-change, notify-verify-change]
