@@ -4,6 +4,15 @@ This file is the general AI context for the Notify repository. Read it before
 making changes. Keep it concise and update the linked docs when behavior,
 architecture, product modules, migrations, or frontend conventions change.
 
+## Global Working Rules
+
+- Do not use em dashes in prose. Use a hyphen instead.
+- Always use a single-line commit message.
+- Do not run tests unless the user explicitly asks.
+- Do not start or run an application unless the user explicitly asks.
+- Do not inspect or test a live application in a browser unless the user explicitly asks.
+- Do not commit changes unless the user explicitly asks.
+
 ## Project Overview
 
 Notify is a notification SaaS monorepo for plug-and-play notification
