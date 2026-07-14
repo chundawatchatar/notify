@@ -1,4 +1,4 @@
-import { Button, NotifyMarkIcon } from "@notify/ui";
+import { Button, NotifyLogoMark } from "@notify/ui";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Home, LockKeyhole, RouteOff } from "lucide-react";
 import type { ReactNode } from "react";
@@ -10,9 +10,7 @@ function NotFoundPage() {
         <section className="grid w-full max-w-5xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
             <Link className="mb-12 flex w-fit items-center gap-2 font-semibold" to="/dashboard">
-              <span className="grid size-9 place-items-center rounded-sm border bg-foreground text-background">
-                <NotifyMarkIcon className="size-4" />
-              </span>
+              <NotifyLogoMark className="size-9" />
               Notify
             </Link>
 
@@ -66,9 +64,7 @@ function NotFoundPage() {
 
             <div className="absolute right-0 bottom-10 left-0 mx-auto w-72 rounded-sm border bg-background p-4 shadow-sm">
               <div className="flex items-start gap-3">
-                <span className="mt-1 grid size-8 place-items-center rounded-sm bg-secondary">
-                  <NotifyMarkIcon className="size-4" />
-                </span>
+                <NotifyLogoMark className="mt-1" />
                 <div className="min-w-0">
                   <p className="font-medium text-sm">We kept your workspace safe.</p>
                   <p className="mt-1 text-muted-foreground text-sm">

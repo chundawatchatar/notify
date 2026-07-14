@@ -1,4 +1,7 @@
-import type { SVGProps } from "react";
+import type { ComponentProps, SVGProps } from "react";
+
+import notifyLogoUrl from "../assets/notify-logo.svg?url";
+import { cn } from "../lib/utils";
 
 function GoogleMarkIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -23,35 +26,13 @@ function GoogleMarkIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function NotifyMarkIcon(props: SVGProps<SVGSVGElement>) {
+type NotifyLogoMarkProps = Omit<ComponentProps<"img">, "src">;
+
+function NotifyLogoMark({ alt = "", className, ...props }: NotifyLogoMarkProps) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" {...props}>
-      <path
-        d="M12 4.5c-2.8 0-5 2.2-5 5v2.2c0 .7-.3 1.3-.8 1.8l-1 1c-.4.4-.1 1.1.4 1.1h12.8c.6 0 .8-.7.4-1.1l-1-1c-.5-.5-.8-1.1-.8-1.8V9.5c0-2.8-2.2-5-5-5Z"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M9.8 18.2a2.4 2.4 0 0 0 4.4 0"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M14 6.2a2.5 2.5 0 0 0-4 0"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
+    <img {...props} alt={alt} className={cn("size-8 shrink-0", className)} src={notifyLogoUrl} />
   );
 }
 
-export { GoogleMarkIcon, NotifyMarkIcon };
+export type { NotifyLogoMarkProps };
+export { GoogleMarkIcon, NotifyLogoMark, notifyLogoUrl };

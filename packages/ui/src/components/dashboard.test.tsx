@@ -14,7 +14,7 @@ import {
   AppShellSidebarFooter,
 } from "./app-shell";
 import { SidebarNavItem, SidebarNavLabel, StatCard, StatusLine, UsageBar } from "./dashboard";
-import { GoogleMarkIcon, NotifyMarkIcon } from "./icons";
+import { GoogleMarkIcon, NotifyLogoMark } from "./icons";
 
 afterEach(cleanup);
 
@@ -108,20 +108,21 @@ describe("dashboard UI components", () => {
     ).toContain("translateX(-32%)");
   });
 
-  it("renders custom brand icons as hidden svg marks", () => {
+  it("renders the custom brand marks", () => {
     expect.hasAssertions();
 
     const container = render(
       <div>
         <GoogleMarkIcon className="google-mark" />
-        <NotifyMarkIcon className="notify-mark" />
+        <NotifyLogoMark className="notify-mark" />
       </div>,
     );
-    const svgs = container.querySelectorAll("svg");
+    const googleMark = container.querySelector("svg");
+    const notifyMark = container.querySelector("img");
 
-    expect(svgs).toHaveLength(2);
-    expect(svgs[0]?.getAttribute("aria-hidden")).toBe("true");
-    expect(svgs[0]?.classList.contains("google-mark")).toBe(true);
-    expect(svgs[1]?.classList.contains("notify-mark")).toBe(true);
+    expect(googleMark?.getAttribute("aria-hidden")).toBe("true");
+    expect(googleMark?.classList.contains("google-mark")).toBe(true);
+    expect(notifyMark?.getAttribute("alt")).toBe("");
+    expect(notifyMark?.classList.contains("notify-mark")).toBe(true);
   });
 });
