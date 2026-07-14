@@ -12,7 +12,8 @@ describe("public api", () => {
     expect(ui.SidebarNavItem).toBeTypeOf("function");
     expect(ui.StatCard).toBeTypeOf("function");
     expect(ui.GoogleMarkIcon).toBeTypeOf("function");
-    expect(ui.NotifyMarkIcon).toBeTypeOf("function");
+    expect(ui.NotifyLogoMark).toBeTypeOf("function");
+    expect(ui.notifyLogoUrl).toBeTypeOf("string");
     expect(ui.PasswordInput).toBeTypeOf("function");
     expect(ui.Sheet).toBeTypeOf("function");
     expect(ui.NavigationMenu).toBeTypeOf("function");

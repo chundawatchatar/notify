@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" viewBox="0 0 128 128">
+  <title>Notify</title>
+  <rect width="128" height="128" rx="24" fill="#b34509" />
+  <g transform="translate(5.12 5.12) scale(0.92)">
+    <path
+      d="M64 26c-16 0-28.5 12.5-28.5 28.5V67c0 4-1.7 7.4-4.6 10.2l-5.7 5.7c-2.3 2.3-.6 6.3 2.3 6.3h73c3.4 0 4.6-4 2.3-6.3l-5.7-5.7A14 14 0 0 1 92.5 67V54.5C92.5 38.5 80 26 64 26Z"
+      fill="none"
+      stroke="#fffaf5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="9"
+    />
+    <path
+      d="M51.5 104a13.7 13.7 0 0 0 25 0"
+      fill="none"
+      stroke="#fffaf5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="9"
+    />
+    <path
+      d="M75.5 35.7a14.3 14.3 0 0 0-23 0"
+      fill="none"
+      stroke="#fffaf5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="9"
+    />
+  </g>
+</svg>

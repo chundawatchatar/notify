@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Input,
-  NotifyMarkIcon,
+  NotifyLogoMark,
   Sheet,
   SheetContent,
   SheetDescription,
@@ -173,9 +173,7 @@ function WorkspaceSidebar({
       }}
     >
       <AppShellBrand className="relative px-6">
-        <span className="grid size-8 shrink-0 place-items-center rounded-sm border bg-foreground text-background">
-          <NotifyMarkIcon className="size-4" />
-        </span>
+        <NotifyLogoMark />
         <div
           className={
             expanded
@@ -317,9 +315,7 @@ function WorkspaceMobileNavigation({
       </SheetTrigger>
       <SheetContent className="w-[min(20rem,calc(100vw-2rem))] gap-0 p-0 sm:max-w-xs" side="left">
         <SheetHeader className="h-16 flex-row items-center gap-3 border-b px-4 py-0 pr-14">
-          <span className="grid size-8 shrink-0 place-items-center rounded-sm border bg-foreground text-background">
-            <NotifyMarkIcon className="size-4" />
-          </span>
+          <NotifyLogoMark />
           <div className="min-w-0 text-left">
             <SheetTitle>Notify</SheetTitle>
             <SheetDescription className="sr-only">Workspace navigation</SheetDescription>

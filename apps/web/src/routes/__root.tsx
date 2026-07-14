@@ -1,3 +1,4 @@
+import { notifyLogoUrl } from "@notify/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -13,7 +14,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         rel: "icon",
         type: "image/svg+xml",
-        href: "/favicon.svg",
+        href: notifyLogoUrl,
       },
     ],
     meta: [

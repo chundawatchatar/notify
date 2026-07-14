@@ -1,4 +1,4 @@
-import { Button, Checkbox, Input, Label, NotifyMarkIcon, PasswordInput } from "@notify/ui";
+import { Button, Checkbox, Input, Label, NotifyLogoMark, PasswordInput } from "@notify/ui";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -566,9 +566,7 @@ function AuthShell({
 function BrandLink({ className }: Readonly<{ className?: string }>) {
   return (
     <Link className={`flex items-center gap-2 font-semibold text-base ${className ?? ""}`} to="/">
-      <span className="grid size-8 place-items-center rounded-sm border bg-foreground text-background">
-        <NotifyMarkIcon className="size-4" />
-      </span>
+      <NotifyLogoMark />
       Notify
     </Link>
   );

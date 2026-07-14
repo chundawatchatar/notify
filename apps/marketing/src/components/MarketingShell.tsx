@@ -1,5 +1,5 @@
-import { Button, NotifyMarkIcon, Typography } from "@notify/ui";
-import { ArrowRight } from "lucide-react";
+import { Button, NotifyLogoMark, Typography } from "@notify/ui";
+import { ArrowRight, Menu, X } from "lucide-react";
 import type { ReactNode } from "react";
 
 const webAppUrl = import.meta.env.PUBLIC_WEB_APP_URL ?? "http://localhost:3100";
@@ -40,16 +40,51 @@ function MarketingHeader({
   return (
     <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 md:px-6">
-        <a className="flex items-center gap-2 font-semibold text-base" href="/">
-          <span className="grid size-8 place-items-center rounded-sm border border-primary bg-primary text-primary-foreground">
-            <NotifyMarkIcon className="size-4" />
-          </span>
-          Notify
-        </a>
+        <div className="flex items-center gap-2">
+          <details className="group relative lg:hidden">
+            <Button asChild size="icon" variant="ghost">
+              <summary
+                aria-label="Toggle navigation menu"
+                className="cursor-pointer list-none [&::-webkit-details-marker]:hidden"
+              >
+                <Menu className="group-open:hidden" />
+                <X className="hidden group-open:block" />
+              </summary>
+            </Button>
+
+            <div className="absolute top-full left-0 mt-3 w-[min(18rem,calc(100vw-2.5rem))] rounded-md border bg-background p-2 shadow-lg">
+              {navItems.map((item) => (
+                <a
+                  aria-current={item.page === activePage ? "page" : undefined}
+                  className={
+                    item.page === activePage
+                      ? "block rounded-md bg-secondary px-3 py-2 font-medium text-primary text-sm"
+                      : "block rounded-md px-3 py-2 text-muted-foreground text-sm transition-colors hover:bg-secondary hover:text-primary"
+                  }
+                  href={item.href}
+                  key={item.href}
+                >
+                  {item.label}
+                </a>
+              ))}
+              <div className="mt-2 border-t pt-2 sm:hidden">
+                <Button asChild className="w-full justify-start" size="sm" variant="ghost">
+                  <a href={marketingUrls.login}>Sign in</a>
+                </Button>
+              </div>
+            </div>
+          </details>
+
+          <a className="flex items-center gap-2 font-semibold text-base" href="/">
+            <NotifyLogoMark />
+            Notify
+          </a>
+        </div>
 
         <div className="hidden items-center gap-6 text-muted-foreground text-sm lg:flex">
           {navItems.map((item) => (
             <a
+              aria-current={item.page === activePage ? "page" : undefined}
               className={
                 item.page === activePage
                   ? "font-medium text-primary"
@@ -85,9 +120,7 @@ function MarketingFooter() {
       <div className="mx-auto grid max-w-7xl gap-8 px-5 py-10 md:grid-cols-[1fr_auto] md:px-6">
         <div>
           <a className="flex w-fit items-center gap-2 font-semibold" href="/">
-            <span className="grid size-8 place-items-center rounded-sm border border-primary bg-primary text-primary-foreground">
-              <NotifyMarkIcon className="size-4" />
-            </span>
+            <NotifyLogoMark />
             Notify
           </a>
           <Typography as="p" className="mt-3 max-w-md text-muted-foreground text-sm">
