@@ -1,6 +1,5 @@
 ---
 import "@notify/styles/app.css";
-import { notifyLogoUrl } from "@notify/ui";
 // biome-ignore lint/correctness/noUnusedImports: Astro renders this component from the template.
 import { MarketingHome } from "../components/MarketingHome";
 ---
@@ -8,7 +7,7 @@ import { MarketingHome } from "../components/MarketingHome";
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href={notifyLogoUrl} />
+		<link rel="icon" type="image/svg+xml" href="/notify-logo.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<meta
