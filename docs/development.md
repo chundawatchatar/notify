@@ -33,6 +33,7 @@ Default local ports are:
 pnpm docker:up
 pnpm dev:all
 pnpm api:setup
+pnpm db:reset
 pnpm api
 pnpm api:release
 pnpm api:image

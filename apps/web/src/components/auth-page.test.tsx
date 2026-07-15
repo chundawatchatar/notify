@@ -11,7 +11,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, createAuthClient } from "@/lib/auth";
 import { blur, change, cleanup, click, render, waitForText } from "@/test/render";
 import { server } from "@/test/server";
-import { CompleteSignupForm, LoginForm, SignupForm } from "./auth-page";
+import {
+  CompleteSignupForm,
+  ForgotPasswordForm,
+  LoginForm,
+  ResetPasswordForm,
+  SignupForm,
+} from "./auth-page";
 
 const originalLocks = navigator.locks;
 const apiBaseUrl = "http://localhost:4100";
@@ -109,6 +115,70 @@ describe("authentication forms", () => {
     blur(confirmation as HTMLInputElement);
     await waitForText(container, "Passwords do not match.");
   });
+
+  it("requests password recovery without revealing account existence", async () => {
+    expect.hasAssertions();
+    let submittedEmail: string | undefined;
+
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/password-reset`, async ({ request }) => {
+        const body = (await request.json()) as { email?: string };
+        submittedEmail = body.email;
+        return HttpResponse.json({ status: "password_reset_requested" }, { status: 202 });
+      }),
+    );
+
+    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const container = render(
+      <QueryClientProvider client={queryClient}>
+        <ForgotPasswordForm />
+      </QueryClientProvider>,
+    );
+    const email = container.querySelector<HTMLInputElement>('input[type="email"]');
+    const submit = container.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+    expect(email).toBeInstanceOf(HTMLInputElement);
+    expect(submit).toBeInstanceOf(HTMLButtonElement);
+
+    change(email as HTMLInputElement, "Owner@Example.com");
+    click(submit as HTMLButtonElement);
+    await waitForText(container, "If an account exists");
+
+    expect(submittedEmail).toBe("Owner@Example.com");
+  });
+
+  it("submits a confirmed password reset and returns to login", async () => {
+    expect.hasAssertions();
+    let submittedBody: Record<string, unknown> | undefined;
+
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/password-reset/complete`, async ({ request }) => {
+        submittedBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ status: "password_reset" });
+      }),
+    );
+
+    const container = renderResetPassword();
+    const [password, confirmation] = container.querySelectorAll<HTMLInputElement>(
+      'input[autocomplete="new-password"]',
+    );
+    const submit = container.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+    expect(password).toBeInstanceOf(HTMLInputElement);
+    expect(confirmation).toBeInstanceOf(HTMLInputElement);
+    expect(submit).toBeInstanceOf(HTMLButtonElement);
+
+    change(password as HTMLInputElement, "new-correct-password");
+    change(confirmation as HTMLInputElement, "new-correct-password");
+    click(submit as HTMLButtonElement);
+    await waitForText(container, "Password reset complete");
+
+    expect(submittedBody).toEqual({
+      password: "new-correct-password",
+      password_confirmation: "new-correct-password",
+      reset_token: "reset-token",
+    });
+  });
 });
 
 function renderCompleteSignup() {
@@ -150,6 +220,32 @@ function renderLogin() {
         <RouterProvider router={router} />
       </QueryClientProvider>
     </AuthProvider>,
+  );
+}
+
+function renderResetPassword() {
+  const rootRoute = createRootRoute();
+  const resetRoute = createRoute({
+    component: () => <ResetPasswordForm resetToken="reset-token" />,
+    getParentRoute: () => rootRoute,
+    path: "/auth/forgot-password",
+  });
+  const loginRoute = createRoute({
+    component: () => <p>Password reset complete</p>,
+    getParentRoute: () => rootRoute,
+    path: "/auth/login",
+    validateSearch: (search) => ({ reset: search.reset === true }),
+  });
+  const router = createRouter({
+    history: createMemoryHistory({ initialEntries: ["/auth/forgot-password"] }),
+    routeTree: rootRoute.addChildren([resetRoute, loginRoute]),
+  });
+  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
   );
 }
 

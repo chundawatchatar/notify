@@ -2,7 +2,7 @@ defmodule Api.AccountsTest do
   use Api.DataCase, async: false
 
   alias Api.Accounts
-  alias Api.Accounts.{SignupChallenge, User}
+  alias Api.Accounts.{AuthChallenge, User}
   alias Api.Workspaces.{Membership, Workspace}
 
   defmodule FailingEmailAdapter do
@@ -24,11 +24,11 @@ defmodule Api.AccountsTest do
     assert_receive {:verification_email, "owner@example.com", verification_url}
     assert Repo.aggregate(User, :count) == 0
 
-    challenge = Repo.one!(SignupChallenge)
+    challenge = signup_challenge(AuthChallenge.signup_verification_purpose())
     raw_verification_token = token_from_url(verification_url)
 
     assert challenge.email == "owner@example.com"
-    refute challenge.verification_token_hash == raw_verification_token
+    refute challenge.token_hash == raw_verification_token
 
     assert {:ok, confirmation} = Accounts.confirm_email(raw_verification_token)
 
@@ -40,7 +40,10 @@ defmodule Api.AccountsTest do
     user = Repo.get!(User, result.user.id)
     workspace = Repo.get!(Workspace, result.workspace.id)
     membership = Repo.get!(Membership, result.membership.id)
-    consumed_challenge = Repo.get!(SignupChallenge, challenge.id)
+    consumed_verification = Repo.get!(AuthChallenge, challenge.id)
+
+    consumed_completion =
+      signup_challenge(AuthChallenge.signup_completion_purpose())
 
     assert user.email == "owner@example.com"
     assert user.confirmed_at
@@ -50,8 +53,8 @@ defmodule Api.AccountsTest do
     assert membership.role == "owner"
     assert membership.user_id == user.id
     assert membership.workspace_id == workspace.id
-    assert consumed_challenge.consumed_at
-    assert consumed_challenge.completion_token_hash == nil
+    assert consumed_verification.consumed_at
+    assert consumed_completion.consumed_at
   end
 
   test "signup completion validates password and terms and rolls back an invalid workspace" do
@@ -79,7 +82,7 @@ defmodule Api.AccountsTest do
 
     assert Repo.aggregate(User, :count) == 0
     assert Repo.aggregate(Workspace, :count) == 0
-    assert Repo.one!(SignupChallenge).consumed_at == nil
+    assert signup_challenge(AuthChallenge.signup_completion_purpose()).consumed_at == nil
   end
 
   test "resending verification invalidates the previous token" do
@@ -92,7 +95,14 @@ defmodule Api.AccountsTest do
     second_token = token_from_url(second_url)
 
     refute first_token == second_token
-    assert Repo.aggregate(SignupChallenge, :count) == 1
+
+    assert Repo.aggregate(
+             from(challenge in AuthChallenge,
+               where: challenge.purpose == ^AuthChallenge.signup_verification_purpose()
+             ),
+             :count
+           ) == 1
+
     assert {:error, :invalid_or_expired_token} = Accounts.confirm_email(first_token)
     assert {:ok, _confirmation} = Accounts.confirm_email(second_token)
   end
@@ -104,7 +114,12 @@ defmodule Api.AccountsTest do
     on_exit(fn -> Application.put_env(:api, :verification_email_adapter, previous_adapter) end)
 
     assert {:error, :delivery_failed} = Accounts.request_signup(@email)
-    assert Repo.get_by!(SignupChallenge, email: "owner@example.com")
+
+    assert Repo.get_by!(AuthChallenge,
+             purpose: AuthChallenge.signup_verification_purpose(),
+             email: "owner@example.com"
+           )
+
     assert Repo.aggregate(User, :count) == 0
 
     Application.put_env(
@@ -122,7 +137,7 @@ defmodule Api.AccountsTest do
 
     assert :ok = Accounts.request_signup(@email)
     refute_receive {:verification_email, _, _}
-    assert Repo.aggregate(SignupChallenge, :count) == 0
+    assert Repo.aggregate(AuthChallenge, :count) == 0
   end
 
   defp verified_signup_token do
@@ -138,5 +153,9 @@ defmodule Api.AccountsTest do
     |> Map.fetch!(:query)
     |> URI.decode_query()
     |> Map.fetch!("token")
+  end
+
+  defp signup_challenge(purpose) do
+    Repo.get_by!(AuthChallenge, purpose: purpose, email: "owner@example.com")
   end
 end

@@ -2,6 +2,7 @@ import { Button } from "@notify/ui";
 import { Navigate, Outlet, useLocation, useRouter } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import type { ProductRoute } from "./auth-page";
+import { PageLoader } from "./page-loader";
 
 const productRoutes = new Set<ProductRoute>([
   "/",
@@ -22,7 +23,7 @@ function GuestRoute() {
   const auth = useAuth();
 
   if (auth.status === "initializing") {
-    return <SessionStatus message="Checking for an existing Notify session." />;
+    return <PageLoader label="Checking for an existing Notify session." />;
   }
 
   if (auth.status === "authenticated") {
@@ -37,7 +38,7 @@ function AuthenticatedRoute() {
   const location = useLocation();
 
   if (auth.status === "initializing") {
-    return <SessionStatus message="Restoring your Notify session." />;
+    return <PageLoader label="Restoring your Notify session." />;
   }
 
   if (auth.status === "anonymous") {
@@ -112,7 +113,7 @@ function AuthenticatedRouteError() {
 }
 
 function AuthenticatedRoutePending() {
-  return <SessionStatus message="Restoring your Notify session." />;
+  return <PageLoader label="Restoring your Notify session." />;
 }
 
 function SessionStatus({

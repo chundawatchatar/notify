@@ -41,6 +41,8 @@ domain library.
 ## Read Next
 
 - `docs/architecture.md`: service boundaries and repo architecture.
+- `docs/authentication.md`: access tokens, refresh rotation, browser security,
+  and session revocation.
 - `docs/frontend.md`: dashboard, marketing, shared UI, and frontend rules.
 - `docs/product-map.md`: product modules and intended flows.
 - `docs/database.md`: database ownership, migrations, and safety rules.
@@ -114,6 +116,7 @@ Local services:
 ```sh
 pnpm docker:up
 pnpm docker:down
+pnpm db:reset
 pnpm dev:all
 pnpm api
 pnpm web

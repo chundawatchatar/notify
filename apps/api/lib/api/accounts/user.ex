@@ -13,6 +13,7 @@ defmodule Api.Accounts.User do
   schema "users" do
     field :email, :string
     field :password, :string, virtual: true, redact: true
+    field :password_confirmation, :string, virtual: true, redact: true
     field :accept_terms, :boolean, virtual: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
@@ -21,6 +22,7 @@ defmodule Api.Accounts.User do
     field :last_login_at, :utc_datetime
 
     has_many :workspace_memberships, Api.Workspaces.Membership
+    has_many :auth_challenges, Api.Accounts.AuthChallenge
 
     timestamps(type: :utc_datetime)
   end
@@ -47,6 +49,15 @@ defmodule Api.Accounts.User do
   end
 
   def last_login_changeset(user, now), do: change(user, last_login_at: now)
+
+  def password_reset_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:password, :password_confirmation])
+    |> validate_required([:password, :password_confirmation])
+    |> validate_length(:password, min: 8, max: 72)
+    |> validate_confirmation(:password, required: true)
+    |> maybe_hash_password()
+  end
 
   def valid_password?(%__MODULE__{hashed_password: hash}, password)
       when is_binary(hash) and is_binary(password) and byte_size(password) > 0 do

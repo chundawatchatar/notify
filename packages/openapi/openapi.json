@@ -103,6 +103,39 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceSummary",
         "x-validate": null
       },
+      "CompletePasswordResetRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "password": {
+            "format": "password",
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "password_confirmation": {
+            "format": "password",
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "reset_token": {
+            "description": "Short-lived credential issued after confirming a reset link.",
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["reset_token", "password", "password_confirmation"],
+        "title": "CompletePasswordResetRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.CompletePasswordResetRequest",
+        "x-validate": null
+      },
       "CompleteSignupRequest": {
         "additionalProperties": false,
         "properties": {
@@ -158,6 +191,23 @@
         "title": "ConfirmEmailRequest",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ConfirmEmailRequest",
+        "x-validate": null
+      },
+      "ConfirmPasswordResetRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "example": "password-reset-token",
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["token"],
+        "title": "ConfirmPasswordResetRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ConfirmPasswordResetRequest",
         "x-validate": null
       },
       "CurrentUserResponse": {
@@ -293,6 +343,78 @@
         "title": "LoginRequest",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.LoginRequest",
+        "x-validate": null
+      },
+      "PasswordResetCompletionResponse": {
+        "properties": {
+          "status": {
+            "enum": ["password_reset"],
+            "example": "password_reset",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["status"],
+        "title": "PasswordResetCompletionResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetCompletionResponse",
+        "x-validate": null
+      },
+      "PasswordResetRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "example": "owner@example.com",
+            "format": "email",
+            "maxLength": 160,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["email"],
+        "title": "PasswordResetRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetRequest",
+        "x-validate": null
+      },
+      "PasswordResetRequestResponse": {
+        "properties": {
+          "status": {
+            "enum": ["password_reset_requested"],
+            "example": "password_reset_requested",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["status"],
+        "title": "PasswordResetRequestResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetRequestResponse",
+        "x-validate": null
+      },
+      "PasswordResetTokenResponse": {
+        "properties": {
+          "expires_in": {
+            "example": 900,
+            "minimum": 1,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "reset_token": {
+            "description": "One-time credential for completing a password reset.",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["reset_token", "expires_in"],
+        "title": "PasswordResetTokenResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetTokenResponse",
         "x-validate": null
       },
       "ReadinessChecks": {
@@ -745,6 +867,172 @@
           }
         ],
         "summary": "Read the authenticated account and workspace",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/password-reset": {
+      "post": {
+        "callbacks": {},
+        "operationId": "requestPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            }
+          },
+          "description": "Password reset email",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetRequestResponse"
+                }
+              }
+            },
+            "description": "Password reset request accepted"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Request password reset instructions",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/password-reset/complete": {
+      "post": {
+        "callbacks": {},
+        "operationId": "completePasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletePasswordResetRequest"
+              }
+            }
+          },
+          "description": "New password",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetCompletionResponse"
+                }
+              }
+            },
+            "description": "Password reset"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Reset token invalid or expired"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Set a new password",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/password-reset/confirm": {
+      "post": {
+        "callbacks": {},
+        "operationId": "confirmPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmPasswordResetRequest"
+              }
+            }
+          },
+          "description": "Password reset token",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetTokenResponse"
+                }
+              }
+            },
+            "description": "Password reset confirmed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Token invalid or expired"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          }
+        },
+        "summary": "Confirm a password reset link",
         "tags": ["authentication"]
       }
     },

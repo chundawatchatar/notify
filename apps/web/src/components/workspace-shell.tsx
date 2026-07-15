@@ -429,14 +429,14 @@ function WorkspaceSidebarFooterControls({
   });
 
   return (
-    <div className={expanded ? "grid gap-2" : "grid justify-items-center gap-2"}>
+    <div className={expanded ? "grid min-w-0 gap-2" : "grid min-w-0 justify-items-center gap-2"}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             aria-label="Open user menu"
             className={
               expanded
-                ? "h-12 w-full justify-start gap-3 rounded-sm border bg-secondary/40 px-2 hover:bg-secondary"
+                ? "h-12 w-full min-w-0 justify-start gap-3 overflow-hidden rounded-sm border bg-secondary/40 px-2 hover:bg-secondary"
                 : "size-10 px-0"
             }
             variant={expanded ? "outline" : "ghost"}
@@ -447,8 +447,10 @@ function WorkspaceSidebarFooterControls({
               </AvatarFallback>
             </Avatar>
             {expanded ? (
-              <span className="min-w-0 text-left">
-                <span className="block truncate font-medium text-sm leading-none">{email}</span>
+              <span className="min-w-0 flex-1 overflow-hidden text-left">
+                <span className="block truncate font-medium text-sm leading-none" title={email}>
+                  {email}
+                </span>
                 <span className="mt-1 block truncate text-muted-foreground text-xs leading-none">
                   {workspaceName}
                 </span>
@@ -466,7 +468,9 @@ function WorkspaceSidebarFooterControls({
               </Avatar>
               <div className="min-w-0">
                 <p className="truncate font-medium">{workspaceName}</p>
-                <p className="truncate text-muted-foreground text-xs">{email}</p>
+                <p className="truncate text-muted-foreground text-xs" title={email}>
+                  {email}
+                </p>
               </div>
             </div>
           </DropdownMenuLabel>

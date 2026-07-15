@@ -32,6 +32,12 @@ type ApiConfirmEmailRequest = JsonRequestBody<"confirmEmail">;
 type ApiSignupTokenResponse = JsonResponse<"confirmEmail", 200>;
 type ApiCompleteSignupRequest = JsonRequestBody<"completeSignup">;
 type ApiSignupCompletionResponse = JsonResponse<"completeSignup", 201>;
+type ApiPasswordResetRequest = JsonRequestBody<"requestPasswordReset">;
+type ApiPasswordResetRequestResponse = JsonResponse<"requestPasswordReset", 202>;
+type ApiConfirmPasswordResetRequest = JsonRequestBody<"confirmPasswordReset">;
+type ApiPasswordResetTokenResponse = JsonResponse<"confirmPasswordReset", 200>;
+type ApiCompletePasswordResetRequest = JsonRequestBody<"completePasswordReset">;
+type ApiPasswordResetCompletionResponse = JsonResponse<"completePasswordReset", 200>;
 type ApiLoginRequest = JsonRequestBody<"login">;
 type ApiAuthResponse = JsonResponse<"login", 200>;
 type ApiCurrentUserResponse = JsonResponse<"getCurrentUser", 200>;
@@ -40,8 +46,10 @@ type ApiValidationErrorResponse = JsonResponse<"login", 422>;
 
 export type {
   ApiAuthResponse,
+  ApiCompletePasswordResetRequest,
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
+  ApiConfirmPasswordResetRequest,
   ApiCurrentUserResponse,
   ApiErrorResponse,
   ApiLivenessResponse,
@@ -49,6 +57,10 @@ export type {
   ApiOperation,
   ApiOperationId,
   ApiOperations,
+  ApiPasswordResetCompletionResponse,
+  ApiPasswordResetRequest,
+  ApiPasswordResetRequestResponse,
+  ApiPasswordResetTokenResponse,
   ApiPath,
   ApiPaths,
   ApiReadinessResponse,

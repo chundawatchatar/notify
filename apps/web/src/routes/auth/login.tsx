@@ -22,6 +22,10 @@ const loginSearchSchema = z.object({
     .union([z.boolean(), z.literal("true")])
     .optional()
     .catch(undefined),
+  reset: z
+    .union([z.boolean(), z.literal("true")])
+    .optional()
+    .catch(undefined),
   redirect: productRouteSchema.optional().catch(undefined),
 });
 
@@ -44,6 +48,7 @@ function LoginPage() {
     >
       <LoginForm
         accountCreated={search.created === true || search.created === "true"}
+        passwordReset={search.reset === true || search.reset === "true"}
         redirectTo={search.redirect}
         sessionExpired={search.expired === true || search.expired === "true"}
       />

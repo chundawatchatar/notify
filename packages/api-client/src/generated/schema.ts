@@ -72,6 +72,57 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/auth/password-reset": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Request password reset instructions */
+    post: operations["requestPasswordReset"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/password-reset/complete": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Set a new password */
+    post: operations["completePasswordReset"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/password-reset/confirm": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Confirm a password reset link */
+    post: operations["confirmPasswordReset"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/auth/refresh": {
     parameters: {
       query?: never;
@@ -248,6 +299,15 @@ export interface components {
       /** @example Acme Cloud */
       name: string;
     };
+    /** CompletePasswordResetRequest */
+    CompletePasswordResetRequest: {
+      /** Format: password */
+      password: string;
+      /** Format: password */
+      password_confirmation: string;
+      /** @description Short-lived credential issued after confirming a reset link. */
+      reset_token: string;
+    };
     /** CompleteSignupRequest */
     CompleteSignupRequest: {
       /**
@@ -265,6 +325,11 @@ export interface components {
     /** ConfirmEmailRequest */
     ConfirmEmailRequest: {
       /** @example verification-token */
+      token: string;
+    };
+    /** ConfirmPasswordResetRequest */
+    ConfirmPasswordResetRequest: {
+      /** @example password-reset-token */
       token: string;
     };
     /** CurrentUserResponse */
@@ -333,6 +398,37 @@ export interface components {
        * @example true
        */
       remember: boolean;
+    };
+    /** PasswordResetCompletionResponse */
+    PasswordResetCompletionResponse: {
+      /**
+       * @example password_reset
+       * @enum {string}
+       */
+      status: "password_reset";
+    };
+    /** PasswordResetRequest */
+    PasswordResetRequest: {
+      /**
+       * Format: email
+       * @example owner@example.com
+       */
+      email: string;
+    };
+    /** PasswordResetRequestResponse */
+    PasswordResetRequestResponse: {
+      /**
+       * @example password_reset_requested
+       * @enum {string}
+       */
+      status: "password_reset_requested";
+    };
+    /** PasswordResetTokenResponse */
+    PasswordResetTokenResponse: {
+      /** @example 900 */
+      expires_in: number;
+      /** @description One-time credential for completing a password reset. */
+      reset_token: string;
     };
     /**
      * ReadinessChecks
@@ -607,6 +703,144 @@ export interface operations {
       };
       /** @description Access token invalid */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  requestPasswordReset: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Password reset email */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PasswordResetRequest"];
+      };
+    };
+    responses: {
+      /** @description Password reset request accepted */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PasswordResetRequestResponse"];
+        };
+      };
+      /** @description Origin rejected */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  completePasswordReset: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description New password */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompletePasswordResetRequest"];
+      };
+    };
+    responses: {
+      /** @description Password reset */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PasswordResetCompletionResponse"];
+        };
+      };
+      /** @description Reset token invalid or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Origin rejected */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  confirmPasswordReset: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Password reset token */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ConfirmPasswordResetRequest"];
+      };
+    };
+    responses: {
+      /** @description Password reset confirmed */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PasswordResetTokenResponse"];
+        };
+      };
+      /** @description Token invalid or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Origin rejected */
+      403: {
         headers: {
           [name: string]: unknown;
         };

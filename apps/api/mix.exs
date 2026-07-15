@@ -71,6 +71,7 @@ defmodule Api.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup"],
+      "db.reset": ["ecto.drop", "ecto.create", "ecto.migrate"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       "test.setup": ["ecto.create --quiet", "ecto.migrate --quiet"],

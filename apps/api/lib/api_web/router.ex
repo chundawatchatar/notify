@@ -21,6 +21,9 @@ defmodule ApiWeb.Router do
     post "/auth/signup/complete", AuthController, :complete_signup
     post "/auth/email-verification/resend", AuthController, :resend_verification
     post "/auth/email-verification/confirm", AuthController, :confirm_email
+    post "/auth/password-reset", AuthController, :request_password_reset
+    post "/auth/password-reset/confirm", AuthController, :confirm_password_reset
+    post "/auth/password-reset/complete", AuthController, :complete_password_reset
     post "/auth/login", AuthController, :login
     post "/auth/refresh", AuthController, :refresh
     delete "/auth/session", AuthController, :delete_session

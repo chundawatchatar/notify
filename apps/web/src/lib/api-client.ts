@@ -1,9 +1,15 @@
 import type {
   ApiAuthResponse,
+  ApiCompletePasswordResetRequest,
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
+  ApiConfirmPasswordResetRequest,
   ApiCurrentUserResponse,
   ApiLoginRequest,
+  ApiPasswordResetCompletionResponse,
+  ApiPasswordResetRequest,
+  ApiPasswordResetRequestResponse,
+  ApiPasswordResetTokenResponse,
   ApiReadinessResponse,
   ApiResendVerificationRequest,
   ApiSignupCompletionResponse,
@@ -35,6 +41,27 @@ function confirmEmail(body: ApiConfirmEmailRequest) {
 function completeSignup(body: ApiCompleteSignupRequest) {
   return post<ApiSignupCompletionResponse, ApiCompleteSignupRequest>(
     "/api/auth/signup/complete",
+    body,
+  );
+}
+
+function requestPasswordReset(body: ApiPasswordResetRequest) {
+  return post<ApiPasswordResetRequestResponse, ApiPasswordResetRequest>(
+    "/api/auth/password-reset",
+    body,
+  );
+}
+
+function confirmPasswordReset(body: ApiConfirmPasswordResetRequest) {
+  return post<ApiPasswordResetTokenResponse, ApiConfirmPasswordResetRequest>(
+    "/api/auth/password-reset/confirm",
+    body,
+  );
+}
+
+function completePasswordReset(body: ApiCompletePasswordResetRequest) {
+  return post<ApiPasswordResetCompletionResponse, ApiCompletePasswordResetRequest>(
+    "/api/auth/password-reset/complete",
     body,
   );
 }
@@ -72,14 +99,17 @@ function getApiVersion() {
 
 export {
   ApiRequestError,
+  completePasswordReset,
   completeSignup,
   confirmEmail,
+  confirmPasswordReset,
   getApiReadiness,
   getApiVersion,
   getCurrentUser,
   login,
   logout,
   refreshSession,
+  requestPasswordReset,
   resendVerification,
   startSignup,
 };

@@ -86,15 +86,15 @@ enabled. Do not route it through the public ingress.
 runtime Secret. Rotating it invalidates issued access JWTs; persisted refresh
 sessions can still issue new JWTs with the new key.
 
-The built-in production verification-email adapter is intentionally disabled.
-Configure a real provider implementation before exposing signup. Until auth
-rate limiting and production email delivery are installed, authentication must
-not be publicly exposed.
+The built-in production verification and password-reset email adapters are
+intentionally disabled. Configure real provider implementations before exposing
+signup or password recovery. Until auth rate limiting and production email
+delivery are installed, authentication must not be publicly exposed.
 
-In development, verification messages are written as `.eml` files under
-`.tmp/dev-emails`. The adapter logs the recipient and absolute file path, but
-keeps the raw verification link in the file. `.tmp/` is gitignored. Override
-the location with `DEV_EMAIL_OUTBOX_DIR` when needed. Do not enable this adapter
+In development, verification and password-reset messages are written as `.eml`
+files under `.tmp/dev-emails`. The adapters log the recipient and absolute file
+path, but keep the raw link in the file. `.tmp/` is gitignored. Override the
+location with `DEV_EMAIL_OUTBOX_DIR` when needed. Do not enable these adapters
 in production.
 
 ## CI Policy

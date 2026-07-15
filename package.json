@@ -25,6 +25,7 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
     "docker:clean": "docker compose down -v --remove-orphans",
+    "db:reset": "nx run @notify/api:db-reset",
     "api": "nx run @notify/api:serve",
     "api:deps": "nx run @notify/api:deps",
     "api:setup": "nx run @notify/api:setup",

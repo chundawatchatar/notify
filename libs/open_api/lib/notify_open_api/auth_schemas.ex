@@ -100,6 +100,64 @@ defmodule NotifyOpenApi.AuthSchemas do
     })
   end
 
+  defmodule PasswordResetRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "PasswordResetRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        email: %Schema{
+          type: :string,
+          format: :email,
+          maxLength: 160,
+          example: "owner@example.com"
+        }
+      },
+      required: [:email]
+    })
+  end
+
+  defmodule ConfirmPasswordResetRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ConfirmPasswordResetRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        token: %Schema{type: :string, minLength: 1, example: "password-reset-token"}
+      },
+      required: [:token]
+    })
+  end
+
+  defmodule CompletePasswordResetRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "CompletePasswordResetRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        reset_token: %Schema{
+          type: :string,
+          minLength: 1,
+          description: "Short-lived credential issued after confirming a reset link."
+        },
+        password: %Schema{type: :string, format: :password, minLength: 8, maxLength: 72},
+        password_confirmation: %Schema{
+          type: :string,
+          format: :password,
+          minLength: 8,
+          maxLength: 72
+        }
+      },
+      required: [:reset_token, :password, :password_confirmation]
+    })
+  end
+
   defmodule StatusResponse do
     require OpenApiSpex
 
@@ -131,6 +189,53 @@ defmodule NotifyOpenApi.AuthSchemas do
         expires_in: %Schema{type: :integer, minimum: 1, example: 900}
       },
       required: [:signup_token, :expires_in]
+    })
+  end
+
+  defmodule PasswordResetRequestResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "PasswordResetRequestResponse",
+      type: :object,
+      properties: %{
+        status: %Schema{
+          type: :string,
+          enum: ["password_reset_requested"],
+          example: "password_reset_requested"
+        }
+      },
+      required: [:status]
+    })
+  end
+
+  defmodule PasswordResetTokenResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "PasswordResetTokenResponse",
+      type: :object,
+      properties: %{
+        reset_token: %Schema{
+          type: :string,
+          description: "One-time credential for completing a password reset."
+        },
+        expires_in: %Schema{type: :integer, minimum: 1, example: 900}
+      },
+      required: [:reset_token, :expires_in]
+    })
+  end
+
+  defmodule PasswordResetCompletionResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "PasswordResetCompletionResponse",
+      type: :object,
+      properties: %{
+        status: %Schema{type: :string, enum: ["password_reset"], example: "password_reset"}
+      },
+      required: [:status]
     })
   end
 

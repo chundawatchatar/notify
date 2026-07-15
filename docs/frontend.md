@@ -230,8 +230,14 @@ and calls the signup-completion endpoint. Password validation is shown on blur
 or submit so incomplete passwords are not flagged while the user is typing. The
 dashboard must not persist either verification credential in browser storage.
 
-Google OAuth and password recovery controls must not simulate success while
-their backend flows are deferred.
+Password recovery starts with an enumeration-safe email request. The emailed
+one-hour token is exchanged after browser hydration for a 15-minute completion
+credential, then removed from the URL. The reset form validates and confirms the
+new password before submission. Successful completion returns to login and all
+previous sessions for that user are revoked.
+
+Google OAuth controls must not simulate success while the backend flow is
+deferred.
 
 ## Shared UI
 

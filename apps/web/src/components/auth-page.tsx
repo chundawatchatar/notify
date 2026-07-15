@@ -15,8 +15,16 @@ import {
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
-import { ApiRequestError, completeSignup, resendVerification, startSignup } from "@/lib/api-client";
+import {
+  ApiRequestError,
+  completePasswordReset,
+  completeSignup,
+  requestPasswordReset,
+  resendVerification,
+  startSignup,
+} from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
+import type { PasswordResetState } from "@/lib/password-reset";
 import type { SignupVerificationState } from "@/lib/signup-verification";
 import {
   isWorkspaceSectionPath,
@@ -40,9 +48,15 @@ const acceptTermsSchema = z.literal(true, "Accept the terms to create a workspac
 
 function LoginForm({
   accountCreated = false,
+  passwordReset = false,
   redirectTo = "/dashboard",
   sessionExpired = false,
-}: Readonly<{ accountCreated?: boolean; redirectTo?: ProductRoute; sessionExpired?: boolean }>) {
+}: Readonly<{
+  accountCreated?: boolean;
+  passwordReset?: boolean;
+  redirectTo?: ProductRoute;
+  sessionExpired?: boolean;
+}>) {
   const navigate = useNavigate();
   const auth = useAuth();
   const mutation = useMutation({
@@ -78,6 +92,9 @@ function LoginForm({
     <form className="grid gap-5" onSubmit={formSubmitHandler(form.handleSubmit)}>
       {accountCreated ? (
         <SuccessMessage message="Your account and workspace are ready. Sign in to continue." />
+      ) : null}
+      {passwordReset ? (
+        <SuccessMessage message="Your password was updated. Sign in with your new password." />
       ) : null}
       {sessionExpired ? (
         <ErrorMessage message="Your session expired. Sign in again to continue." />
@@ -124,7 +141,14 @@ function LoginForm({
       >
         {(field) => (
           <FormField
-            action={<span className="text-muted-foreground text-xs">Recovery coming soon</span>}
+            action={
+              <Link
+                className="text-muted-foreground text-xs hover:text-foreground"
+                to="/auth/forgot-password"
+              >
+                Forgot password?
+              </Link>
+            }
             error={
               apiFieldError(mutation.error, "password") ?? firstFieldError(field.state.meta.errors)
             }
@@ -484,17 +508,257 @@ function CompleteSignupForm({
   );
 }
 
-function RecoveryUnavailable() {
+function ForgotPasswordForm() {
+  const [sentEmail, setSentEmail] = useState<string>();
+  const mutation = useMutation({ mutationFn: requestPasswordReset });
+  const form = useForm({
+    defaultValues: { email: "" },
+    onSubmit: async ({ value }) => {
+      mutation.reset();
+
+      try {
+        await mutation.mutateAsync(value);
+        setSentEmail(value.email.trim().toLowerCase());
+      } catch {
+        // The mutation renders the client-safe API error below.
+      }
+    },
+  });
+
+  if (sentEmail) {
+    return (
+      <div className="grid gap-4">
+        <SuccessMessage message="If an account exists for this email, a password reset link is on its way." />
+        <p className="text-muted-foreground text-sm">
+          Check <span className="font-medium text-foreground">{sentEmail}</span>. The link expires
+          in one hour and can be used once.
+        </p>
+        <Button asChild className="w-full" variant="outline">
+          <Link to="/auth/login">
+            <ArrowLeft />
+            Back to sign in
+          </Link>
+        </Button>
+        <Button
+          onClick={() => {
+            mutation.reset();
+            setSentEmail(undefined);
+          }}
+          type="button"
+          variant="ghost"
+        >
+          Use a different email
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid gap-4">
-      <StatusPanel message="Password recovery is not available yet. Contact support if you are locked out of an existing account." />
+    <form className="grid gap-5" onSubmit={formSubmitHandler(form.handleSubmit)}>
+      <form.Field
+        name="email"
+        validators={{
+          onChange: ({ value }) => zodError(emailSchema, value),
+          onSubmit: ({ value }) => zodError(emailSchema, value),
+        }}
+      >
+        {(field) => (
+          <FormField
+            error={
+              apiFieldError(mutation.error, "email") ?? firstFieldError(field.state.meta.errors)
+            }
+            inputId={field.name}
+            label="Account email"
+          >
+            <Input
+              autoComplete="email"
+              id={field.name}
+              name={field.name}
+              onBlur={field.handleBlur}
+              onChange={(event) => {
+                mutation.reset();
+                field.handleChange(event.target.value);
+              }}
+              placeholder="you@company.com"
+              type="email"
+              value={field.state.value}
+            />
+          </FormField>
+        )}
+      </form.Field>
+
+      <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+        {([canSubmit, isSubmitting]) => (
+          <Button
+            className="h-11 w-full"
+            disabled={!canSubmit || isSubmitting || mutation.isPending}
+            type="submit"
+          >
+            {mutation.isPending ? "Sending reset link" : "Send reset link"}
+            <ArrowRight />
+          </Button>
+        )}
+      </form.Subscribe>
+
       <Button asChild className="w-full" variant="outline">
         <Link to="/auth/login">
           <ArrowLeft />
           Back to sign in
         </Link>
       </Button>
-    </div>
+      <MutationMessage error={mutation.error} />
+    </form>
+  );
+}
+
+function PasswordResetFlow({
+  onComplete,
+  reset,
+}: Readonly<{ onComplete?: () => void; reset?: PasswordResetState }>) {
+  const [requestNewLink, setRequestNewLink] = useState(false);
+
+  if (reset?.status === "confirmed") {
+    return <ResetPasswordForm onComplete={onComplete} resetToken={reset.resetToken} />;
+  }
+
+  if (reset?.status === "error" && !requestNewLink) {
+    return (
+      <div className="grid gap-4">
+        <ErrorMessage message={reset.error} />
+        <Button
+          className="w-full"
+          onClick={() => {
+            onComplete?.();
+            setRequestNewLink(true);
+          }}
+          type="button"
+        >
+          Request a new reset link
+        </Button>
+        <Button asChild className="w-full" variant="outline">
+          <Link to="/auth/login">
+            <ArrowLeft />
+            Back to sign in
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return <ForgotPasswordForm />;
+}
+
+function ResetPasswordForm({
+  onComplete,
+  resetToken,
+}: Readonly<{ onComplete?: () => void; resetToken: string }>) {
+  const navigate = useNavigate();
+  const mutation = useMutation({
+    mutationFn: completePasswordReset,
+    onSuccess: async () => {
+      onComplete?.();
+      await navigate({ replace: true, search: { reset: true }, to: "/auth/login" });
+    },
+  });
+  const form = useForm({
+    defaultValues: { confirmPassword: "", password: "" },
+    onSubmit: async ({ value }) => {
+      mutation.reset();
+
+      try {
+        await mutation.mutateAsync({
+          password: value.password,
+          password_confirmation: value.confirmPassword,
+          reset_token: resetToken,
+        });
+      } catch {
+        // The mutation renders the client-safe API error below.
+      }
+    },
+  });
+
+  return (
+    <form className="grid gap-5" onSubmit={formSubmitHandler(form.handleSubmit)}>
+      <form.Field
+        name="password"
+        validators={{
+          onBlur: ({ value }) => zodError(passwordSchema, value),
+          onSubmit: ({ value }) => zodError(passwordSchema, value),
+        }}
+      >
+        {(field) => (
+          <FormField
+            error={
+              apiFieldError(mutation.error, "password") ?? firstFieldError(field.state.meta.errors)
+            }
+            inputId={field.name}
+            label="New password"
+          >
+            <PasswordInput
+              autoComplete="new-password"
+              id={field.name}
+              name={field.name}
+              onBlur={field.handleBlur}
+              onChange={(event) => {
+                mutation.reset();
+                field.handleChange(event.target.value);
+              }}
+              placeholder="Create a new password"
+              value={field.state.value}
+            />
+          </FormField>
+        )}
+      </form.Field>
+
+      <form.Field
+        name="confirmPassword"
+        validators={{
+          onBlur: ({ fieldApi, value }) =>
+            passwordConfirmationError(value, fieldApi.form.getFieldValue("password")),
+          onSubmit: ({ fieldApi, value }) =>
+            passwordConfirmationError(value, fieldApi.form.getFieldValue("password")),
+        }}
+      >
+        {(field) => (
+          <FormField
+            error={
+              apiFieldError(mutation.error, "password_confirmation") ??
+              firstFieldError(field.state.meta.errors)
+            }
+            inputId={field.name}
+            label="Confirm new password"
+          >
+            <PasswordInput
+              autoComplete="new-password"
+              id={field.name}
+              name={field.name}
+              onBlur={field.handleBlur}
+              onChange={(event) => {
+                mutation.reset();
+                field.handleChange(event.target.value);
+              }}
+              placeholder="Enter the new password again"
+              value={field.state.value}
+            />
+          </FormField>
+        )}
+      </form.Field>
+
+      <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+        {([canSubmit, isSubmitting]) => (
+          <Button
+            className="h-11 w-full"
+            disabled={!canSubmit || isSubmitting || mutation.isPending}
+            type="submit"
+          >
+            {mutation.isPending ? "Updating password" : "Update password"}
+            <ArrowRight />
+          </Button>
+        )}
+      </form.Subscribe>
+
+      <MutationMessage error={mutation.error} />
+    </form>
   );
 }
 
@@ -665,14 +929,6 @@ function SuccessMessage({ message }: Readonly<{ message: string }>) {
   );
 }
 
-function StatusPanel({ message }: Readonly<{ message: string }>) {
-  return (
-    <p className="rounded-md border bg-secondary/35 px-4 py-3 text-muted-foreground text-sm">
-      {message}
-    </p>
-  );
-}
-
 function apiFieldError(error: unknown, field: string) {
   return error instanceof ApiRequestError ? error.fields?.[field]?.[0] : undefined;
 }
@@ -720,8 +976,10 @@ export type { ProductRoute };
 export {
   AuthShell,
   CompleteSignupForm,
+  ForgotPasswordForm,
   LoginForm,
-  RecoveryUnavailable,
+  PasswordResetFlow,
+  ResetPasswordForm,
   SignupForm,
   VerifyEmailFlow,
 };

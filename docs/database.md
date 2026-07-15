@@ -49,6 +49,16 @@ pnpm docker:up
 pnpm api:setup
 ```
 
+Reset the local development database by dropping it, recreating it, and running
+all migrations:
+
+```sh
+pnpm db:reset
+```
+
+This command permanently deletes local development data and does not load
+development seeds.
+
 ## CI/CD
 
 Migrations should run as an explicit one-off job before API pods roll forward.
@@ -78,19 +88,24 @@ code.
 
 ## Current Authentication Tables
 
-- `signup_challenges`: normalized email, hashed email-verification and
-  signup-completion credentials, expiries, verification time, and consumption
-  time. A resend replaces the existing challenge for that email.
+- `auth_challenges`: purpose-scoped, one-time signup and password-reset
+  credentials. Signup purposes are scoped to a normalized email, while
+  password-reset purposes are scoped to a user. Each verification or completion
+  stage has its own hashed token, expiry, and optional consumption time. A new
+  request replaces the current verification stage for the same purpose and
+  subject.
 - `users`: normalized unique login identity, Argon2 password hash, email
   confirmation, terms acceptance, and latest successful login time.
 - `workspaces`: tenant boundary created during signup.
 - `workspace_memberships`: user-to-workspace role, initially only `owner`.
 - `auth_sessions`: membership-scoped refresh digest, expiry, and revocation.
 
-All authentication IDs use UUIDs. Raw refresh, verification, and signup
-completion credentials are never persisted. Signup does not create a user until
-the email has been verified. The verified completion transaction creates the
-user, workspace, and owner membership together.
+All authentication IDs use UUIDs. Raw refresh, verification, signup completion,
+and password-reset credentials are never persisted. Confirming an email-link
+credential consumes its verification row and creates a separate 15-minute
+completion row. Signup does not create a user until the email has been verified.
+The verified completion transaction creates the user, workspace, and owner
+membership together.
 
 ## Expected Product Tables
 

@@ -85,6 +85,8 @@ The API persists the refresh-token digest and active workspace membership. It
 checks the session record on every protected request so logout, expiry, or
 membership removal revokes access immediately. Browser refresh and logout calls
 must include credentials and originate from the configured dashboard origin.
+See `docs/authentication.md` for the complete login, refresh, rotation,
+browser-access, and session-revocation flow.
 
 Email/password signup verifies ownership before creating an account. The API
 stores a hashed, expiring signup challenge and exchanges the email link for a
@@ -93,8 +95,12 @@ creates the confirmed user, one workspace, and its owner membership. This keeps
 an unverified request from reserving another person's email. No session is
 created until the user signs in.
 
-Google OAuth, password recovery, multi-workspace selection, and authentication
-rate limiting remain deferred.
+Password recovery stores hashed, expiring, one-time credentials and returns the
+same request response whether or not an account exists. Completing a reset
+updates the Argon2 password hash and revokes all existing sessions for the user.
+
+Google OAuth, multi-workspace selection, and authentication rate limiting
+remain deferred.
 
 ## Adding New Features
 

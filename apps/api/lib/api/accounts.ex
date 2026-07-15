@@ -1,24 +1,32 @@
 defmodule Api.Accounts do
   import Ecto.Query
 
-  alias Api.Accounts.{AccessToken, AuthSession, SignupChallenge, User, VerificationEmail}
+  require Logger
+
+  alias Api.Accounts.{
+    AccessToken,
+    AuthChallenge,
+    AuthSession,
+    PasswordResetEmail,
+    User,
+    VerificationEmail
+  }
+
   alias Api.Repo
   alias Api.Workspaces.{Membership, Workspace}
   alias Ecto.Multi
 
-  @signup_challenge_replace_fields [
-    :verification_token_hash,
-    :verification_expires_at,
+  @auth_challenge_replace_fields [
+    :token_hash,
+    :expires_at,
     :verified_at,
-    :completion_token_hash,
-    :completion_expires_at,
     :consumed_at,
     :updated_at
   ]
 
   def request_signup(email) when is_binary(email) do
-    {raw_token, challenge} = SignupChallenge.build(email)
-    changeset = SignupChallenge.changeset(challenge)
+    {raw_token, challenge} = AuthChallenge.build_signup_verification(email)
+    changeset = AuthChallenge.changeset(challenge)
 
     cond do
       not changeset.valid? ->
@@ -33,22 +41,91 @@ defmodule Api.Accounts do
   end
 
   def request_signup(_email) do
-    {_raw_token, challenge} = SignupChallenge.build("")
-    {:error, :challenge, SignupChallenge.changeset(challenge)}
+    {_raw_token, challenge} = AuthChallenge.build_signup_verification("")
+    {:error, :challenge, AuthChallenge.changeset(challenge)}
   end
 
   def resend_verification(email), do: request_signup(email)
 
+  def request_password_reset(email) when is_binary(email) do
+    email = User.normalize_email(email)
+
+    case Repo.get_by(User, email: email) do
+      %User{} = user -> persist_and_deliver_password_reset(user)
+      nil -> :ok
+    end
+  end
+
+  def request_password_reset(_email), do: :ok
+
+  def confirm_password_reset(raw_token) do
+    now = DateTime.utc_now(:second)
+
+    with {:ok, token_hash} <- AuthChallenge.token_hash(raw_token),
+         {:ok, {completion_token, challenge}} <-
+           Repo.transaction(fn ->
+             verify_auth_challenge(
+               token_hash,
+               AuthChallenge.password_reset_verification_purpose(),
+               AuthChallenge.password_reset_completion_purpose(),
+               now
+             )
+           end) do
+      {:ok,
+       %{
+         reset_token: completion_token,
+         expires_in: AuthChallenge.completion_expires_in(),
+         challenge: challenge
+       }}
+    else
+      _invalid -> {:error, :invalid_or_expired_token}
+    end
+  end
+
+  def complete_password_reset(attrs) when is_map(attrs) do
+    attrs = Map.new(attrs, fn {key, value} -> {to_string(key), value} end)
+    now = DateTime.utc_now(:second)
+
+    with {:ok, token_hash} <- AuthChallenge.token_hash(attrs["reset_token"]) do
+      Multi.new()
+      |> Multi.run(:challenge, fn repo, _changes ->
+        lock_password_reset_completion(repo, token_hash, now)
+      end)
+      |> Multi.update(:user, fn %{challenge: challenge} ->
+        User.password_reset_changeset(challenge.user, attrs)
+      end)
+      |> Multi.run(:revoked_sessions, fn repo, %{user: user} ->
+        revoke_user_sessions(repo, user.id, now)
+      end)
+      |> Multi.update(:consumed_challenge, fn %{challenge: challenge} ->
+        AuthChallenge.consume_changeset(challenge, now)
+      end)
+      |> Repo.transaction()
+      |> normalize_password_reset_result()
+    else
+      _invalid -> {:error, :invalid_or_expired_reset_token}
+    end
+  end
+
+  def complete_password_reset(_attrs), do: {:error, :invalid_or_expired_reset_token}
+
   def confirm_email(raw_token) do
     now = DateTime.utc_now(:second)
 
-    with {:ok, token_hash} <- SignupChallenge.token_hash(raw_token),
+    with {:ok, token_hash} <- AuthChallenge.token_hash(raw_token),
          {:ok, {completion_token, challenge}} <-
-           Repo.transaction(fn -> verify_signup_challenge(token_hash, now) end) do
+           Repo.transaction(fn ->
+             verify_auth_challenge(
+               token_hash,
+               AuthChallenge.signup_verification_purpose(),
+               AuthChallenge.signup_completion_purpose(),
+               now
+             )
+           end) do
       {:ok,
        %{
          signup_token: completion_token,
-         expires_in: SignupChallenge.completion_expires_in(),
+         expires_in: AuthChallenge.completion_expires_in(),
          challenge: challenge
        }}
     else
@@ -61,7 +138,7 @@ defmodule Api.Accounts do
     now = DateTime.utc_now(:second)
     signup_token = attrs["signup_token"]
 
-    with {:ok, token_hash} <- SignupChallenge.token_hash(signup_token) do
+    with {:ok, token_hash} <- AuthChallenge.token_hash(signup_token) do
       Multi.new()
       |> Multi.run(:challenge, fn repo, _changes ->
         lock_signup_completion(repo, token_hash, now)
@@ -82,7 +159,7 @@ defmodule Api.Accounts do
         })
       end)
       |> Multi.update(:consumed_challenge, fn %{challenge: challenge} ->
-        SignupChallenge.consume_changeset(challenge, now)
+        AuthChallenge.consume_changeset(challenge, now)
       end)
       |> Repo.transaction()
       |> normalize_completion_result()
@@ -168,8 +245,8 @@ defmodule Api.Accounts do
 
   defp persist_and_deliver_challenge(changeset, email, raw_token) do
     case Repo.insert(changeset,
-           on_conflict: {:replace, @signup_challenge_replace_fields},
-           conflict_target: :email,
+           on_conflict: {:replace, @auth_challenge_replace_fields},
+           conflict_target: [:purpose, :email],
            returning: true
          ) do
       {:ok, _challenge} ->
@@ -183,22 +260,60 @@ defmodule Api.Accounts do
     end
   end
 
-  defp verify_signup_challenge(token_hash, now) do
+  defp persist_and_deliver_password_reset(user) do
+    {raw_token, challenge} = AuthChallenge.build_password_reset_verification(user)
+    changeset = AuthChallenge.changeset(challenge)
+
+    case Repo.insert(changeset,
+           on_conflict: {:replace, @auth_challenge_replace_fields},
+           conflict_target: [:purpose, :user_id],
+           returning: true
+         ) do
+      {:ok, _challenge} ->
+        case PasswordResetEmail.deliver(user.email, raw_token) do
+          :ok -> :ok
+          {:error, reason} -> Logger.error("Password reset delivery failed: #{inspect(reason)}")
+        end
+
+        :ok
+
+      {:error, changeset} ->
+        Logger.error("Password reset challenge persistence failed: #{inspect(changeset.errors)}")
+        :ok
+    end
+  end
+
+  defp verify_auth_challenge(token_hash, verification_purpose, completion_purpose, now) do
     challenge =
       Repo.one(
-        from challenge in SignupChallenge,
+        from challenge in AuthChallenge,
           where:
-            challenge.verification_token_hash == ^token_hash and
-              challenge.verification_expires_at > ^now and is_nil(challenge.verified_at) and
+            challenge.purpose == ^verification_purpose and challenge.token_hash == ^token_hash and
+              challenge.expires_at > ^now and is_nil(challenge.verified_at) and
               is_nil(challenge.consumed_at),
           lock: "FOR UPDATE"
       )
 
     case challenge do
-      %SignupChallenge{} ->
-        {completion_token, changeset} = SignupChallenge.verify_changeset(challenge, now)
-        {:ok, verified_challenge} = Repo.update(changeset)
-        {completion_token, verified_challenge}
+      %AuthChallenge{} ->
+        {completion_token, completion_challenge} =
+          AuthChallenge.build_completion(challenge, completion_purpose, now)
+
+        {:ok, _consumed_verification} =
+          challenge
+          |> AuthChallenge.consume_changeset(now)
+          |> Repo.update()
+
+        {:ok, persisted_completion} =
+          completion_challenge
+          |> AuthChallenge.changeset()
+          |> Repo.insert(
+            on_conflict: {:replace, @auth_challenge_replace_fields},
+            conflict_target: challenge_conflict_target(completion_challenge),
+            returning: true
+          )
+
+        {completion_token, persisted_completion}
 
       nil ->
         Repo.rollback(:invalid_or_expired_token)
@@ -207,16 +322,51 @@ defmodule Api.Accounts do
 
   defp lock_signup_completion(repo, token_hash, now) do
     case repo.one(
-           from challenge in SignupChallenge,
+           from challenge in AuthChallenge,
              where:
-               challenge.completion_token_hash == ^token_hash and
-                 challenge.completion_expires_at > ^now and not is_nil(challenge.verified_at) and
+               challenge.purpose == ^AuthChallenge.signup_completion_purpose() and
+                 challenge.token_hash == ^token_hash and challenge.expires_at > ^now and
+                 not is_nil(challenge.verified_at) and
                  is_nil(challenge.consumed_at),
              lock: "FOR UPDATE"
          ) do
-      %SignupChallenge{} = challenge -> {:ok, challenge}
+      %AuthChallenge{} = challenge -> {:ok, challenge}
       nil -> {:error, :invalid_or_expired_signup_token}
     end
+  end
+
+  defp lock_password_reset_completion(repo, token_hash, now) do
+    case repo.one(
+           from challenge in AuthChallenge,
+             where:
+               challenge.purpose == ^AuthChallenge.password_reset_completion_purpose() and
+                 challenge.token_hash == ^token_hash and challenge.expires_at > ^now and
+                 not is_nil(challenge.verified_at) and is_nil(challenge.consumed_at),
+             lock: "FOR UPDATE",
+             preload: [:user]
+         ) do
+      %AuthChallenge{} = challenge -> {:ok, challenge}
+      nil -> {:error, :invalid_or_expired_reset_token}
+    end
+  end
+
+  defp challenge_conflict_target(%AuthChallenge{email: email}) when is_binary(email),
+    do: [:purpose, :email]
+
+  defp challenge_conflict_target(%AuthChallenge{user_id: user_id}) when is_binary(user_id),
+    do: [:purpose, :user_id]
+
+  defp revoke_user_sessions(repo, user_id, now) do
+    query =
+      from session in AuthSession,
+        join: membership in Membership,
+        on: membership.id == session.workspace_membership_id,
+        where: membership.user_id == ^user_id and is_nil(session.revoked_at)
+
+    {revoked_count, _sessions} =
+      repo.update_all(query, set: [revoked_at: now, updated_at: now])
+
+    {:ok, revoked_count}
   end
 
   defp normalize_completion_result({:ok, result}), do: {:ok, result}
@@ -225,6 +375,14 @@ defmodule Api.Accounts do
     do: {:error, reason}
 
   defp normalize_completion_result({:error, operation, value, _changes}),
+    do: {:error, operation, value}
+
+  defp normalize_password_reset_result({:ok, result}), do: {:ok, result}
+
+  defp normalize_password_reset_result({:error, :challenge, reason, _changes}),
+    do: {:error, reason}
+
+  defp normalize_password_reset_result({:error, operation, value, _changes}),
     do: {:error, operation, value}
 
   defp owner_membership(user) do

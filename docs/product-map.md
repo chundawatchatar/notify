@@ -20,7 +20,7 @@ Responsibilities:
 - sign in with a short-lived access JWT and rotating refresh session
 - current-account lookup and logout
 - protected dashboard session restoration and logout
-- future Google login and password recovery flows
+- enumeration-safe password recovery with one-time email links
 
 Current backend endpoints:
 
@@ -28,13 +28,17 @@ Current backend endpoints:
 - `POST /api/auth/signup/complete`
 - `POST /api/auth/email-verification/resend`
 - `POST /api/auth/email-verification/confirm`
+- `POST /api/auth/password-reset`
+- `POST /api/auth/password-reset/confirm`
+- `POST /api/auth/password-reset/complete`
 - `POST /api/auth/login`
 - `POST /api/auth/refresh`
 - `GET /api/auth/me`
 - `DELETE /api/auth/session`
 
-Google OAuth, password reset, multi-workspace selection, and auth rate limiting
-are deferred. Rate limiting is required before public production exposure.
+Google OAuth, multi-workspace selection, and auth rate limiting are deferred.
+Rate limiting and a production email provider are required before public
+production exposure.
 
 ## Dashboard
 

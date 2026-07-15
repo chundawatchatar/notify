@@ -51,56 +51,68 @@ defmodule Api.Repo.Migrations.CreateAuthFoundation do
              check: "role IN ('owner')"
            )
 
-    create table(:signup_challenges, primary_key: false) do
+    create table(:auth_challenges, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :email, :string, null: false
-      add :verification_token_hash, :binary
-      add :verification_expires_at, :utc_datetime
+      add :purpose, :string, null: false
+      add :email, :string
+
+      add :user_id, references(:users, type: :binary_id, on_delete: :delete_all)
+
+      add :token_hash, :binary, null: false
+      add :expires_at, :utc_datetime, null: false
       add :verified_at, :utc_datetime
-      add :completion_token_hash, :binary
-      add :completion_expires_at, :utc_datetime
       add :consumed_at, :utc_datetime
 
       timestamps(type: :utc_datetime)
     end
 
-    create unique_index(:signup_challenges, [:email])
-    create unique_index(:signup_challenges, [:verification_token_hash])
-    create unique_index(:signup_challenges, [:completion_token_hash])
-    create index(:signup_challenges, [:verification_expires_at])
-    create index(:signup_challenges, [:completion_expires_at])
+    create unique_index(:auth_challenges, [:token_hash])
+    create unique_index(:auth_challenges, [:purpose, :email])
+    create unique_index(:auth_challenges, [:purpose, :user_id])
+    create index(:auth_challenges, [:expires_at])
+    create index(:auth_challenges, [:user_id])
 
-    create constraint(:signup_challenges, :signup_challenges_email_normalized,
-             check: "email = lower(btrim(email))"
+    create constraint(:auth_challenges, :auth_challenges_email_normalized,
+             check: "email IS NULL OR email = lower(btrim(email))"
            )
 
-    create constraint(:signup_challenges, :signup_challenges_email_length,
-             check: "char_length(email) BETWEEN 3 AND 160"
+    create constraint(:auth_challenges, :auth_challenges_email_length,
+             check: "email IS NULL OR char_length(email) BETWEEN 3 AND 160"
            )
 
-    create constraint(:signup_challenges, :signup_challenges_state,
+    create constraint(:auth_challenges, :auth_challenges_purpose,
+             check: """
+             purpose IN (
+               'signup_verification',
+               'signup_completion',
+               'password_reset_verification',
+               'password_reset_completion'
+             )
+             """
+           )
+
+    create constraint(:auth_challenges, :auth_challenges_subject,
              check: """
              (
-               verification_token_hash IS NOT NULL AND
-               verification_expires_at IS NOT NULL AND
-               verified_at IS NULL AND
-               completion_token_hash IS NULL AND
-               completion_expires_at IS NULL AND
-               consumed_at IS NULL
+               purpose IN ('signup_verification', 'signup_completion') AND
+               email IS NOT NULL AND
+               user_id IS NULL
              ) OR (
-               verification_token_hash IS NULL AND
-               verification_expires_at IS NULL AND
-               verified_at IS NOT NULL AND
-               completion_token_hash IS NOT NULL AND
-               completion_expires_at IS NOT NULL AND
-               consumed_at IS NULL
+               purpose IN ('password_reset_verification', 'password_reset_completion') AND
+               email IS NULL AND
+               user_id IS NOT NULL
+             )
+             """
+           )
+
+    create constraint(:auth_challenges, :auth_challenges_stage,
+             check: """
+             (
+               purpose IN ('signup_verification', 'password_reset_verification') AND
+               verified_at IS NULL
              ) OR (
-               verification_token_hash IS NULL AND
-               verification_expires_at IS NULL AND
-               verified_at IS NOT NULL AND
-               completion_token_hash IS NULL AND
-               completion_expires_at IS NULL AND
-               consumed_at IS NOT NULL
+               purpose IN ('signup_completion', 'password_reset_completion') AND
+               verified_at IS NOT NULL
              )
              """
            )

@@ -17,6 +17,9 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert Map.has_key?(response["paths"], "/api/auth/signup/complete")
     assert Map.has_key?(response["paths"], "/api/auth/email-verification/resend")
     assert Map.has_key?(response["paths"], "/api/auth/email-verification/confirm")
+    assert Map.has_key?(response["paths"], "/api/auth/password-reset")
+    assert Map.has_key?(response["paths"], "/api/auth/password-reset/confirm")
+    assert Map.has_key?(response["paths"], "/api/auth/password-reset/complete")
     assert Map.has_key?(response["paths"], "/api/auth/login")
     assert Map.has_key?(response["paths"], "/api/auth/refresh")
     assert Map.has_key?(response["paths"], "/api/auth/me")
@@ -57,5 +60,10 @@ defmodule ApiWeb.OpenApiControllerTest do
              "200"
            ]["content"]["application/json"]["schema"]["$ref"] ==
              "#/components/schemas/SignupTokenResponse"
+
+    assert response["paths"]["/api/auth/password-reset/confirm"]["post"]["responses"]["200"][
+             "content"
+           ]["application/json"]["schema"]["$ref"] ==
+             "#/components/schemas/PasswordResetTokenResponse"
   end
 end

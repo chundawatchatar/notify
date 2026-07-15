@@ -9,11 +9,17 @@ defmodule ApiWeb.AuthController do
 
   alias NotifyOpenApi.AuthSchemas.{
     AuthResponse,
+    CompletePasswordResetRequest,
     CompleteSignupRequest,
     ConfirmEmailRequest,
+    ConfirmPasswordResetRequest,
     ErrorResponse,
     LoginRequest,
     MeResponse,
+    PasswordResetCompletionResponse,
+    PasswordResetRequest,
+    PasswordResetRequestResponse,
+    PasswordResetTokenResponse,
     ResendVerificationRequest,
     SignupCompletionResponse,
     SignupRequest,
@@ -27,7 +33,16 @@ defmodule ApiWeb.AuthController do
   @refresh_cookie "_notify_refresh"
   @refresh_cookie_path "/api/auth"
 
-  plug ApiWeb.Plugs.RequireAllowedOrigin when action in [:login, :refresh, :delete_session]
+  plug ApiWeb.Plugs.RequireAllowedOrigin
+       when action in [
+              :login,
+              :request_password_reset,
+              :confirm_password_reset,
+              :complete_password_reset,
+              :refresh,
+              :delete_session
+            ]
+
   plug ApiWeb.Plugs.Authenticate, [required: false] when action == :delete_session
 
   tags ["authentication"]
@@ -195,6 +210,88 @@ defmodule ApiWeb.AuthController do
 
       {:error, :workspace, changeset} ->
         AuthError.validation(conn, changeset, %{name: :workspace_name})
+
+      {:error, _operation, %Ecto.Changeset{} = changeset} ->
+        AuthError.validation(conn, changeset)
+    end
+  end
+
+  operation :request_password_reset,
+    summary: "Request password reset instructions",
+    operation_id: "requestPasswordReset",
+    request_body:
+      {"Password reset email", "application/json", PasswordResetRequest, required: true},
+    responses: [
+      accepted:
+        {"Password reset request accepted", "application/json", PasswordResetRequestResponse},
+      forbidden: {"Origin rejected", "application/json", ErrorResponse},
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+    ]
+
+  def request_password_reset(conn, %{"email" => email})
+      when is_binary(email) and byte_size(email) > 0 and byte_size(email) <= 160 do
+    :ok = Accounts.request_password_reset(email)
+
+    conn
+    |> put_status(:accepted)
+    |> json(%{status: "password_reset_requested"})
+  end
+
+  def request_password_reset(conn, _params) do
+    AuthError.render(
+      conn,
+      :unprocessable_entity,
+      "validation_failed",
+      "Request validation failed.",
+      %{email: ["is required and must be at most 160 characters"]}
+    )
+  end
+
+  operation :confirm_password_reset,
+    summary: "Confirm a password reset link",
+    operation_id: "confirmPasswordReset",
+    request_body:
+      {"Password reset token", "application/json", ConfirmPasswordResetRequest, required: true},
+    responses: [
+      ok: {"Password reset confirmed", "application/json", PasswordResetTokenResponse},
+      bad_request: {"Token invalid or expired", "application/json", ErrorResponse},
+      forbidden: {"Origin rejected", "application/json", ErrorResponse}
+    ]
+
+  def confirm_password_reset(conn, %{"token" => token}) do
+    case Accounts.confirm_password_reset(token) do
+      {:ok, result} ->
+        json(conn, %{reset_token: result.reset_token, expires_in: result.expires_in})
+
+      {:error, :invalid_or_expired_token} ->
+        invalid_password_reset_token(conn)
+    end
+  end
+
+  def confirm_password_reset(conn, _params), do: invalid_password_reset_token(conn)
+
+  operation :complete_password_reset,
+    summary: "Set a new password",
+    operation_id: "completePasswordReset",
+    request_body:
+      {"New password", "application/json", CompletePasswordResetRequest, required: true},
+    responses: [
+      ok: {"Password reset", "application/json", PasswordResetCompletionResponse},
+      bad_request: {"Reset token invalid or expired", "application/json", ErrorResponse},
+      forbidden: {"Origin rejected", "application/json", ErrorResponse},
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+    ]
+
+  def complete_password_reset(conn, params) do
+    case Accounts.complete_password_reset(params) do
+      {:ok, _result} ->
+        json(conn, %{status: "password_reset"})
+
+      {:error, :invalid_or_expired_reset_token} ->
+        invalid_password_reset_token(conn)
+
+      {:error, :user, %Ecto.Changeset{} = changeset} ->
+        AuthError.validation(conn, changeset)
 
       {:error, _operation, %Ecto.Changeset{} = changeset} ->
         AuthError.validation(conn, changeset)
@@ -392,6 +489,15 @@ defmodule ApiWeb.AuthController do
 
   defp secure_cookies? do
     Application.fetch_env!(:api, :environment) == :prod
+  end
+
+  defp invalid_password_reset_token(conn) do
+    AuthError.render(
+      conn,
+      :bad_request,
+      "invalid_password_reset_token",
+      "Password reset token is invalid or expired."
+    )
   end
 
   defp unique_email_error?(changeset) do

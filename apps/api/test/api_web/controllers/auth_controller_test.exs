@@ -88,6 +88,31 @@ defmodule ApiWeb.AuthControllerTest do
     assert me_response["workspace"]["id"] == membership.workspace.id
   end
 
+  test "remember extends the refresh session from one day to thirty days", %{conn: conn} do
+    membership = insert(:membership)
+
+    standard_conn =
+      conn
+      |> with_origin()
+      |> post(~p"/api/auth/login", %{
+        email: membership.user.email,
+        password: @password,
+        remember: false
+      })
+
+    remembered_conn =
+      build_conn()
+      |> with_origin()
+      |> post(~p"/api/auth/login", %{
+        email: membership.user.email,
+        password: @password,
+        remember: true
+      })
+
+    assert_in_delta standard_conn.resp_cookies["_notify_refresh"].max_age, 86_400, 1
+    assert_in_delta remembered_conn.resp_cookies["_notify_refresh"].max_age, 2_592_000, 1
+  end
+
   test "refresh rotates the cookie and replay revokes the session", %{conn: conn} do
     membership = insert(:membership)
     {login_conn, login_response} = login(conn, membership.user.email)
@@ -122,6 +147,94 @@ defmodule ApiWeb.AuthControllerTest do
     |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
     |> get(~p"/api/auth/me")
     |> json_response(401)
+  end
+
+  test "password reset requests do not reveal whether an account exists", %{conn: conn} do
+    membership = insert(:membership)
+
+    existing_response =
+      conn
+      |> with_origin()
+      |> post(~p"/api/auth/password-reset", %{email: membership.user.email})
+      |> json_response(202)
+
+    assert existing_response["status"] == "password_reset_requested"
+    assert_receive {:password_reset_email, email, _url}
+    assert email == membership.user.email
+
+    missing_response =
+      build_conn()
+      |> with_origin()
+      |> post(~p"/api/auth/password-reset", %{email: "missing@example.com"})
+      |> json_response(202)
+
+    assert missing_response == existing_response
+    refute_receive {:password_reset_email, "missing@example.com", _url}
+  end
+
+  test "password reset is one-time and revokes existing sessions", %{conn: conn} do
+    membership = insert(:membership)
+    {_login_conn, login_response} = login(conn, membership.user.email)
+    access_token = login_response["access_token"]
+
+    build_conn()
+    |> with_origin()
+    |> post(~p"/api/auth/password-reset", %{email: membership.user.email})
+    |> json_response(202)
+
+    assert_receive {:password_reset_email, _, reset_url}
+    request_token = token_from_url(reset_url)
+
+    confirmation_response =
+      build_conn()
+      |> with_origin()
+      |> post(~p"/api/auth/password-reset/confirm", %{token: request_token})
+      |> json_response(200)
+
+    reset_token = confirmation_response["reset_token"]
+    assert confirmation_response["expires_in"] == 900
+
+    completion_response =
+      build_conn()
+      |> with_origin()
+      |> post(~p"/api/auth/password-reset/complete", %{
+        reset_token: reset_token,
+        password: "new-correct-password",
+        password_confirmation: "new-correct-password"
+      })
+      |> json_response(200)
+
+    assert completion_response["status"] == "password_reset"
+
+    build_conn()
+    |> put_req_header("authorization", "Bearer #{access_token}")
+    |> get(~p"/api/auth/me")
+    |> json_response(401)
+
+    build_conn()
+    |> with_origin()
+    |> post(~p"/api/auth/login", %{email: membership.user.email, password: @password})
+    |> json_response(401)
+
+    build_conn()
+    |> with_origin()
+    |> post(~p"/api/auth/login", %{
+      email: membership.user.email,
+      password: "new-correct-password"
+    })
+    |> json_response(200)
+
+    replay_response =
+      build_conn()
+      |> with_origin()
+      |> post(~p"/api/auth/password-reset/complete", %{
+        reset_token: reset_token,
+        password: "another-password",
+        password_confirmation: "another-password"
+      })
+      |> json_response(400)
+
+    assert replay_response["errors"]["code"] == "invalid_password_reset_token"
   end
 
   test "logout is idempotent and immediately revokes the access token", %{conn: conn} do
@@ -172,4 +285,12 @@ defmodule ApiWeb.AuthControllerTest do
   end
 
   defp with_origin(conn), do: put_req_header(conn, "origin", @origin)
+
+  defp token_from_url(url) do
+    url
+    |> URI.parse()
+    |> Map.fetch!(:query)
+    |> URI.decode_query()
+    |> Map.fetch!("token")
+  end
 end

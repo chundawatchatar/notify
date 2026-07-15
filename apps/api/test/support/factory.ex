@@ -3,7 +3,7 @@ defmodule Api.Factory do
 
   use ExMachina.Ecto, repo: Api.Repo
 
-  alias Api.Accounts.{AuthSession, SignupChallenge, User}
+  alias Api.Accounts.{AuthChallenge, AuthSession, User}
   alias Api.Workspaces.{Membership, Workspace}
 
   def user_factory do
@@ -36,9 +36,11 @@ defmodule Api.Factory do
     }
   end
 
-  def signup_challenge_factory do
+  def auth_challenge_factory do
     {_raw_token, challenge} =
-      SignupChallenge.build(sequence(:signup_challenge_email, &"signup-#{&1}@example.com"))
+      AuthChallenge.build_signup_verification(
+        sequence(:auth_challenge_email, &"signup-#{&1}@example.com")
+      )
 
     challenge
   end
