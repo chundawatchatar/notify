@@ -18,6 +18,14 @@ and shared UI package.
 Use TanStack Router file routes in `apps/web/src/routes`. Do not edit
 `apps/web/src/routeTree.gen.ts` by hand; it is generated.
 
+Use directory-owned route families. A route family's `route.tsx` owns its
+shared layout behavior, guards, loaders, pending UI, error UI, and `<Outlet />`;
+its `index.tsx` is the default page. For example, auth routes live under
+`auth/`, with `auth/route.tsx` as the guest layout and child pages such as
+`auth/login.tsx`. Apply the same convention to pathless layouts such as
+`_authenticated/route.tsx` and its protected child routes. Keep standalone
+routes such as `__root.tsx` and `404.tsx` at the route root.
+
 Current main routes:
 
 - `/auth`
@@ -25,7 +33,6 @@ Current main routes:
 - `/auth/signup`
 - `/auth/verify-email`
 - `/auth/forgot-password`
-- `/auth/reset-password`
 - `/dashboard`
 - `/apps`
 - `/ingress`
@@ -49,8 +56,9 @@ apps/web/src/components/workspace-section-page.tsx
 
 The shared workspace sections use one constrained `$section` child route under
 the pathless authenticated layout. Dashboard routes remain explicit because
-they render different page composition. Unsupported section values redirect to
-the application's `/404` route.
+they render different page composition. Unmatched paths and unsupported section
+values render the root route's not-found component without replacing the
+requested URL. The explicit `/404` route renders the same page.
 
 ## React Conventions
 

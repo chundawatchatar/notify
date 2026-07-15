@@ -12,7 +12,6 @@ Routes:
 - `/auth/signup`
 - `/auth/verify-email`
 - `/auth/forgot-password`
-- `/auth/reset-password`
 
 Responsibilities:
 
