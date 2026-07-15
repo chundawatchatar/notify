@@ -1,4 +1,4 @@
-import { Button } from "@notify/ui";
+import { Alert, Button } from "@notify/ui";
 import { Navigate, Outlet, useLocation, useRouter } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import type { ProductRoute } from "./auth-page";
@@ -122,9 +122,9 @@ function SessionStatus({
 }: Readonly<{ action?: React.ReactNode; message: string }>) {
   return (
     <main className="grid min-h-screen place-items-center bg-background px-5 text-foreground">
-      <div className="grid max-w-md gap-4 rounded-sm border bg-card p-6 text-center shadow-sm">
-        <p className="text-muted-foreground">{message}</p>
-        {action}
+      <div className="grid w-full max-w-md gap-4">
+        <Alert severity="error">{message}</Alert>
+        {action ? <div className="flex justify-center">{action}</div> : null}
       </div>
     </main>
   );

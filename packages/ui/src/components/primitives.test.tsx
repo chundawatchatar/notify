@@ -49,16 +49,29 @@ describe("primitive components", () => {
     expect.hasAssertions();
 
     const container = render(
-      <Alert className="custom-alert" variant="destructive">
-        <AlertTitle>Delivery failed</AlertTitle>
-        <AlertDescription>Retry the webhook endpoint.</AlertDescription>
-      </Alert>,
+      <div>
+        <Alert className="custom-alert" severity="error">
+          <AlertTitle>Delivery failed</AlertTitle>
+          <AlertDescription>Retry the webhook endpoint.</AlertDescription>
+        </Alert>
+        <Alert role="status" severity="success">
+          <AlertTitle>Delivery restored</AlertTitle>
+          <AlertDescription>Events are moving again.</AlertDescription>
+        </Alert>
+      </div>,
     );
-    const alert = container.querySelector('[data-slot="alert"]');
+    const alerts = container.querySelectorAll('[data-slot="alert"]');
+    const alert = alerts[0];
+    const success = alerts[1];
 
     expect(alert?.getAttribute("role")).toBe("alert");
+    expect(alert?.getAttribute("data-severity")).toBe("error");
     expect(alert?.classList.contains("custom-alert")).toBe(true);
     expect(alert?.textContent).toContain("Delivery failed");
+    expect(alert?.querySelector('[data-slot="alert-icon"]')).not.toBeNull();
+    expect(success?.getAttribute("role")).toBe("status");
+    expect(success?.getAttribute("aria-live")).toBe("polite");
+    expect(success?.getAttribute("data-severity")).toBe("success");
     expect(container.querySelector('[data-slot="alert-description"]')?.textContent).toContain(
       "Retry",
     );

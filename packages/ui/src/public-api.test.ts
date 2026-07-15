@@ -18,6 +18,7 @@ describe("public api", () => {
     expect(ui.Sheet).toBeTypeOf("function");
     expect(ui.NavigationMenu).toBeTypeOf("function");
     expect(ui.RadioGroup).toBeTypeOf("function");
+    expect(ui.Alert).toBeTypeOf("function");
     expect(ui.Toaster).toBeTypeOf("function");
     expect(ui.toast).toBeTypeOf("function");
     expect(ui.variantToElementMap.heading2).toBe("h2");

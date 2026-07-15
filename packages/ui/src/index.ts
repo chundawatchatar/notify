@@ -1,5 +1,6 @@
 export { toast } from "sonner";
-export { Alert, AlertDescription, AlertTitle } from "./components/alert";
+export type { AlertProps, AlertSeverity } from "./components/alert";
+export { Alert, AlertDescription, AlertTitle, alertVariants } from "./components/alert";
 export {
   AppShell,
   AppShellBrand,

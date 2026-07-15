@@ -91,7 +91,7 @@ export const FormControls: Story = {
 export const FeedbackAndLoading: Story = {
   render: () => (
     <div className="grid w-[420px] gap-5">
-      <Alert>
+      <Alert severity="success">
         <AlertTitle>Delivery queue is healthy</AlertTitle>
         <AlertDescription>
           All realtime gateways are accepting new socket sessions.

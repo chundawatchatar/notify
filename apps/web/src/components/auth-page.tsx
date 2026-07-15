@@ -1,4 +1,13 @@
-import { Button, Checkbox, Input, Label, NotifyLogoMark, PasswordInput } from "@notify/ui";
+import {
+  Alert,
+  AlertTitle,
+  Button,
+  Checkbox,
+  Input,
+  Label,
+  NotifyLogoMark,
+  PasswordInput,
+} from "@notify/ui";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -91,13 +100,22 @@ function LoginForm({
   return (
     <form className="grid gap-5" onSubmit={formSubmitHandler(form.handleSubmit)}>
       {accountCreated ? (
-        <SuccessMessage message="Your account and workspace are ready. Sign in to continue." />
+        <Alert role="status" severity="success">
+          <AlertTitle>Workspace ready</AlertTitle>
+          Your account and workspace are ready. Sign in to continue.
+        </Alert>
       ) : null}
       {passwordReset ? (
-        <SuccessMessage message="Your password was updated. Sign in with your new password." />
+        <Alert role="status" severity="success">
+          <AlertTitle>Password updated</AlertTitle>
+          Your password was updated. Sign in with your new password.
+        </Alert>
       ) : null}
       {sessionExpired ? (
-        <ErrorMessage message="Your session expired. Sign in again to continue." />
+        <Alert severity="error">
+          <AlertTitle>Session expired</AlertTitle>
+          Your session expired. Sign in again to continue.
+        </Alert>
       ) : null}
 
       <form.Field
@@ -198,7 +216,12 @@ function LoginForm({
         )}
       </form.Subscribe>
 
-      {unsupported ? <ErrorMessage message={auth.error ?? "This browser is unsupported."} /> : null}
+      {unsupported ? (
+        <Alert severity="error">
+          <AlertTitle>Browser unsupported</AlertTitle>
+          {auth.error ?? "This browser is unsupported."}
+        </Alert>
+      ) : null}
       <MutationMessage error={mutation.error} />
     </form>
   );
@@ -225,7 +248,10 @@ function SignupForm() {
   if (sentEmail) {
     return (
       <div className="grid gap-5">
-        <SuccessMessage message="If this email can be registered, a verification link is on its way." />
+        <Alert role="status" severity="success">
+          <AlertTitle>Check your inbox</AlertTitle>
+          If this email can be registered, a verification link is on its way.
+        </Alert>
         <p className="text-muted-foreground text-sm">
           Check <span className="font-medium text-foreground">{sentEmail}</span>. The link expires
           in 24 hours and can be used once.
@@ -251,7 +277,10 @@ function SignupForm() {
           Use a different email
         </Button>
         {resendMutation.isSuccess ? (
-          <SuccessMessage message="Verification email requested." />
+          <Alert role="status" severity="success">
+            <AlertTitle>Email sent</AlertTitle>
+            Verification email requested.
+          </Alert>
         ) : null}
         <MutationMessage error={resendMutation.error} />
       </div>
@@ -320,9 +349,10 @@ function VerifyEmailFlow({
 
   return (
     <div className="grid gap-4">
-      <ErrorMessage
-        message={verification?.error ?? "This verification link is invalid or expired."}
-      />
+      <Alert severity="error">
+        <AlertTitle>Verification failed</AlertTitle>
+        {verification?.error ?? "This verification link is invalid or expired."}
+      </Alert>
       <Button asChild className="w-full" variant="outline">
         <Link to="/auth/signup">Request a new verification link</Link>
       </Button>
@@ -528,7 +558,10 @@ function ForgotPasswordForm() {
   if (sentEmail) {
     return (
       <div className="grid gap-4">
-        <SuccessMessage message="If an account exists for this email, a password reset link is on its way." />
+        <Alert role="status" severity="success">
+          <AlertTitle>Check your inbox</AlertTitle>
+          If an account exists for this email, a password reset link is on its way.
+        </Alert>
         <p className="text-muted-foreground text-sm">
           Check <span className="font-medium text-foreground">{sentEmail}</span>. The link expires
           in one hour and can be used once.
@@ -624,7 +657,10 @@ function PasswordResetFlow({
   if (reset?.status === "error" && !requestNewLink) {
     return (
       <div className="grid gap-4">
-        <ErrorMessage message={reset.error} />
+        <Alert severity="error">
+          <AlertTitle>Reset link unavailable</AlertTitle>
+          {reset.error}
+        </Alert>
         <Button
           className="w-full"
           onClick={() => {
@@ -904,29 +940,12 @@ function FieldError({ message }: Readonly<{ message?: string }>) {
 }
 
 function MutationMessage({ error }: Readonly<{ error: unknown }>) {
-  return error ? <ErrorMessage message={requestErrorMessage(error)} /> : null;
-}
-
-function ErrorMessage({ message }: Readonly<{ message: string }>) {
-  return (
-    <p
-      className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-destructive text-sm"
-      role="alert"
-    >
-      {message}
-    </p>
-  );
-}
-
-function SuccessMessage({ message }: Readonly<{ message: string }>) {
-  return (
-    <p
-      className="rounded-md border border-emerald-600/30 bg-emerald-600/10 px-3 py-2 text-emerald-700 text-sm"
-      role="status"
-    >
-      {message}
-    </p>
-  );
+  return error ? (
+    <Alert severity="error">
+      <AlertTitle>Request failed</AlertTitle>
+      {requestErrorMessage(error)}
+    </Alert>
+  ) : null;
 }
 
 function apiFieldError(error: unknown, field: string) {
