@@ -36,9 +36,18 @@ Current backend endpoints:
 - `GET /api/auth/me`
 - `DELETE /api/auth/session`
 
-Google OAuth, multi-workspace selection, and auth rate limiting are deferred.
+Google OAuth and auth rate limiting are deferred.
 Rate limiting and a production email provider are required before public
 production exposure.
+
+## Workspace Collaboration
+
+Workspace membership is the collaboration and access boundary for every
+notification app. Initial roles are owner, admin, developer, and viewer.
+Workspace switching will use membership-scoped sessions and canonical
+`/w/:workspaceSlug` routes. Invitations will support expiring, revocable,
+single-use email tokens. Departments or teams, custom roles, and app-specific
+grants are deferred. The authoritative model is in `docs/architecture.md`.
 
 ## Dashboard
 

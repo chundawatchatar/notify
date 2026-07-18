@@ -42,6 +42,14 @@ Current main routes:
 - `/settings`
 - `/404`
 
+Workspace-scoped product routes will use `/w/:workspaceSlug` as their canonical
+prefix, with a globally unique readable workspace slug and no UUID in the URL.
+The authenticated route layer must resolve the active membership from the API;
+client state and a JWT role claim are not authorization sources. A workspace
+switch receives a new membership-scoped access token and refresh token before
+the route context changes. See `docs/architecture.md` for the collaboration
+model and `docs/authentication.md` for credential rotation.
+
 Shared dashboard layout lives in:
 
 ```text
