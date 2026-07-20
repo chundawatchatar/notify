@@ -286,6 +286,17 @@ defmodule NotifyOpenApi.AuthSchemas do
     })
   end
 
+  defmodule WorkspaceRole do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "AuthWorkspaceRole",
+      type: :string,
+      enum: ["owner", "admin", "developer", "viewer"],
+      example: "owner"
+    })
+  end
+
   defmodule MeResponse do
     require OpenApiSpex
 
@@ -295,7 +306,7 @@ defmodule NotifyOpenApi.AuthSchemas do
       properties: %{
         user: UserSummary,
         workspace: WorkspaceSummary,
-        role: %Schema{type: :string, enum: ["owner"], example: "owner"}
+        role: WorkspaceRole
       },
       required: [:user, :workspace, :role]
     })
@@ -313,7 +324,7 @@ defmodule NotifyOpenApi.AuthSchemas do
         expires_in: %Schema{type: :integer, minimum: 1, example: 900},
         user: UserSummary,
         workspace: WorkspaceSummary,
-        role: %Schema{type: :string, enum: ["owner"], example: "owner"}
+        role: WorkspaceRole
       },
       required: [:access_token, :token_type, :expires_in, :user, :workspace, :role]
     })

@@ -18,11 +18,7 @@
             "x-validate": null
           },
           "role": {
-            "enum": ["owner"],
-            "example": "owner",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "$ref": "#/components/schemas/AuthWorkspaceRole"
           },
           "token_type": {
             "enum": ["Bearer"],
@@ -109,6 +105,14 @@
         "title": "AuthWorkspace",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceSummary",
+        "x-validate": null
+      },
+      "AuthWorkspaceRole": {
+        "enum": ["owner", "admin", "developer", "viewer"],
+        "example": "owner",
+        "title": "AuthWorkspaceRole",
+        "type": "string",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceRole",
         "x-validate": null
       },
       "CompletePasswordResetRequest": {
@@ -221,11 +225,7 @@
       "CurrentUserResponse": {
         "properties": {
           "role": {
-            "enum": ["owner"],
-            "example": "owner",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
+            "$ref": "#/components/schemas/AuthWorkspaceRole"
           },
           "user": {
             "$ref": "#/components/schemas/AuthUser"

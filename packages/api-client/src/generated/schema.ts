@@ -261,11 +261,7 @@ export interface components {
       access_token: string;
       /** @example 900 */
       expires_in: number;
-      /**
-       * @example owner
-       * @enum {string}
-       */
-      role: "owner";
+      role: components["schemas"]["AuthWorkspaceRole"];
       /**
        * @example Bearer
        * @enum {string}
@@ -301,6 +297,12 @@ export interface components {
       /** @example acme-cloud */
       slug: string;
     };
+    /**
+     * AuthWorkspaceRole
+     * @example owner
+     * @enum {string}
+     */
+    AuthWorkspaceRole: "owner" | "admin" | "developer" | "viewer";
     /** CompletePasswordResetRequest */
     CompletePasswordResetRequest: {
       /** Format: password */
@@ -336,11 +338,7 @@ export interface components {
     };
     /** CurrentUserResponse */
     CurrentUserResponse: {
-      /**
-       * @example owner
-       * @enum {string}
-       */
-      role: "owner";
+      role: components["schemas"]["AuthWorkspaceRole"];
       user: components["schemas"]["AuthUser"];
       workspace: components["schemas"]["AuthWorkspace"];
     };

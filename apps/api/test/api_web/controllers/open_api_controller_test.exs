@@ -56,6 +56,13 @@ defmodule ApiWeb.OpenApiControllerTest do
              %{"bearerAuth" => []}
            ]
 
+    assert response["components"]["schemas"]["AuthWorkspaceRole"]["enum"] == [
+             "owner",
+             "admin",
+             "developer",
+             "viewer"
+           ]
+
     assert response["paths"]["/api/auth/email-verification/confirm"]["post"]["responses"][
              "200"
            ]["content"]["application/json"]["schema"]["$ref"] ==

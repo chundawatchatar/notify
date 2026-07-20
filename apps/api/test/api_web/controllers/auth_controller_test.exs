@@ -68,7 +68,8 @@ defmodule ApiWeb.AuthControllerTest do
   test "login issues a refresh cookie and bearer token scoped to the current workspace", %{
     conn: conn
   } do
-    membership = insert(:membership)
+    owner_membership = insert(:membership)
+    membership = insert(:membership, workspace: owner_membership.workspace, role: "admin")
     {login_conn, response} = login(conn, membership.user.email)
 
     assert response["token_type"] == "Bearer"
@@ -76,7 +77,7 @@ defmodule ApiWeb.AuthControllerTest do
     assert response["user"]["id"] == membership.user.id
     assert response["workspace"]["id"] == membership.workspace.id
     assert response["workspace"]["slug"] == membership.workspace.slug
-    assert response["role"] == "owner"
+    assert response["role"] == "admin"
     assert login_conn.resp_cookies["_notify_refresh"].http_only
     assert Repo.get!(User, membership.user.id).last_login_at
 
