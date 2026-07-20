@@ -393,7 +393,7 @@ defmodule Api.Accounts do
     Repo.one(
       from membership in Membership,
         where: membership.user_id == ^user.id,
-        order_by: [asc: membership.inserted_at],
+        order_by: [asc: membership.inserted_at, asc: membership.id],
         limit: 1,
         preload: [:user, :workspace]
     )

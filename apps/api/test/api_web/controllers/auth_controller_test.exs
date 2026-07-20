@@ -89,6 +89,7 @@ defmodule ApiWeb.AuthControllerTest do
 
     assert me_response["workspace"]["id"] == membership.workspace.id
     assert me_response["workspace"]["slug"] == membership.workspace.slug
+    assert me_response["role"] == "admin"
   end
 
   test "remember extends the refresh session from one day to thirty days", %{conn: conn} do
