@@ -33,6 +33,9 @@ defmodule Api.Workspaces.Workspace do
     |> check_constraint(:slug, name: :workspaces_slug_format)
   end
 
+  @doc """
+  Allocates the first available slug for a workspace name within the current transaction.
+  """
   def next_available_slug(repo, name) do
     base_slug = WorkspaceSlug.normalize(name)
 
