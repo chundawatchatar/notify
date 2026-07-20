@@ -97,8 +97,10 @@ code.
 - `users`: normalized unique login identity, Argon2 password hash, email
   confirmation, terms acceptance, and latest successful login time.
 - `workspaces`: tenant boundary created during signup.
-- `workspace_memberships`: user-to-workspace role and session boundary. Initial
-  roles are `owner`, `admin`, `developer`, and `viewer`.
+- `workspace_memberships`: user-to-workspace role and session boundary. Rows
+  are retained across removal, with `active` or `removed` status plus join and
+  removal timestamps. Initial roles are `owner`, `admin`, `developer`, and
+  `viewer`.
 - `auth_sessions`: membership-scoped refresh digest, expiry, and revocation.
 
 An active membership is one that has not been removed or deactivated. It is the
@@ -106,9 +108,11 @@ only membership that can authorize a request, own a session, or count as a
 workspace owner. Removal or deactivation revokes every session for that
 membership in the same transaction.
 
-Future workspace invitations must store the normalized invitee email, selected
-workspace role, hashed single-use token, expiry, optional revocation time, and
-acceptance time. An acceptance must not reuse a consumed or revoked token.
+`workspace_invitations` stores the normalized invitee email, selected workspace
+role, inviter membership, SHA-256 digest of a single-use token, seven-day
+expiry, optional revocation time, and acceptance time. Raw invitation tokens
+are never persisted. An acceptance must not reuse a consumed or revoked token,
+and re-inviting a removed user reactivates the existing membership row.
 The membership migration must use a deferred database constraint trigger, or an
 equivalent commit-time database invariant, to reject any transaction that leaves
 a workspace without an active owner. It applies to membership removal, owner

@@ -18,7 +18,9 @@ defmodule Api.Workspaces.OwnerProtection do
     owner_ids =
       repo.all(
         from membership in Membership,
-          where: membership.workspace_id == ^workspace_id and membership.role == "owner",
+          where:
+            membership.workspace_id == ^workspace_id and membership.role == "owner" and
+              membership.status == "active",
           lock: "FOR UPDATE",
           select: membership.id
       )
