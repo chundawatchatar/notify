@@ -35,13 +35,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import type { PasswordResetState } from "@/lib/password-reset";
 import type { SignupVerificationState } from "@/lib/signup-verification";
-import {
-  isWorkspaceSectionPath,
-  type WorkspaceSectionPath,
-  workspaceSectionFromPath,
-} from "@/lib/workspace-sections";
-
-type ProductRoute = "/" | "/dashboard" | WorkspaceSectionPath;
+import { resolveProductRedirect } from "@/lib/workspace-paths";
 
 const emailSchema = z.email("Enter a valid work email.").max(160, "Email is too long.");
 const loginPasswordSchema = z.string().min(1, "Enter your password.");
@@ -58,29 +52,40 @@ const acceptTermsSchema = z.literal(true, "Accept the terms to create a workspac
 function LoginForm({
   accountCreated = false,
   passwordReset = false,
-  redirectTo = "/dashboard",
+  redirectTo,
   sessionExpired = false,
 }: Readonly<{
   accountCreated?: boolean;
   passwordReset?: boolean;
-  redirectTo?: ProductRoute;
+  redirectTo?: string;
   sessionExpired?: boolean;
 }>) {
   const navigate = useNavigate();
   const auth = useAuth();
   const mutation = useMutation({
     mutationFn: auth.signIn,
-    onSuccess: async () => {
-      if (isWorkspaceSectionPath(redirectTo)) {
+    onSuccess: async (state) => {
+      const workspaceSlug = state.principal?.workspace.slug;
+      const redirect = resolveProductRedirect(redirectTo, workspaceSlug ?? "");
+
+      if (!workspaceSlug) {
+        return;
+      }
+
+      if (redirect.kind === "section") {
         await navigate({
-          params: { section: workspaceSectionFromPath(redirectTo) },
+          params: { section: redirect.section, workspaceSlug },
           replace: true,
-          to: "/$section",
+          to: "/w/$workspaceSlug/$section",
         });
         return;
       }
 
-      await navigate({ to: redirectTo, replace: true });
+      await navigate({
+        params: { workspaceSlug },
+        replace: true,
+        to: "/w/$workspaceSlug/dashboard",
+      });
     },
   });
   const form = useForm({

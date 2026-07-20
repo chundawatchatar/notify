@@ -1,23 +1,8 @@
 import { Alert, Button } from "@notify/ui";
 import { Navigate, Outlet, useLocation, useRouter } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import type { ProductRoute } from "./auth-page";
+import { productRedirectPath } from "@/lib/workspace-paths";
 import { PageLoader } from "./page-loader";
-
-const productRoutes = new Set<ProductRoute>([
-  "/",
-  "/analytics",
-  "/apps",
-  "/dashboard",
-  "/ingress",
-  "/security",
-  "/settings",
-  "/subscription",
-]);
-
-function productRedirectPath(pathname: string): ProductRoute {
-  return productRoutes.has(pathname as ProductRoute) ? (pathname as ProductRoute) : "/dashboard";
-}
 
 function GuestRoute() {
   const auth = useAuth();
@@ -26,8 +11,18 @@ function GuestRoute() {
     return <PageLoader label="Checking for an existing Notify session." />;
   }
 
+  if (auth.status === "authenticated" && auth.principal) {
+    return (
+      <Navigate
+        replace
+        params={{ workspaceSlug: auth.principal.workspace.slug }}
+        to="/w/$workspaceSlug/dashboard"
+      />
+    );
+  }
+
   if (auth.status === "authenticated") {
-    return <Navigate replace to="/dashboard" />;
+    return <SessionStatus message="Unable to resolve the active Notify workspace." />;
   }
 
   return <Outlet />;

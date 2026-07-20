@@ -2,17 +2,32 @@ import { Button, NotifyLogoMark } from "@notify/ui";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Home, LockKeyhole, RouteOff } from "lucide-react";
 import type { ReactNode } from "react";
+import { useAuth } from "@/lib/auth";
 
 function NotFoundPage() {
+  const auth = useAuth();
+  const workspaceSlug = auth.principal?.workspace.slug;
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="grid min-h-screen place-items-center px-5 py-10">
         <section className="grid w-full max-w-5xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
-            <Link className="mb-12 flex w-fit items-center gap-2 font-semibold" to="/dashboard">
-              <NotifyLogoMark className="size-9" />
-              Notify
-            </Link>
+            {auth.status === "authenticated" && workspaceSlug ? (
+              <Link
+                className="mb-12 flex w-fit items-center gap-2 font-semibold"
+                params={{ workspaceSlug }}
+                to="/w/$workspaceSlug/dashboard"
+              >
+                <NotifyLogoMark className="size-9" />
+                Notify
+              </Link>
+            ) : (
+              <Link className="mb-12 flex w-fit items-center gap-2 font-semibold" to="/auth/login">
+                <NotifyLogoMark className="size-9" />
+                Notify
+              </Link>
+            )}
 
             <p className="font-mono text-muted-foreground text-xs uppercase">Page unavailable</p>
             <h1 className="mt-4 max-w-xl font-semibold text-4xl tracking-normal md:text-5xl">
@@ -25,10 +40,17 @@ function NotFoundPage() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild className="h-11">
-                <Link to="/dashboard">
-                  <Home />
-                  Go to dashboard
-                </Link>
+                {auth.status === "authenticated" && workspaceSlug ? (
+                  <Link params={{ workspaceSlug }} to="/w/$workspaceSlug/dashboard">
+                    <Home />
+                    Go to dashboard
+                  </Link>
+                ) : (
+                  <Link to="/auth/login">
+                    <Home />
+                    Go to dashboard
+                  </Link>
+                )}
               </Button>
               <Button asChild className="h-11" variant="outline">
                 <Link to="/auth/login">

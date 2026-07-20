@@ -48,11 +48,10 @@ prefix, with a globally unique readable workspace slug and no UUID in the URL:
 | Security          | `/w/:workspaceSlug/security`     | `/security`                   |
 | Settings          | `/w/:workspaceSlug/settings`     | `/settings`                   |
 
-Legacy aliases are transitional only. Once workspace routing is implemented,
-they resolve the current membership and redirect to the matching canonical URL;
-they do not become a second route contract. If no current membership can be
-resolved, the user is sent to workspace selection instead. This routing change
-is documented here only and does not change current application behavior.
+Legacy aliases are transitional only. They resolve the current membership and
+redirect to the matching canonical URL; they do not become a second route
+contract. If no current membership can be resolved, the user is sent to
+workspace selection instead.
 
 The authenticated route layer must resolve the active membership from the API;
 client state and a JWT role claim are not authorization sources. A workspace

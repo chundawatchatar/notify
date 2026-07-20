@@ -1,6 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { DashboardPage } from "@/components/dashboard-page";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  component: DashboardPage,
+  beforeLoad: ({ context }) => {
+    const workspaceSlug = context.auth.getSnapshot().principal?.workspace.slug;
+
+    if (!workspaceSlug) {
+      throw new Error("Unable to resolve the active Notify workspace.");
+    }
+
+    throw redirect({ replace: true, to: "/w/$workspaceSlug/dashboard", params: { workspaceSlug } });
+  },
 });

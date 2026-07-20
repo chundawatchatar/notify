@@ -123,6 +123,11 @@ const activityItems = [
 
 function DashboardPage() {
   const auth = useAuth();
+  const workspaceSlug = auth.principal?.workspace.slug;
+
+  if (!workspaceSlug) {
+    throw new Error("Dashboard requires an active workspace.");
+  }
 
   return (
     <WorkspaceShell activeItem="dashboard">
@@ -130,13 +135,13 @@ function DashboardPage() {
         actions={
           <>
             <Button asChild variant="outline">
-              <Link params={{ section: "security" }} to="/$section">
+              <Link params={{ section: "security", workspaceSlug }} to="/w/$workspaceSlug/$section">
                 <KeyRound />
                 API keys
               </Link>
             </Button>
             <Button asChild>
-              <Link params={{ section: "apps" }} to="/$section">
+              <Link params={{ section: "apps", workspaceSlug }} to="/w/$workspaceSlug/$section">
                 <Plus />
                 New app
               </Link>
@@ -179,7 +184,7 @@ function DashboardPage() {
                 </CardDescription>
               </div>
               <Button asChild size="sm" variant="outline">
-                <Link params={{ section: "apps" }} to="/$section">
+                <Link params={{ section: "apps", workspaceSlug }} to="/w/$workspaceSlug/$section">
                   View all
                 </Link>
               </Button>
@@ -235,7 +240,7 @@ function DashboardPage() {
               <StatusLine label="Rate limit" value="72% available" />
             </div>
             <Button asChild className="w-full" variant="outline">
-              <Link params={{ section: "ingress" }} to="/$section">
+              <Link params={{ section: "ingress", workspaceSlug }} to="/w/$workspaceSlug/$section">
                 <ArrowUpRight />
                 Open API settings
               </Link>
@@ -260,7 +265,10 @@ function DashboardPage() {
                 <p className="text-muted-foreground text-sm">Renews Aug 1, 2026</p>
               </div>
               <Button asChild size="sm" variant="secondary">
-                <Link params={{ section: "subscription" }} to="/$section">
+                <Link
+                  params={{ section: "subscription", workspaceSlug }}
+                  to="/w/$workspaceSlug/$section"
+                >
                   Billing
                 </Link>
               </Button>

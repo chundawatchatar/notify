@@ -20,6 +20,10 @@ import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedSectionRouteImport } from './routes/_authenticated/$section'
+import { Route as AuthenticatedWWorkspaceSlugRouteRouteImport } from './routes/_authenticated/w/$workspaceSlug/route'
+import { Route as AuthenticatedWWorkspaceSlugIndexRouteImport } from './routes/_authenticated/w/$workspaceSlug/index'
+import { Route as AuthenticatedWWorkspaceSlugDashboardRouteImport } from './routes/_authenticated/w/$workspaceSlug/dashboard'
+import { Route as AuthenticatedWWorkspaceSlugSectionRouteImport } from './routes/_authenticated/w/$workspaceSlug/$section'
 
 const R404Route = R404RouteImport.update({
   id: '/404',
@@ -77,6 +81,30 @@ const AuthenticatedSectionRoute = AuthenticatedSectionRouteImport.update({
   path: '/$section',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedWWorkspaceSlugRouteRoute =
+  AuthenticatedWWorkspaceSlugRouteRouteImport.update({
+    id: '/w/$workspaceSlug',
+    path: '/w/$workspaceSlug',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWWorkspaceSlugIndexRoute =
+  AuthenticatedWWorkspaceSlugIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedWWorkspaceSlugRouteRoute,
+  } as any)
+const AuthenticatedWWorkspaceSlugDashboardRoute =
+  AuthenticatedWWorkspaceSlugDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedWWorkspaceSlugRouteRoute,
+  } as any)
+const AuthenticatedWWorkspaceSlugSectionRoute =
+  AuthenticatedWWorkspaceSlugSectionRouteImport.update({
+    id: '/$section',
+    path: '/$section',
+    getParentRoute: () => AuthenticatedWWorkspaceSlugRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -89,6 +117,10 @@ export interface FileRoutesByFullPath {
   '/auth/signup': typeof AuthSignupRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/auth/': typeof AuthIndexRoute
+  '/w/$workspaceSlug': typeof AuthenticatedWWorkspaceSlugRouteRouteWithChildren
+  '/w/$workspaceSlug/$section': typeof AuthenticatedWWorkspaceSlugSectionRoute
+  '/w/$workspaceSlug/dashboard': typeof AuthenticatedWWorkspaceSlugDashboardRoute
+  '/w/$workspaceSlug/': typeof AuthenticatedWWorkspaceSlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/404': typeof R404Route
@@ -100,6 +132,9 @@ export interface FileRoutesByTo {
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthIndexRoute
+  '/w/$workspaceSlug/$section': typeof AuthenticatedWWorkspaceSlugSectionRoute
+  '/w/$workspaceSlug/dashboard': typeof AuthenticatedWWorkspaceSlugDashboardRoute
+  '/w/$workspaceSlug': typeof AuthenticatedWWorkspaceSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,6 +149,10 @@ export interface FileRoutesById {
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/auth/': typeof AuthIndexRoute
+  '/_authenticated/w/$workspaceSlug': typeof AuthenticatedWWorkspaceSlugRouteRouteWithChildren
+  '/_authenticated/w/$workspaceSlug/$section': typeof AuthenticatedWWorkspaceSlugSectionRoute
+  '/_authenticated/w/$workspaceSlug/dashboard': typeof AuthenticatedWWorkspaceSlugDashboardRoute
+  '/_authenticated/w/$workspaceSlug/': typeof AuthenticatedWWorkspaceSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,6 +167,10 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth/verify-email'
     | '/auth/'
+    | '/w/$workspaceSlug'
+    | '/w/$workspaceSlug/$section'
+    | '/w/$workspaceSlug/dashboard'
+    | '/w/$workspaceSlug/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/404'
@@ -139,6 +182,9 @@ export interface FileRouteTypes {
     | '/auth/verify-email'
     | '/'
     | '/auth'
+    | '/w/$workspaceSlug/$section'
+    | '/w/$workspaceSlug/dashboard'
+    | '/w/$workspaceSlug'
   id:
     | '__root__'
     | '/_authenticated'
@@ -152,6 +198,10 @@ export interface FileRouteTypes {
     | '/auth/verify-email'
     | '/_authenticated/'
     | '/auth/'
+    | '/_authenticated/w/$workspaceSlug'
+    | '/_authenticated/w/$workspaceSlug/$section'
+    | '/_authenticated/w/$workspaceSlug/dashboard'
+    | '/_authenticated/w/$workspaceSlug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -239,19 +289,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSectionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/w/$workspaceSlug': {
+      id: '/_authenticated/w/$workspaceSlug'
+      path: '/w/$workspaceSlug'
+      fullPath: '/w/$workspaceSlug'
+      preLoaderRoute: typeof AuthenticatedWWorkspaceSlugRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/w/$workspaceSlug/': {
+      id: '/_authenticated/w/$workspaceSlug/'
+      path: '/'
+      fullPath: '/w/$workspaceSlug/'
+      preLoaderRoute: typeof AuthenticatedWWorkspaceSlugIndexRouteImport
+      parentRoute: typeof AuthenticatedWWorkspaceSlugRouteRoute
+    }
+    '/_authenticated/w/$workspaceSlug/dashboard': {
+      id: '/_authenticated/w/$workspaceSlug/dashboard'
+      path: '/dashboard'
+      fullPath: '/w/$workspaceSlug/dashboard'
+      preLoaderRoute: typeof AuthenticatedWWorkspaceSlugDashboardRouteImport
+      parentRoute: typeof AuthenticatedWWorkspaceSlugRouteRoute
+    }
+    '/_authenticated/w/$workspaceSlug/$section': {
+      id: '/_authenticated/w/$workspaceSlug/$section'
+      path: '/$section'
+      fullPath: '/w/$workspaceSlug/$section'
+      preLoaderRoute: typeof AuthenticatedWWorkspaceSlugSectionRouteImport
+      parentRoute: typeof AuthenticatedWWorkspaceSlugRouteRoute
+    }
   }
 }
+
+interface AuthenticatedWWorkspaceSlugRouteRouteChildren {
+  AuthenticatedWWorkspaceSlugSectionRoute: typeof AuthenticatedWWorkspaceSlugSectionRoute
+  AuthenticatedWWorkspaceSlugDashboardRoute: typeof AuthenticatedWWorkspaceSlugDashboardRoute
+  AuthenticatedWWorkspaceSlugIndexRoute: typeof AuthenticatedWWorkspaceSlugIndexRoute
+}
+
+const AuthenticatedWWorkspaceSlugRouteRouteChildren: AuthenticatedWWorkspaceSlugRouteRouteChildren =
+  {
+    AuthenticatedWWorkspaceSlugSectionRoute:
+      AuthenticatedWWorkspaceSlugSectionRoute,
+    AuthenticatedWWorkspaceSlugDashboardRoute:
+      AuthenticatedWWorkspaceSlugDashboardRoute,
+    AuthenticatedWWorkspaceSlugIndexRoute:
+      AuthenticatedWWorkspaceSlugIndexRoute,
+  }
+
+const AuthenticatedWWorkspaceSlugRouteRouteWithChildren =
+  AuthenticatedWWorkspaceSlugRouteRoute._addFileChildren(
+    AuthenticatedWWorkspaceSlugRouteRouteChildren,
+  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSectionRoute: typeof AuthenticatedSectionRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedWWorkspaceSlugRouteRoute: typeof AuthenticatedWWorkspaceSlugRouteRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSectionRoute: AuthenticatedSectionRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedWWorkspaceSlugRouteRoute:
+    AuthenticatedWWorkspaceSlugRouteRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
