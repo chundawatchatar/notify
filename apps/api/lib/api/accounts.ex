@@ -146,9 +146,13 @@ defmodule Api.Accounts do
       |> Multi.insert(:user, fn %{challenge: challenge} ->
         User.signup_completion_changeset(%User{}, attrs, challenge.email, challenge.verified_at)
       end)
-      |> Multi.insert(:workspace, fn _changes ->
+      |> Multi.run(:workspace_slug, fn repo, _changes ->
+        Workspace.next_available_slug(repo, attrs["workspace_name"])
+      end)
+      |> Multi.insert(:workspace, fn %{workspace_slug: slug} ->
         Workspace.changeset(%Workspace{}, %{
-          name: attrs["workspace_name"]
+          name: attrs["workspace_name"],
+          slug: slug
         })
       end)
       |> Multi.insert(:membership, fn %{user: user, workspace: workspace} ->

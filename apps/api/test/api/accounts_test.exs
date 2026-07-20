@@ -50,6 +50,7 @@ defmodule Api.AccountsTest do
     assert user.terms_version == "v1"
     assert user.hashed_password != @completion_attrs["password"]
     assert workspace.name == "Acme Cloud"
+    assert workspace.slug == "acme-cloud"
     assert membership.role == "owner"
     assert membership.user_id == user.id
     assert membership.workspace_id == workspace.id
@@ -83,6 +84,24 @@ defmodule Api.AccountsTest do
     assert Repo.aggregate(User, :count) == 0
     assert Repo.aggregate(Workspace, :count) == 0
     assert signup_challenge(AuthChallenge.signup_completion_purpose()).consumed_at == nil
+  end
+
+  test "signup selects the next available suffix for a max-length workspace slug" do
+    workspace_name = String.duplicate("a", 50)
+    truncated_slug = String.duplicate("a", 48)
+
+    insert(:workspace, name: workspace_name, slug: workspace_name)
+    insert(:workspace, name: "Existing workspace", slug: truncated_slug <> "-2")
+
+    assert {:ok, result} =
+             Accounts.complete_signup(%{
+               "accept_terms" => true,
+               "password" => "correct-password",
+               "signup_token" => verified_signup_token(),
+               "workspace_name" => workspace_name
+             })
+
+    assert Repo.get!(Workspace, result.workspace.id).slug == truncated_slug <> "-3"
   end
 
   test "resending verification invalidates the previous token" do

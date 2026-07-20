@@ -298,6 +298,8 @@ export interface components {
       id: string;
       /** @example Acme Cloud */
       name: string;
+      /** @example acme-cloud */
+      slug: string;
     };
     /** CompletePasswordResetRequest */
     CompletePasswordResetRequest: {
