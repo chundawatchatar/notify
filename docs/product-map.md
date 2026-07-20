@@ -36,15 +36,28 @@ Current backend endpoints:
 - `GET /api/auth/me`
 - `DELETE /api/auth/session`
 
-Google OAuth, multi-workspace selection, and auth rate limiting are deferred.
+Google OAuth and auth rate limiting are deferred.
 Rate limiting and a production email provider are required before public
 production exposure.
 
+## Workspace Collaboration
+
+Workspace membership is the collaboration and access boundary for every
+notification app. Initial roles are owner, admin, developer, and viewer.
+Workspace switching uses membership-scoped sessions. Every product route below
+uses the canonical `/w/:workspaceSlug` prefix; the listed unscoped path is a
+temporary legacy alias that redirects to the canonical URL after the workspace
+routing migration. Invitations will support expiring, revocable, single-use
+email tokens. Departments or teams, custom roles, and app-specific grants are
+deferred. The authoritative model is in `docs/architecture.md`.
+
 ## Dashboard
 
-Route:
+Canonical route:
 
-- `/dashboard`
+- `/w/:workspaceSlug/dashboard`
+
+Legacy alias: `/dashboard`
 
 Responsibilities:
 
@@ -56,9 +69,11 @@ Responsibilities:
 
 ## Notification Apps
 
-Route:
+Canonical route:
 
-- `/apps`
+- `/w/:workspaceSlug/apps`
+
+Legacy alias: `/apps`
 
 Responsibilities:
 
@@ -77,9 +92,11 @@ Expected future backend ownership:
 
 ## Ingress Endpoint
 
-Route:
+Canonical route:
 
-- `/ingress`
+- `/w/:workspaceSlug/ingress`
+
+Legacy alias: `/ingress`
 
 Responsibilities:
 
@@ -98,9 +115,11 @@ Expected future backend ownership:
 
 ## Analytics
 
-Route:
+Canonical route:
 
-- `/analytics`
+- `/w/:workspaceSlug/analytics`
+
+Legacy alias: `/analytics`
 
 Responsibilities:
 
@@ -117,9 +136,11 @@ Expected future backend ownership:
 
 ## Subscription
 
-Route:
+Canonical route:
 
-- `/subscription`
+- `/w/:workspaceSlug/subscription`
+
+Legacy alias: `/subscription`
 
 Responsibilities:
 
@@ -136,9 +157,11 @@ Expected future backend ownership:
 
 ## Security And API Keys
 
-Route:
+Canonical route:
 
-- `/security`
+- `/w/:workspaceSlug/security`
+
+Legacy alias: `/security`
 
 Responsibilities:
 
@@ -157,9 +180,11 @@ Expected future backend ownership:
 
 ## Settings
 
-Route:
+Canonical route:
 
-- `/settings`
+- `/w/:workspaceSlug/settings`
+
+Legacy alias: `/settings`
 
 Responsibilities:
 

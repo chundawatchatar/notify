@@ -99,8 +99,35 @@ Password recovery stores hashed, expiring, one-time credentials and returns the
 same request response whether or not an account exists. Completing a reset
 updates the Argon2 password hash and revokes all existing sessions for the user.
 
-Google OAuth, multi-workspace selection, and authentication rate limiting
-remain deferred.
+Google OAuth and authentication rate limiting remain deferred.
+
+## Workspace Collaboration And Access
+
+The tenant hierarchy is `user -> membership -> workspace -> notification app`.
+A user is an account identity that may have multiple workspace memberships. A
+workspace is the tenant, billing, collaboration, and audit boundary; notification
+apps always belong to a workspace. A membership joins a user to one workspace,
+stores the user's role, and is the security boundary for a session.
+
+Initial workspace roles are `owner`, `admin`, `developer`, and `viewer`.
+Authorization loads the current membership from the database. A JWT identifies
+the user, session, and workspace, but it does not carry a role claim. This keeps
+role changes and membership removal effective immediately when protected
+requests check the session and active membership.
+
+Each workspace has a globally unique, readable slug. Dashboard URLs use
+`/w/:workspaceSlug` and never expose a workspace UUID. Switching workspaces
+creates a new membership-scoped access token and rotating refresh token.
+
+Invitations target a normalized email and use hashed, single-use credentials
+with expiry, revocation, and acceptance timestamps. A workspace must always
+retain at least one active owner. Removing a membership revokes its sessions
+immediately. See `docs/authentication.md` for session behavior,
+`docs/database.md` for persistence constraints, and `docs/frontend.md` for URL
+and client conventions.
+
+Departments or teams, custom roles, and notification-app-specific grants are
+explicitly deferred.
 
 ## Adding New Features
 

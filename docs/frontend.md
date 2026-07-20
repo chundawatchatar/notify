@@ -26,21 +26,39 @@ its `index.tsx` is the default page. For example, auth routes live under
 `_authenticated/route.tsx` and its protected child routes. Keep standalone
 routes such as `__root.tsx` and `404.tsx` at the route root.
 
-Current main routes:
+Authentication routes remain unscoped:
 
 - `/auth`
 - `/auth/login`
 - `/auth/signup`
 - `/auth/verify-email`
 - `/auth/forgot-password`
-- `/dashboard`
-- `/apps`
-- `/ingress`
-- `/analytics`
-- `/subscription`
-- `/security`
-- `/settings`
 - `/404`
+
+Workspace-scoped product routes use `/w/:workspaceSlug` as their canonical
+prefix, with a globally unique readable workspace slug and no UUID in the URL:
+
+| Product area      | Canonical route                  | Legacy alias during migration |
+| ----------------- | -------------------------------- | ----------------------------- |
+| Dashboard         | `/w/:workspaceSlug/dashboard`    | `/dashboard`                  |
+| Notification apps | `/w/:workspaceSlug/apps`         | `/apps`                       |
+| Ingress           | `/w/:workspaceSlug/ingress`      | `/ingress`                    |
+| Analytics         | `/w/:workspaceSlug/analytics`    | `/analytics`                  |
+| Subscription      | `/w/:workspaceSlug/subscription` | `/subscription`               |
+| Security          | `/w/:workspaceSlug/security`     | `/security`                   |
+| Settings          | `/w/:workspaceSlug/settings`     | `/settings`                   |
+
+Legacy aliases are transitional only. Once workspace routing is implemented,
+they resolve the current membership and redirect to the matching canonical URL;
+they do not become a second route contract. If no current membership can be
+resolved, the user is sent to workspace selection instead. This routing change
+is documented here only and does not change current application behavior.
+
+The authenticated route layer must resolve the active membership from the API;
+client state and a JWT role claim are not authorization sources. A workspace
+switch receives a new membership-scoped access token and refresh token before
+the route context changes. See `docs/architecture.md` for the collaboration
+model and `docs/authentication.md` for credential rotation.
 
 Shared dashboard layout lives in:
 

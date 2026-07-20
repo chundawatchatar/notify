@@ -140,6 +140,10 @@ For product features, prefer this order:
 
 - Never revert user changes unless explicitly asked.
 - Check `git status --short` before staging or committing.
+- Use Angular Conventional Commit subjects: `<type>(<scope>): <imperative summary>`.
+  Keep every commit message to one line, without a trailing period.
+- Before opening a pull request, inspect the final diff and verify the target
+  branch. Use `develop` unless the task specifies another target.
 - Commit generated route updates when route files change.
 - Keep unrelated changes out of commits.
 

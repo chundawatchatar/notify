@@ -7,7 +7,8 @@ dashboard JavaScript never persists either credential in `localStorage` or
 
 ## Credential Model
 
-- The access token is a signed JWT with a 15-minute lifetime. Dashboard
+- The access token is a signed JWT with a 15-minute lifetime. It contains only
+  `sub` (user ID), `sid` (session ID), and `wid` (workspace ID). Dashboard
   JavaScript keeps it only in memory and sends it as an `Authorization: Bearer`
   header.
 - The refresh token is an opaque session UUID plus a cryptographically random
@@ -17,6 +18,11 @@ dashboard JavaScript never persists either credential in `localStorage` or
   `Secure` in production.
 - A session belongs to a workspace membership and records its expiry and
   optional revocation time in `auth_sessions`.
+
+Roles are not authorization claims in the JWT. On protected requests, the API
+loads the active membership referenced by the session and applies its current
+database role. Membership removal therefore immediately revokes its sessions
+and invalidates their access tokens.
 
 The refresh session lasts one day by default or 30 days when the user selects
 the remember option during login.
@@ -67,6 +73,13 @@ The refresh endpoint performs these checks inside a database transaction:
 
 The dashboard also uses the Web Locks API and an in-process single-flight
 promise so tabs do not intentionally race refresh requests.
+
+## Workspace Switching
+
+The selected workspace is always represented by a membership-scoped session.
+Switching to another workspace creates a new session for that membership,
+issues a new access JWT and refresh token, and rotates the browser cookie. The
+previous workspace session is not reused as proof of access to the new one.
 
 ## Replay Protection
 

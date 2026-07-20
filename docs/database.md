@@ -97,8 +97,26 @@ code.
 - `users`: normalized unique login identity, Argon2 password hash, email
   confirmation, terms acceptance, and latest successful login time.
 - `workspaces`: tenant boundary created during signup.
-- `workspace_memberships`: user-to-workspace role, initially only `owner`.
+- `workspace_memberships`: user-to-workspace role and session boundary. Initial
+  roles are `owner`, `admin`, `developer`, and `viewer`.
 - `auth_sessions`: membership-scoped refresh digest, expiry, and revocation.
+
+An active membership is one that has not been removed or deactivated. It is the
+only membership that can authorize a request, own a session, or count as a
+workspace owner. Removal or deactivation revokes every session for that
+membership in the same transaction.
+
+Future workspace invitations must store the normalized invitee email, selected
+workspace role, hashed single-use token, expiry, optional revocation time, and
+acceptance time. An acceptance must not reuse a consumed or revoked token.
+The membership migration must use a deferred database constraint trigger, or an
+equivalent commit-time database invariant, to reject any transaction that leaves
+a workspace without an active owner. It applies to membership removal, owner
+role demotion, deactivation, and invitation acceptance, so concurrent changes
+cannot remove or demote the final active owner.
+
+No custom-role, department/team, or app-specific-grant tables are planned in
+this phase. See `docs/architecture.md` for the collaboration model.
 
 All authentication IDs use UUIDs. Raw refresh, verification, signup completion,
 and password-reset credentials are never persisted. Confirming an email-link
