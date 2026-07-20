@@ -101,12 +101,19 @@ code.
   roles are `owner`, `admin`, `developer`, and `viewer`.
 - `auth_sessions`: membership-scoped refresh digest, expiry, and revocation.
 
+An active membership is one that has not been removed or deactivated. It is the
+only membership that can authorize a request, own a session, or count as a
+workspace owner. Removal or deactivation revokes every session for that
+membership in the same transaction.
+
 Future workspace invitations must store the normalized invitee email, selected
 workspace role, hashed single-use token, expiry, optional revocation time, and
 acceptance time. An acceptance must not reuse a consumed or revoked token.
-Database constraints and transactional membership changes must preserve at
-least one active owner per workspace. Removing a membership must revoke its
-active sessions in the same authorization boundary.
+The membership migration must use a deferred database constraint trigger, or an
+equivalent commit-time database invariant, to reject any transaction that leaves
+a workspace without an active owner. It applies to membership removal, owner
+role demotion, deactivation, and invitation acceptance, so concurrent changes
+cannot remove or demote the final active owner.
 
 No custom-role, department/team, or app-specific-grant tables are planned in
 this phase. See `docs/architecture.md` for the collaboration model.
