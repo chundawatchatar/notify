@@ -358,7 +358,7 @@ defmodule ApiWeb.AuthController do
         )
 
       {:error, :workspace_membership_not_found} ->
-        Logger.error("Verified user has no owner workspace membership")
+        Logger.error("Verified user has no workspace membership")
 
         AuthError.render(
           conn,

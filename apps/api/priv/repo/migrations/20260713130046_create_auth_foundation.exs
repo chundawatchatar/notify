@@ -56,8 +56,65 @@ defmodule Api.Repo.Migrations.CreateAuthFoundation do
     create index(:workspace_memberships, [:workspace_id])
 
     create constraint(:workspace_memberships, :workspace_memberships_role,
-             check: "role IN ('owner')"
+             check: "role IN ('owner', 'admin', 'developer', 'viewer')"
            )
+
+    execute(
+      """
+      CREATE FUNCTION enforce_workspace_owner() RETURNS trigger AS $$
+      BEGIN
+        IF TG_OP = 'DELETE' THEN
+          PERFORM 1 FROM workspaces WHERE id = OLD.workspace_id FOR UPDATE;
+        ELSIF TG_OP = 'INSERT' THEN
+          PERFORM 1 FROM workspaces WHERE id = NEW.workspace_id FOR UPDATE;
+        ELSE
+          PERFORM 1
+          FROM workspaces
+          WHERE id IN (OLD.workspace_id, NEW.workspace_id)
+          ORDER BY id
+          FOR UPDATE;
+        END IF;
+
+        IF TG_OP IN ('UPDATE', 'DELETE') AND
+           EXISTS (SELECT 1 FROM workspaces WHERE id = OLD.workspace_id) AND
+           NOT EXISTS (
+             SELECT 1 FROM workspace_memberships
+             WHERE workspace_id = OLD.workspace_id AND role = 'owner'
+           ) THEN
+          RAISE EXCEPTION USING
+            ERRCODE = '23514',
+            CONSTRAINT = 'workspace_memberships_owner_required',
+            MESSAGE = 'workspace must retain at least one owner';
+        END IF;
+
+        IF TG_OP IN ('INSERT', 'UPDATE') AND
+           EXISTS (SELECT 1 FROM workspaces WHERE id = NEW.workspace_id) AND
+           NOT EXISTS (
+             SELECT 1 FROM workspace_memberships
+             WHERE workspace_id = NEW.workspace_id AND role = 'owner'
+           ) THEN
+          RAISE EXCEPTION USING
+            ERRCODE = '23514',
+            CONSTRAINT = 'workspace_memberships_owner_required',
+            MESSAGE = 'workspace must retain at least one owner';
+        END IF;
+
+        RETURN NULL;
+      END;
+      $$ LANGUAGE plpgsql
+      """,
+      "DROP FUNCTION enforce_workspace_owner()"
+    )
+
+    execute(
+      """
+      CREATE CONSTRAINT TRIGGER workspace_memberships_owner_required
+      AFTER INSERT OR UPDATE OR DELETE ON workspace_memberships
+      DEFERRABLE INITIALLY DEFERRED
+      FOR EACH ROW EXECUTE FUNCTION enforce_workspace_owner()
+      """,
+      "DROP TRIGGER workspace_memberships_owner_required ON workspace_memberships"
+    )
 
     create table(:auth_challenges, primary_key: false) do
       add :id, :binary_id, primary_key: true

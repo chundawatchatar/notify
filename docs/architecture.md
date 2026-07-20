@@ -115,6 +115,18 @@ the user, session, and workspace, but it does not carry a role claim. This keeps
 role changes and membership removal effective immediately when protected
 requests check the session and active membership.
 
+The centralized workspace permission policy is the only role-to-action mapping:
+
+| Role      | Permissions                                                                                |
+| --------- | ------------------------------------------------------------------------------------------ |
+| Owner     | All workspace permissions                                                                  |
+| Admin     | All except deleting the workspace and managing owners                                      |
+| Developer | View workspace and members; view, create, and manage apps; manage credentials; view events |
+| Viewer    | View workspace, members, apps, and events                                                  |
+
+Billing and membership management are limited to owners and admins. Controllers
+must require named permissions from this policy rather than compare role strings.
+
 Each workspace has a globally unique, readable slug. Dashboard URLs use
 `/w/:workspaceSlug` and never expose a workspace UUID. Switching workspaces
 creates a new membership-scoped access token and rotating refresh token.

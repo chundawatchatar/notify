@@ -184,7 +184,7 @@ defmodule Api.Accounts do
 
       true ->
         user
-        |> owner_membership()
+        |> first_membership()
         |> create_session(remember)
     end
   end
@@ -389,11 +389,11 @@ defmodule Api.Accounts do
   defp normalize_password_reset_result({:error, operation, value, _changes}),
     do: {:error, operation, value}
 
-  defp owner_membership(user) do
+  defp first_membership(user) do
     Repo.one(
       from membership in Membership,
-        where: membership.user_id == ^user.id and membership.role == "owner",
-        order_by: [asc: membership.inserted_at],
+        where: membership.user_id == ^user.id,
+        order_by: [asc: membership.inserted_at, asc: membership.id],
         limit: 1,
         preload: [:user, :workspace]
     )
