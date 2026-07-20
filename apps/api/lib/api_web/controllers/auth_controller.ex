@@ -461,7 +461,11 @@ defmodule ApiWeb.AuthController do
   defp principal_payload(result) do
     %{
       user: %{id: result.user.id, email: result.user.email},
-      workspace: %{id: result.workspace.id, name: result.workspace.name},
+      workspace: %{
+        id: result.workspace.id,
+        name: result.workspace.name,
+        slug: result.workspace.slug
+      },
       role: result.membership.role
     }
   end

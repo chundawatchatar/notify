@@ -17,7 +17,8 @@ defmodule Api.Factory do
   end
 
   def workspace_factory do
-    %Workspace{name: Faker.Company.name()}
+    slug = sequence(:workspace_slug, &"workspace-#{&1}")
+    %Workspace{name: Faker.Company.name(), slug: slug}
   end
 
   def membership_factory do

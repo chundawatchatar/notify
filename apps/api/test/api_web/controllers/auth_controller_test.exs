@@ -75,6 +75,7 @@ defmodule ApiWeb.AuthControllerTest do
     assert response["expires_in"] == 900
     assert response["user"]["id"] == membership.user.id
     assert response["workspace"]["id"] == membership.workspace.id
+    assert response["workspace"]["slug"] == membership.workspace.slug
     assert response["role"] == "owner"
     assert login_conn.resp_cookies["_notify_refresh"].http_only
     assert Repo.get!(User, membership.user.id).last_login_at
@@ -86,6 +87,7 @@ defmodule ApiWeb.AuthControllerTest do
       |> json_response(200)
 
     assert me_response["workspace"]["id"] == membership.workspace.id
+    assert me_response["workspace"]["slug"] == membership.workspace.slug
   end
 
   test "remember extends the refresh session from one day to thirty days", %{conn: conn} do
@@ -128,6 +130,7 @@ defmodule ApiWeb.AuthControllerTest do
     second_refresh_token = refresh_conn.resp_cookies["_notify_refresh"].value
 
     refute first_refresh_token == second_refresh_token
+    assert refresh_response["workspace"]["slug"] == membership.workspace.slug
 
     replay_response =
       build_conn()

@@ -95,9 +95,17 @@
             "type": "string",
             "x-struct": null,
             "x-validate": null
+          },
+          "slug": {
+            "example": "acme-cloud",
+            "maxLength": 50,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           }
         },
-        "required": ["id", "name"],
+        "required": ["id", "name", "slug"],
         "title": "AuthWorkspace",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceSummary",

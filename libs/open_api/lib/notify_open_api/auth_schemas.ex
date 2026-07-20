@@ -274,9 +274,15 @@ defmodule NotifyOpenApi.AuthSchemas do
       type: :object,
       properties: %{
         id: %Schema{type: :string, format: :uuid},
-        name: %Schema{type: :string, example: "Acme Cloud"}
+        name: %Schema{type: :string, example: "Acme Cloud"},
+        slug: %Schema{
+          type: :string,
+          maxLength: 50,
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          example: "acme-cloud"
+        }
       },
-      required: [:id, :name]
+      required: [:id, :name, :slug]
     })
   end
 

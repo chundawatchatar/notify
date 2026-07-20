@@ -23,12 +23,20 @@ defmodule Api.Repo.Migrations.CreateAuthFoundation do
     create table(:workspaces, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
+      add :slug, :string, null: false
 
       timestamps(type: :utc_datetime)
     end
 
     create constraint(:workspaces, :workspaces_name_length,
              check: "char_length(btrim(name)) BETWEEN 2 AND 100"
+           )
+
+    create unique_index(:workspaces, ["lower(slug)"], name: :workspaces_slug_lower_index)
+
+    create constraint(:workspaces, :workspaces_slug_format,
+             check:
+               "char_length(slug) BETWEEN 1 AND 50 AND slug = lower(slug) AND slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
            )
 
     create table(:workspace_memberships, primary_key: false) do
