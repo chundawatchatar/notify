@@ -67,7 +67,12 @@ commands when repository size makes the full suite too slow in CI.
 Required PR rules:
 
 - PR targets `develop`.
-- At least one approval is required.
+- CodeRabbit uses the request-changes workflow and automatically approves when
+  its comments are resolved and its pre-merge checks pass.
+- Solo-maintainer repositories may keep GitHub's required approval count at
+  zero. CodeRabbit approval remains an automated quality signal.
+- Ticketed PR titles follow `[NFY-123] Concise title`. Repository maintenance
+  work without a Linear ticket may use `[Chore] Concise title`.
 - Code owner approval is required once `CODEOWNERS` exists.
 - All conversations must be resolved.
 - Draft PRs cannot merge.
