@@ -419,6 +419,10 @@ export interface components {
     ValidationErrorResponse: {
       errors: components["schemas"]["ValidationErrorDetails"];
     };
+    /** UpdateWorkspaceMemberRoleErrorResponse */
+    UpdateWorkspaceMemberRoleErrorResponse:
+      | components["schemas"]["ErrorResponse"]
+      | components["schemas"]["ValidationErrorResponse"];
     /** WorkspaceMember */
     WorkspaceMember: {
       /**
@@ -1646,13 +1650,13 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Validation failed */
+      /** @description Validation or owner protection failed */
       422: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ValidationErrorResponse"];
+          "application/json": components["schemas"]["UpdateWorkspaceMemberRoleErrorResponse"];
         };
       };
     };

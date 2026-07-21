@@ -144,6 +144,20 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ValidationErrorResponse",
         "x-validate": null
       },
+      "UpdateWorkspaceMemberRoleErrorResponse": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ValidationErrorResponse"
+          }
+        ],
+        "title": "UpdateWorkspaceMemberRoleErrorResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.UpdateMemberRoleErrorResponse",
+        "x-validate": null
+      },
       "WorkspaceMember": {
         "properties": {
           "email": {
@@ -2073,11 +2087,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                  "$ref": "#/components/schemas/UpdateWorkspaceMemberRoleErrorResponse"
                 }
               }
             },
-            "description": "Validation failed"
+            "description": "Validation or owner protection failed"
           }
         },
         "security": [

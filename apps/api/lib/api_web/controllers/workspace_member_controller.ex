@@ -17,6 +17,7 @@ defmodule ApiWeb.WorkspaceMemberController do
     InvitationsResponse,
     Member,
     MembersResponse,
+    UpdateMemberRoleErrorResponse,
     UpdateMemberRoleRequest
   }
 
@@ -64,7 +65,9 @@ defmodule ApiWeb.WorkspaceMemberController do
       ok: {"Updated member", "application/json", Member},
       forbidden: {"Permission denied", "application/json", ErrorResponse},
       not_found: {"Member unavailable", "application/json", ErrorResponse},
-      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+      unprocessable_entity:
+        {"Validation or owner protection failed", "application/json",
+         UpdateMemberRoleErrorResponse}
     ]
 
   def update(conn, %{

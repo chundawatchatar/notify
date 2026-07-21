@@ -1,6 +1,6 @@
 defmodule NotifyOpenApi.WorkspaceSchemas do
   alias OpenApiSpex.Schema
-  alias NotifyOpenApi.AuthSchemas.WorkspaceRole
+  alias NotifyOpenApi.AuthSchemas.{ErrorResponse, ValidationErrorResponse, WorkspaceRole}
 
   defmodule Member do
     require OpenApiSpex
@@ -38,6 +38,16 @@ defmodule NotifyOpenApi.WorkspaceSchemas do
       additionalProperties: false,
       properties: %{role: WorkspaceRole},
       required: [:role]
+    })
+  end
+
+  defmodule UpdateMemberRoleErrorResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "UpdateWorkspaceMemberRoleErrorResponse",
+      type: :object,
+      anyOf: [ErrorResponse, ValidationErrorResponse]
     })
   end
 

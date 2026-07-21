@@ -15,6 +15,8 @@ release promotion are documented in `docs/github-workflow.md`.
    by the smallest applicable implementation playbooks.
 4. Inspect the current repository patterns and relevant documentation before
    editing. Keep the ticket scope separate from unrelated cleanup.
+5. When readiness checks pass, a request to start or resume the named ticket
+   authorizes moving it to In Progress before implementation begins.
 
 ## 2. Worktree And Branch
 
@@ -52,8 +54,13 @@ The following actions require explicit requester authorization:
 - changing Linear status, assignment, labels, or comments when the requester
   has not already asked for that update.
 
-Authorizing a merge also authorizes the required post-merge Linear Done
-transition and safe removal of the clean ticket worktree.
+Milestone requests carry the following scoped authorization:
+
+- asking to start or resume a named ticket authorizes moving it to In Progress;
+- asking to open or publish its pull request authorizes linking the pull request
+  in Linear and moving the ticket to In Review;
+- authorizing a merge also authorizes the required post-merge Linear Done
+  transition and safe removal of the clean ticket worktree.
 
 Read-only inspection, implementation edits, contract generation, formatting,
 linting, and typechecking remain allowed when they are normal in-scope work and
@@ -84,8 +91,9 @@ When authorized:
 5. Write multiline pull request descriptions through a body file or standard
    input with real line breaks. Read the saved body back after every create or
    edit and reject literal `\n` sequences or truncated content.
-6. Add the pull request URL to Linear and move the issue to the appropriate
-   review state when authorized.
+6. Add the pull request URL to Linear and move the issue to In Review. The
+   request to open or publish the pull request provides this scoped
+   authorization.
 
 ## 7. Review, Merge, And Cleanup
 
@@ -94,6 +102,7 @@ When authorized:
 2. Merge only after explicit authorization, required approvals, resolved
    conversations, and required checks succeed.
 3. Confirm the pull request actually merged before cleanup.
-4. Move the Linear issue to Done.
-5. Confirm the ticket worktree has no uncommitted changes, then remove that
-   dedicated worktree from outside it. Never force-remove a dirty worktree.
+4. Move the Linear issue to Done under the merge authorization.
+5. Under the same authorization, confirm the ticket worktree has no uncommitted
+   changes, then remove that dedicated worktree from outside it. Never
+   force-remove a dirty worktree.

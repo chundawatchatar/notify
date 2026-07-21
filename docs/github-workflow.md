@@ -47,8 +47,8 @@ Production tags should use `vYYYYMMDD.N`, for example `v20260609.1`.
 
 Assigned Linear implementation tickets follow the canonical
 [ticket delivery workflow](ticket-delivery.md). This document owns the
-GitHub-specific branch, pull-request, merge-queue, release, hotfix, and
-automation policies.
+GitHub-specific branch protection, pull-request checks, merge-queue, release,
+hotfix, and automation policies.
 
 ## Normal PR Flow
 

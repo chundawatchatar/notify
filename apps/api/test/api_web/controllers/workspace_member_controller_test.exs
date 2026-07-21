@@ -102,6 +102,14 @@ defmodule ApiWeb.WorkspaceMemberControllerTest do
     owner = insert(:membership)
     access_token = login(conn, owner.user.email)
 
+    role_update_response =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> patch(~p"/api/workspaces/#{owner.workspace.slug}/members/#{owner.id}", %{role: "viewer"})
+      |> json_response(422)
+
+    assert role_update_response["errors"]["code"] == "last_owner"
+
     response =
       build_conn()
       |> put_req_header("authorization", "Bearer #{access_token}")
