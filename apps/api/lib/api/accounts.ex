@@ -231,6 +231,27 @@ defmodule Api.Accounts do
     end
   end
 
+  def list_workspaces(user) do
+    Repo.all(
+      from membership in Membership,
+        join: workspace in assoc(membership, :workspace),
+        where: membership.user_id == ^user.id and membership.status == "active",
+        order_by: [asc: workspace.name, asc: workspace.id],
+        preload: [workspace: workspace]
+    )
+  end
+
+  def switch_workspace(%AuthSession{} = current_session, workspace_slug)
+      when is_binary(workspace_slug) do
+    now = DateTime.utc_now(:second)
+
+    with {:ok, {session, refresh_token}} <-
+           Repo.transaction(fn -> switch_session(current_session.id, workspace_slug, now) end),
+         {:ok, access_token} <- issue_access_token(session) do
+      {:ok, auth_result(session, access_token, refresh_token)}
+    end
+  end
+
   def revoke_session(%AuthSession{} = session) do
     session
     |> AuthSession.revoke_changeset()
@@ -430,6 +451,48 @@ defmodule Api.Accounts do
           session.id == ^session_id and is_nil(session.revoked_at) and
             session.expires_at > ^now and membership.status == "active",
         preload: [workspace_membership: {membership, [:user, :workspace]}]
+    )
+  end
+
+  defp switch_session(current_session_id, workspace_slug, now) do
+    current_session =
+      Repo.one(
+        from session in AuthSession,
+          join: membership in assoc(session, :workspace_membership),
+          where:
+            session.id == ^current_session_id and is_nil(session.revoked_at) and
+              session.expires_at > ^now and membership.status == "active",
+          lock: "FOR UPDATE",
+          preload: [workspace_membership: {membership, [:user, :workspace]}]
+      )
+
+    with %AuthSession{} = current_session <- current_session,
+         %Membership{} = target_membership <-
+           active_membership_for_workspace(
+             current_session.workspace_membership.user_id,
+             workspace_slug
+           ) do
+      {:ok, _revoked_session} = Repo.update(AuthSession.revoke_changeset(current_session, now))
+
+      {refresh_token, session} =
+        AuthSession.build_with_expiry(target_membership, current_session.expires_at)
+
+      {:ok, session} = Repo.insert(AuthSession.changeset(session, %{}))
+
+      {%{session | workspace_membership: target_membership}, refresh_token}
+    else
+      nil -> Repo.rollback(:workspace_not_found)
+    end
+  end
+
+  defp active_membership_for_workspace(user_id, workspace_slug) do
+    Repo.one(
+      from membership in Membership,
+        join: workspace in assoc(membership, :workspace),
+        where:
+          membership.user_id == ^user_id and membership.status == "active" and
+            workspace.slug == ^workspace_slug,
+        preload: [user: [], workspace: workspace]
     )
   end
 

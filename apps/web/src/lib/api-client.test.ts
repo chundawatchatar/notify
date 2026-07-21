@@ -1,7 +1,7 @@
 import { HttpResponse, http } from "msw";
 import { describe, expect, it } from "vitest";
 import { server } from "@/test/server";
-import { ApiRequestError, login, startSignup } from "./api-client";
+import { ApiRequestError, listWorkspaces, login, startSignup, switchWorkspace } from "./api-client";
 
 const apiBaseUrl = "http://localhost:4100";
 
@@ -39,6 +39,35 @@ describe("auth API client", () => {
       fields: { email: ["has invalid format"] },
       status: 422,
     });
+  });
+
+  it("sends authenticated workspace requests with the expected credentials", async () => {
+    expect.hasAssertions();
+    let listAuthorization: string | null = null;
+    let switchAuthorization: string | null = null;
+    let switchCredentials: RequestCredentials | undefined;
+    let switchBody: unknown;
+
+    server.use(
+      http.get(`${apiBaseUrl}/api/workspaces`, ({ request }) => {
+        listAuthorization = request.headers.get("authorization");
+        return HttpResponse.json({ workspaces: [] });
+      }),
+      http.post(`${apiBaseUrl}/api/auth/workspace/switch`, async ({ request }) => {
+        switchAuthorization = request.headers.get("authorization");
+        switchCredentials = request.credentials;
+        switchBody = await request.json();
+        return HttpResponse.json(authResponse());
+      }),
+    );
+
+    await listWorkspaces("access-token");
+    await switchWorkspace("access-token", { workspace_slug: "notify-labs" });
+
+    expect(listAuthorization).toBe("Bearer access-token");
+    expect(switchAuthorization).toBe("Bearer access-token");
+    expect(switchCredentials).toBe("include");
+    expect(switchBody).toEqual({ workspace_slug: "notify-labs" });
   });
 });
 

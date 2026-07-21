@@ -24,6 +24,8 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert Map.has_key?(response["paths"], "/api/auth/refresh")
     assert Map.has_key?(response["paths"], "/api/auth/me")
     assert Map.has_key?(response["paths"], "/api/auth/session")
+    assert Map.has_key?(response["paths"], "/api/workspaces")
+    assert Map.has_key?(response["paths"], "/api/auth/workspace/switch")
 
     assert response["components"]["securitySchemes"]["bearerAuth"] == %{
              "bearerFormat" => "JWT",
@@ -55,6 +57,11 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert response["paths"]["/api/auth/me"]["get"]["security"] == [
              %{"bearerAuth" => []}
            ]
+
+    assert response["paths"]["/api/workspaces"]["get"]["operationId"] == "listWorkspaces"
+
+    assert response["paths"]["/api/auth/workspace/switch"]["post"]["operationId"] ==
+             "switchWorkspace"
 
     assert response["components"]["schemas"]["AuthWorkspaceRole"]["enum"] == [
              "owner",

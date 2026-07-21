@@ -586,6 +586,25 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupTokenResponse",
         "x-validate": null
       },
+      "SwitchWorkspaceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "workspace_slug": {
+            "example": "notify-labs",
+            "maxLength": 50,
+            "minLength": 1,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["workspace_slug"],
+        "title": "SwitchWorkspaceRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SwitchWorkspaceRequest",
+        "x-validate": null
+      },
       "ValidationErrorDetails": {
         "properties": {
           "code": {
@@ -657,6 +676,55 @@
         "title": "VersionResponse",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.Schemas.VersionResponse",
+        "x-validate": null
+      },
+      "WorkspaceListResponse": {
+        "properties": {
+          "workspaces": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceMembershipSummary"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["workspaces"],
+        "title": "WorkspaceListResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceListResponse",
+        "x-validate": null
+      },
+      "WorkspaceMembershipSummary": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "Acme Cloud",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "role": {
+            "$ref": "#/components/schemas/AuthWorkspaceRole"
+          },
+          "slug": {
+            "example": "acme-cloud",
+            "maxLength": 50,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "name", "slug", "role"],
+        "title": "WorkspaceMembershipSummary",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceMembershipSummary",
         "x-validate": null
       }
     },
@@ -1240,6 +1308,104 @@
         "tags": ["authentication"]
       }
     },
+    "/api/auth/workspace/switch": {
+      "post": {
+        "callbacks": {},
+        "operationId": "switchWorkspace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwitchWorkspaceRequest"
+              }
+            }
+          },
+          "description": "Target workspace",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "Switched workspace session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Rotated HttpOnly refresh-token cookie",
+                "schema": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace unavailable"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace switch failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Switch the authenticated session to another workspace",
+        "tags": ["authentication"]
+      }
+    },
     "/api/health/live": {
       "get": {
         "callbacks": {},
@@ -1314,6 +1480,42 @@
         },
         "summary": "Read API version",
         "tags": ["system"]
+      }
+    },
+    "/api/workspaces": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listWorkspaces",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceListResponse"
+                }
+              }
+            },
+            "description": "Active workspace memberships"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List active workspaces for the authenticated user",
+        "tags": ["authentication"]
       }
     }
   },

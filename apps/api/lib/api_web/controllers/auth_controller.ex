@@ -25,7 +25,9 @@ defmodule ApiWeb.AuthController do
     SignupRequest,
     SignupTokenResponse,
     StatusResponse,
-    ValidationErrorResponse
+    SwitchWorkspaceRequest,
+    ValidationErrorResponse,
+    WorkspaceListResponse
   }
 
   alias OpenApiSpex.{Header, Schema}
@@ -40,7 +42,8 @@ defmodule ApiWeb.AuthController do
               :confirm_password_reset,
               :complete_password_reset,
               :refresh,
-              :delete_session
+              :delete_session,
+              :switch_workspace
             ]
 
   plug ApiWeb.Plugs.Authenticate, [required: false] when action == :delete_session
@@ -416,6 +419,91 @@ defmodule ApiWeb.AuthController do
 
   def me(conn, _params) do
     json(conn, principal_payload(conn))
+  end
+
+  operation :list_workspaces,
+    summary: "List active workspaces for the authenticated user",
+    operation_id: "listWorkspaces",
+    security: [%{"bearerAuth" => []}],
+    responses: [
+      ok: {"Active workspace memberships", "application/json", WorkspaceListResponse},
+      unauthorized: {"Access token invalid", "application/json", ErrorResponse}
+    ]
+
+  def list_workspaces(conn, _params) do
+    workspaces =
+      conn.assigns.current_user
+      |> Accounts.list_workspaces()
+      |> Enum.map(fn membership ->
+        %{
+          id: membership.workspace.id,
+          name: membership.workspace.name,
+          slug: membership.workspace.slug,
+          role: membership.role
+        }
+      end)
+
+    json(conn, %{workspaces: workspaces})
+  end
+
+  operation :switch_workspace,
+    summary: "Switch the authenticated session to another workspace",
+    operation_id: "switchWorkspace",
+    security: [%{"bearerAuth" => []}],
+    request_body:
+      {"Target workspace", "application/json", SwitchWorkspaceRequest, required: true},
+    responses: [
+      ok:
+        {"Switched workspace session", "application/json", AuthResponse,
+         headers: %{
+           "Set-Cookie" => %Header{
+             description: "Rotated HttpOnly refresh-token cookie",
+             schema: %Schema{type: :string}
+           }
+         }},
+      forbidden: {"Origin rejected", "application/json", ErrorResponse},
+      not_found: {"Workspace unavailable", "application/json", ErrorResponse},
+      unauthorized: {"Access token invalid", "application/json", ErrorResponse},
+      internal_server_error: {"Workspace switch failed", "application/json", ErrorResponse},
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+    ]
+
+  def switch_workspace(conn, %{"workspace_slug" => workspace_slug})
+      when is_binary(workspace_slug) and byte_size(workspace_slug) > 0 do
+    case Accounts.switch_workspace(conn.assigns.current_session, workspace_slug) do
+      {:ok, result} ->
+        conn
+        |> put_refresh_cookie(result)
+        |> json(auth_payload(result))
+
+      {:error, :workspace_not_found} ->
+        AuthError.render(
+          conn,
+          :not_found,
+          "workspace_not_found",
+          "Workspace is unavailable."
+        )
+
+      {:error, reason} ->
+        Logger.error("Workspace switch failed: #{inspect(reason)}")
+
+        AuthError.render(
+          conn,
+          :internal_server_error,
+          "workspace_switch_failed",
+          "Unable to switch workspace."
+        )
+    end
+  end
+
+  def switch_workspace(conn, _params) do
+    AuthError.render(
+      conn,
+      :unprocessable_entity,
+      "validation_failed",
+      "Request validation failed.",
+      %{workspace_slug: ["is required"]}
+    )
   end
 
   operation :delete_session,

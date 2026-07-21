@@ -999,7 +999,6 @@ function formSubmitHandler(handleSubmit: () => Promise<void>) {
   };
 }
 
-export type { ProductRoute };
 export {
   AuthShell,
   CompleteSignupForm,

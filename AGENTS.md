@@ -48,6 +48,7 @@ domain library.
 - `docs/database.md`: database ownership, migrations, and safety rules.
 - `docs/development.md`: local setup and runtime versions.
 - `docs/operations.md`: releases, health probes, metrics, and Kubernetes deployment.
+- `docs/github-workflow.md`: required ticket delivery, review, and merge flow.
 
 ## Universal AI Playbooks
 
