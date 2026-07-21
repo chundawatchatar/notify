@@ -205,6 +205,12 @@ defmodule Api.Workspaces do
     end
   end
 
+  def resolve_invitation(token) do
+    with {:ok, invitation} <- validate_invitation(token) do
+      {:ok, Repo.preload(invitation, :workspace)}
+    end
+  end
+
   def accept_invitation(token, %User{} = user) do
     now = DateTime.utc_now(:second)
 

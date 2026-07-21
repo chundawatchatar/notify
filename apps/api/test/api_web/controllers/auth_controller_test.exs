@@ -84,6 +84,33 @@ defmodule ApiWeb.AuthControllerTest do
     assert workspace_id == inviter.workspace_id
   end
 
+  test "resolves an active invitation without consuming it", %{conn: conn} do
+    inviter = insert(:membership, workspace: build(:workspace, name: "Acme Cloud"))
+
+    assert {:ok, %{token: token}} =
+             Api.Workspaces.create_invitation(inviter, %{
+               email: "invited@example.com",
+               role: "developer"
+             })
+
+    response =
+      conn
+      |> post(~p"/api/auth/invitations/resolve", %{token: token})
+      |> json_response(200)
+
+    assert response["workspace_name"] == "Acme Cloud"
+    assert response["email"] == "invited@example.com"
+    assert response["role"] == "developer"
+    assert response["expires_at"]
+
+    still_resolvable =
+      build_conn()
+      |> post(~p"/api/auth/invitations/resolve", %{token: token})
+      |> json_response(200)
+
+    assert still_resolvable["email"] == "invited@example.com"
+  end
+
   test "an authenticated matching user accepts an invitation into its workspace", %{conn: conn} do
     inviter = insert(:membership)
     invited_user = insert(:user, email: "invited@example.com")

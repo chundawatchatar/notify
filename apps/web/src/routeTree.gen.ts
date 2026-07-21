@@ -20,6 +20,7 @@ import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedSectionRouteImport } from './routes/_authenticated/$section'
+import { Route as AuthInvitationsAcceptRouteImport } from './routes/auth/invitations/accept'
 import { Route as AuthenticatedWWorkspaceSlugRouteRouteImport } from './routes/_authenticated/w/$workspaceSlug/route'
 import { Route as AuthenticatedWWorkspaceSlugIndexRouteImport } from './routes/_authenticated/w/$workspaceSlug/index'
 import { Route as AuthenticatedWWorkspaceSlugDashboardRouteImport } from './routes/_authenticated/w/$workspaceSlug/dashboard'
@@ -82,6 +83,11 @@ const AuthenticatedSectionRoute = AuthenticatedSectionRouteImport.update({
   path: '/$section',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthInvitationsAcceptRoute = AuthInvitationsAcceptRouteImport.update({
+  id: '/invitations/accept',
+  path: '/invitations/accept',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
 const AuthenticatedWWorkspaceSlugRouteRoute =
   AuthenticatedWWorkspaceSlugRouteRouteImport.update({
     id: '/w/$workspaceSlug',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/auth/': typeof AuthIndexRoute
   '/w/$workspaceSlug': typeof AuthenticatedWWorkspaceSlugRouteRouteWithChildren
+  '/auth/invitations/accept': typeof AuthInvitationsAcceptRoute
   '/w/$workspaceSlug/$section': typeof AuthenticatedWWorkspaceSlugSectionRoute
   '/w/$workspaceSlug/dashboard': typeof AuthenticatedWWorkspaceSlugDashboardRoute
   '/w/$workspaceSlug/': typeof AuthenticatedWWorkspaceSlugIndexRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthIndexRoute
+  '/auth/invitations/accept': typeof AuthInvitationsAcceptRoute
   '/w/$workspaceSlug/$section': typeof AuthenticatedWWorkspaceSlugSectionRoute
   '/w/$workspaceSlug/dashboard': typeof AuthenticatedWWorkspaceSlugDashboardRoute
   '/w/$workspaceSlug': typeof AuthenticatedWWorkspaceSlugIndexRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/auth/': typeof AuthIndexRoute
   '/_authenticated/w/$workspaceSlug': typeof AuthenticatedWWorkspaceSlugRouteRouteWithChildren
+  '/auth/invitations/accept': typeof AuthInvitationsAcceptRoute
   '/_authenticated/w/$workspaceSlug/$section': typeof AuthenticatedWWorkspaceSlugSectionRoute
   '/_authenticated/w/$workspaceSlug/dashboard': typeof AuthenticatedWWorkspaceSlugDashboardRoute
   '/_authenticated/w/$workspaceSlug/': typeof AuthenticatedWWorkspaceSlugIndexRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/auth/verify-email'
     | '/auth/'
     | '/w/$workspaceSlug'
+    | '/auth/invitations/accept'
     | '/w/$workspaceSlug/$section'
     | '/w/$workspaceSlug/dashboard'
     | '/w/$workspaceSlug/'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/auth/verify-email'
     | '/'
     | '/auth'
+    | '/auth/invitations/accept'
     | '/w/$workspaceSlug/$section'
     | '/w/$workspaceSlug/dashboard'
     | '/w/$workspaceSlug'
@@ -211,6 +222,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/auth/'
     | '/_authenticated/w/$workspaceSlug'
+    | '/auth/invitations/accept'
     | '/_authenticated/w/$workspaceSlug/$section'
     | '/_authenticated/w/$workspaceSlug/dashboard'
     | '/_authenticated/w/$workspaceSlug/'
@@ -302,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSectionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/auth/invitations/accept': {
+      id: '/auth/invitations/accept'
+      path: '/invitations/accept'
+      fullPath: '/auth/invitations/accept'
+      preLoaderRoute: typeof AuthInvitationsAcceptRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
     '/_authenticated/w/$workspaceSlug': {
       id: '/_authenticated/w/$workspaceSlug'
       path: '/w/$workspaceSlug'
@@ -388,6 +407,7 @@ interface AuthRouteRouteChildren {
   AuthSignupRoute: typeof AuthSignupRoute
   AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
   AuthIndexRoute: typeof AuthIndexRoute
+  AuthInvitationsAcceptRoute: typeof AuthInvitationsAcceptRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
@@ -396,6 +416,7 @@ const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthSignupRoute: AuthSignupRoute,
   AuthVerifyEmailRoute: AuthVerifyEmailRoute,
   AuthIndexRoute: AuthIndexRoute,
+  AuthInvitationsAcceptRoute: AuthInvitationsAcceptRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(

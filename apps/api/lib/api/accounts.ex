@@ -188,6 +188,9 @@ defmodule Api.Accounts do
 
   def accept_invitation(_, _), do: {:error, :invalid_or_expired_invitation}
 
+  def resolve_invitation(token) when is_binary(token), do: Workspaces.resolve_invitation(token)
+  def resolve_invitation(_), do: {:error, :invalid_or_expired_invitation}
+
   def complete_invitation_signup(token, attrs) when is_binary(token) and is_map(attrs) do
     with {:ok, result} <- Workspaces.complete_invitation_signup(token, attrs),
          membership = %{result.membership | user: result.user, workspace: result.workspace},

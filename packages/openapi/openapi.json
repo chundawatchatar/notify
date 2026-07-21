@@ -189,6 +189,23 @@
         "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.Member",
         "x-validate": null
       },
+      "ResolveInvitationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "example": "invitation-token",
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["token"],
+        "title": "ResolveInvitationRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ResolveInvitationRequest",
+        "x-validate": null
+      },
       "PasswordResetTokenResponse": {
         "properties": {
           "expires_in": {
@@ -375,6 +392,39 @@
         "title": "WorkspaceMembersResponse",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.MembersResponse",
+        "x-validate": null
+      },
+      "InvitationPreviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "format": "email",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "expires_at": {
+            "format": "date_time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "role": {
+            "enum": ["owner", "admin", "developer", "viewer"],
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "workspace_name": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["email", "expires_at", "role", "workspace_name"],
+        "title": "InvitationPreviewResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.InvitationPreviewResponse",
         "x-validate": null
       },
       "SignupTokenResponse": {
@@ -1129,6 +1179,48 @@
           }
         ],
         "summary": "Accept a workspace invitation for the authenticated user",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/invitations/resolve": {
+      "post": {
+        "callbacks": {},
+        "operationId": "resolveInvitation",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveInvitationRequest"
+              }
+            }
+          },
+          "description": "Invitation token",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPreviewResponse"
+                }
+              }
+            },
+            "description": "Invitation details"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation invalid or expired"
+          }
+        },
+        "summary": "Resolve an invitation for acceptance",
         "tags": ["authentication"]
       }
     },

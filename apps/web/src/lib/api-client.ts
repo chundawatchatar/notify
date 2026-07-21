@@ -8,6 +8,7 @@ import type {
   ApiConfirmPasswordResetRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
+  ApiInvitationPreviewResponse,
   ApiInvitationSignupResponse,
   ApiLoginRequest,
   ApiPasswordResetCompletionResponse,
@@ -16,6 +17,7 @@ import type {
   ApiPasswordResetTokenResponse,
   ApiReadinessResponse,
   ApiResendVerificationRequest,
+  ApiResolveInvitationRequest,
   ApiSignupCompletionResponse,
   ApiSignupRequest,
   ApiSignupResponse,
@@ -61,6 +63,13 @@ function acceptInvitation(accessToken: string, body: ApiAcceptInvitationRequest)
     accessToken,
     credentials: "include",
   });
+}
+
+function resolveInvitation(body: ApiResolveInvitationRequest) {
+  return post<ApiInvitationPreviewResponse, ApiResolveInvitationRequest>(
+    "/api/auth/invitations/resolve",
+    body,
+  );
 }
 
 function completeInvitationSignup(body: ApiCompleteInvitationSignupRequest) {
@@ -216,6 +225,7 @@ export {
   removeWorkspaceMember,
   requestPasswordReset,
   resendVerification,
+  resolveInvitation,
   revokeWorkspaceInvitation,
   startSignup,
   switchWorkspace,
