@@ -10,12 +10,21 @@ format:
 
 selection_rules:
   - Match the requested outcome, not only the file name.
+  - For assigned Linear implementation tickets, load notify-ticket-delivery before task-specific playbooks.
   - Load every skill needed for a cross-boundary change in recipe order.
   - Do not load all skills by default.
   - Use notify-verify-change before reporting completion or committing.
   - If native skill discovery is unavailable, open each selected SKILL.md directly.
 
 skills:
+  notify-ticket-delivery:
+    path: .agents/skills/notify-ticket-delivery/SKILL.md
+    intents:
+      - Start, resume, implement, publish, review, merge, or complete an assigned Linear ticket
+      - Create or clean up a ticket worktree and branch
+      - Coordinate ticket status, pull request, verification, and delivery authorization gates
+    keywords: [ticket, linear, issue, worktree, branch, pull-request, merge, delivery]
+
   notify-api-change:
     path: .agents/skills/notify-api-change/SKILL.md
     intents:

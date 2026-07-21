@@ -43,34 +43,12 @@ The release number is per day. For example:
 
 Production tags should use `vYYYYMMDD.N`, for example `v20260609.1`.
 
-## Ticket Delivery Workflow
+## Ticket Delivery
 
-Use this flow for an assigned Linear implementation ticket unless the ticket or
-request explicitly changes it:
-
-1. Read the issue requirements, related documentation, and the smallest
-   applicable repository playbooks before editing.
-2. Create a dedicated Git worktree below `../notify-worktrees`. Do not start
-   containers from a worktree, because they duplicate local service containers.
-   Run `pnpm install` there only when dependencies are unavailable.
-3. Branch from the current `develop` branch. Use a descriptive ticket branch
-   name such as `nfy-123-short-description`; do not include a username.
-4. Implement the ticket and regenerate contract outputs rather than editing
-   generated files directly.
-5. When the requester explicitly authorizes verification, run the checks
-   required by the ticket. If they require the full suite, run `pnpm test`
-   before pushing.
-6. When the requester explicitly authorizes a commit, inspect the final diff
-   and commit only the ticket-related files with a single-line Conventional
-   Commit message.
-7. When the requester explicitly authorizes publishing, push the branch and
-   open a pull request targeting `develop`, with a clear title and description
-   that link the Linear issue and list verification.
-8. Update the Linear issue with the pull request URL, move it to the appropriate
-   in-progress or review state, and assign it to the requester when asked.
-9. Wait for review. Address actionable feedback, rerun affected verification,
-   and push follow-up commits. When all feedback is resolved and approvals and
-   required checks pass, merge the pull request and update the Linear issue.
+Assigned Linear implementation tickets follow the canonical
+[ticket delivery workflow](ticket-delivery.md). This document owns the
+GitHub-specific branch, pull-request, merge-queue, release, hotfix, and
+automation policies.
 
 ## Normal PR Flow
 

@@ -16,6 +16,7 @@ config :api,
   generators: [timestamp_type: :utc_datetime],
   metrics_enabled: true,
   metrics_token: nil,
+  invitation_email_adapter: Api.Accounts.InvitationEmail.DevAdapter,
   password_reset_email_adapter: Api.Accounts.PasswordResetEmail.DevAdapter,
   verification_email_adapter: Api.Accounts.VerificationEmail.DevAdapter,
   web_app_url: "http://localhost:3100"

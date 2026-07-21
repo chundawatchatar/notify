@@ -11,13 +11,76 @@ defmodule Api.Workspaces do
   alias Domain.WorkspacePermissions
   alias Ecto.Multi
 
+  def list_members(workspace_id) do
+    Repo.all(
+      from membership in Membership,
+        join: user in assoc(membership, :user),
+        where: membership.workspace_id == ^workspace_id and membership.status == "active",
+        order_by: [asc: user.email, asc: membership.id],
+        preload: [user: user]
+    )
+  end
+
+  def list_pending_invitations(workspace_id) do
+    now = DateTime.utc_now(:second)
+
+    Repo.all(
+      from invitation in Invitation,
+        where:
+          invitation.workspace_id == ^workspace_id and is_nil(invitation.accepted_at) and
+            is_nil(invitation.revoked_at) and invitation.expires_at > ^now,
+        order_by: [asc: invitation.inserted_at, asc: invitation.id]
+    )
+  end
+
+  def get_active_membership(workspace_id, membership_id) do
+    with {:ok, membership_id} <- Ecto.UUID.cast(membership_id) do
+      Repo.one(
+        from membership in Membership,
+          where:
+            membership.id == ^membership_id and membership.workspace_id == ^workspace_id and
+              membership.status == "active"
+      )
+    else
+      :error -> nil
+    end
+  end
+
+  def get_unaccepted_invitation(workspace_id, invitation_id) do
+    with {:ok, invitation_id} <- Ecto.UUID.cast(invitation_id) do
+      Repo.one(
+        from invitation in Invitation,
+          where:
+            invitation.id == ^invitation_id and invitation.workspace_id == ^workspace_id and
+              is_nil(invitation.accepted_at)
+      )
+    else
+      :error -> nil
+    end
+  end
+
   @doc """
   Changes a membership role without allowing the final owner to be demoted.
   """
-  def update_membership_role(%Membership{id: membership_id, workspace_id: workspace_id}, role) do
+  def update_membership_role(%Membership{} = membership, role),
+    do: update_membership_role(membership, membership, role)
+
+  def update_membership_role(
+        %Membership{id: actor_id},
+        %Membership{id: membership_id, workspace_id: workspace_id},
+        role
+      ) do
     Multi.new()
     |> Multi.run(:workspace, fn repo, _changes -> lock_workspace(repo, workspace_id) end)
-    |> Multi.run(:membership, fn repo, _changes -> lock_membership(repo, membership_id) end)
+    |> Multi.run(:actor, fn repo, _changes ->
+      lock_active_membership(repo, actor_id, workspace_id, :forbidden)
+    end)
+    |> Multi.run(:membership, fn repo, _changes ->
+      lock_active_membership(repo, membership_id, workspace_id, :membership_not_found)
+    end)
+    |> Multi.run(:permission, fn _repo, %{actor: actor, membership: membership} ->
+      authorize_member_management(actor, membership, role)
+    end)
     |> Multi.run(:owner_protection, fn repo, %{membership: membership} ->
       OwnerProtection.ensure_owner_retained(repo, membership, role)
     end)
@@ -31,12 +94,26 @@ defmodule Api.Workspaces do
   @doc """
   Removes a membership without allowing the final owner to be removed.
   """
-  def remove_membership(%Membership{id: membership_id, workspace_id: workspace_id}) do
+  def remove_membership(%Membership{} = membership),
+    do: remove_membership(membership, membership)
+
+  def remove_membership(
+        %Membership{id: actor_id},
+        %Membership{id: membership_id, workspace_id: workspace_id}
+      ) do
     now = DateTime.utc_now(:second)
 
     Multi.new()
     |> Multi.run(:workspace, fn repo, _changes -> lock_workspace(repo, workspace_id) end)
-    |> Multi.run(:membership, fn repo, _changes -> lock_membership(repo, membership_id) end)
+    |> Multi.run(:actor, fn repo, _changes ->
+      lock_active_membership(repo, actor_id, workspace_id, :forbidden)
+    end)
+    |> Multi.run(:membership, fn repo, _changes ->
+      lock_active_membership(repo, membership_id, workspace_id, :membership_not_found)
+    end)
+    |> Multi.run(:permission, fn _repo, %{actor: actor, membership: membership} ->
+      authorize_member_management(actor, membership, nil)
+    end)
     |> Multi.run(:owner_protection, fn repo, %{membership: membership} ->
       OwnerProtection.ensure_owner_retained(repo, membership, nil)
     end)
@@ -61,7 +138,7 @@ defmodule Api.Workspaces do
       Multi.new()
       |> Multi.run(:workspace, fn repo, _changes -> lock_workspace(repo, inviter.workspace_id) end)
       |> Multi.run(:inviter, fn repo, _changes ->
-        lock_active_membership(repo, inviter.id, inviter.workspace_id)
+        lock_active_membership(repo, inviter.id, inviter.workspace_id, :inviter_not_active)
       end)
       |> Multi.run(:permission, fn _repo, %{inviter: current_inviter} ->
         if WorkspacePermissions.grantable_role?(current_inviter.role, role),
@@ -183,17 +260,6 @@ defmodule Api.Workspaces do
 
   def accept_invitation(_, _), do: {:error, :invalid_or_expired_invitation}
 
-  defp lock_membership(repo, membership_id) do
-    case repo.one(
-           from membership in Membership,
-             where: membership.id == ^membership_id,
-             lock: "FOR UPDATE"
-         ) do
-      %Membership{} = membership -> {:ok, membership}
-      nil -> {:error, :membership_not_found}
-    end
-  end
-
   defp lock_user_membership(repo, user_id, workspace_id) do
     {:ok,
      repo.one(
@@ -203,7 +269,7 @@ defmodule Api.Workspaces do
      )}
   end
 
-  defp lock_active_membership(repo, membership_id, workspace_id) do
+  defp lock_active_membership(repo, membership_id, workspace_id, not_found_reason) do
     case repo.one(
            from membership in Membership,
              where:
@@ -212,8 +278,18 @@ defmodule Api.Workspaces do
              lock: "FOR UPDATE"
          ) do
       %Membership{} = membership -> {:ok, membership}
-      nil -> {:error, :inviter_not_active}
+      nil -> {:error, not_found_reason}
     end
+  end
+
+  defp authorize_member_management(actor, membership, new_role) do
+    manages_members? = WorkspacePermissions.allowed?(actor.role, :manage_members)
+
+    manages_owners? =
+      (membership.role != "owner" and new_role != "owner") or
+        WorkspacePermissions.allowed?(actor.role, :manage_owners)
+
+    if manages_members? and manages_owners?, do: {:ok, :authorized}, else: {:error, :forbidden}
   end
 
   defp lock_invitation(repo, invitation_id) do

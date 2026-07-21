@@ -285,118 +285,84 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/workspaces/{workspaceSlug}/invitations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List pending workspace invitations */
+    get: operations["listWorkspaceInvitations"];
+    put?: never;
+    /** Invite a person to a workspace */
+    post: operations["createWorkspaceInvitation"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/workspaces/{workspaceSlug}/invitations/{invitationId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revoke a pending workspace invitation */
+    delete: operations["revokeWorkspaceInvitation"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/workspaces/{workspaceSlug}/members": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List active workspace members */
+    get: operations["listWorkspaceMembers"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/workspaces/{workspaceSlug}/members/{membershipId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Remove a workspace member */
+    delete: operations["removeWorkspaceMember"];
+    options?: never;
+    head?: never;
+    /** Change a workspace member role */
+    patch: operations["updateWorkspaceMemberRole"];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    /** AuthResponse */
-    AuthResponse: {
-      /** @description Short-lived JWT access token. */
-      access_token: string;
-      /** @example 900 */
-      expires_in: number;
-      role: components["schemas"]["AuthWorkspaceRole"];
-      /**
-       * @example Bearer
-       * @enum {string}
-       */
-      token_type: "Bearer";
-      user: components["schemas"]["AuthUser"];
-      workspace: components["schemas"]["AuthWorkspace"];
-    };
-    /** AuthStatusResponse */
-    AuthStatusResponse: {
-      /**
-       * @example verification_sent
-       * @enum {string}
-       */
-      status: "verification_sent";
-    };
-    /** AuthUser */
-    AuthUser: {
-      /**
-       * Format: email
-       * @example owner@example.com
-       */
-      email: string;
-      /** Format: uuid */
-      id: string;
-    };
-    /** AuthWorkspace */
-    AuthWorkspace: {
-      /** Format: uuid */
-      id: string;
-      /** @example Acme Cloud */
-      name: string;
-      /** @example acme-cloud */
-      slug: string;
-    };
-    /**
-     * AuthWorkspaceRole
-     * @example owner
-     * @enum {string}
-     */
-    AuthWorkspaceRole: "owner" | "admin" | "developer" | "viewer";
-    /** CompletePasswordResetRequest */
-    CompletePasswordResetRequest: {
-      /** Format: password */
-      password: string;
-      /** Format: password */
-      password_confirmation: string;
-      /** @description Short-lived credential issued after confirming a reset link. */
-      reset_token: string;
-    };
-    /** CompleteSignupRequest */
-    CompleteSignupRequest: {
-      /**
-       * @example true
-       * @enum {boolean}
-       */
-      accept_terms: true;
-      /** Format: password */
-      password: string;
-      /** @description Short-lived credential issued after email verification. */
-      signup_token: string;
-      /** @example Acme Cloud */
-      workspace_name: string;
-    };
-    /** ConfirmEmailRequest */
-    ConfirmEmailRequest: {
-      /** @example verification-token */
-      token: string;
-    };
     /** ConfirmPasswordResetRequest */
     ConfirmPasswordResetRequest: {
       /** @example password-reset-token */
       token: string;
-    };
-    /** CurrentUserResponse */
-    CurrentUserResponse: {
-      role: components["schemas"]["AuthWorkspaceRole"];
-      user: components["schemas"]["AuthUser"];
-      workspace: components["schemas"]["AuthWorkspace"];
-    };
-    /**
-     * DatabaseCheck
-     * @description Database readiness check result.
-     * @example {
-     *       "ready": true
-     *     }
-     */
-    DatabaseCheck: {
-      /** @example true */
-      ready: boolean;
-    };
-    /** ErrorDetails */
-    ErrorDetails: {
-      /** @example invalid_credentials */
-      code: string;
-      /** @example Email or password is invalid. */
-      detail: string;
-    };
-    /** ErrorResponse */
-    ErrorResponse: {
-      errors: components["schemas"]["ErrorDetails"];
     };
     /**
      * LivenessResponse
@@ -418,6 +384,206 @@ export interface components {
        */
       status: "ok";
     };
+    /** ErrorResponse */
+    ErrorResponse: {
+      errors: components["schemas"]["ErrorDetails"];
+    };
+    /** AuthStatusResponse */
+    AuthStatusResponse: {
+      /**
+       * @example verification_sent
+       * @enum {string}
+       */
+      status: "verification_sent";
+    };
+    /** CompleteSignupRequest */
+    CompleteSignupRequest: {
+      /**
+       * @example true
+       * @enum {boolean}
+       */
+      accept_terms: true;
+      /** Format: password */
+      password: string;
+      /** @description Short-lived credential issued after email verification. */
+      signup_token: string;
+      /** @example Acme Cloud */
+      workspace_name: string;
+    };
+    /** ConfirmEmailRequest */
+    ConfirmEmailRequest: {
+      /** @example verification-token */
+      token: string;
+    };
+    /** ValidationErrorResponse */
+    ValidationErrorResponse: {
+      errors: components["schemas"]["ValidationErrorDetails"];
+    };
+    /** WorkspaceMember */
+    WorkspaceMember: {
+      /**
+       * Format: email
+       * @example developer@example.com
+       */
+      email: string;
+      /** Format: uuid */
+      id: string;
+      /** Format: date-time */
+      joined_at: string;
+      role: components["schemas"]["AuthWorkspaceRole"];
+    };
+    /** PasswordResetTokenResponse */
+    PasswordResetTokenResponse: {
+      /** @example 900 */
+      expires_in: number;
+      /** @description One-time credential for completing a password reset. */
+      reset_token: string;
+    };
+    /** PasswordResetRequestResponse */
+    PasswordResetRequestResponse: {
+      /**
+       * @example password_reset_requested
+       * @enum {string}
+       */
+      status: "password_reset_requested";
+    };
+    /** SignupCompletionResponse */
+    SignupCompletionResponse: {
+      /**
+       * @example account_created
+       * @enum {string}
+       */
+      status: "account_created";
+    };
+    /** UpdateWorkspaceMemberRoleRequest */
+    UpdateWorkspaceMemberRoleRequest: {
+      role: components["schemas"]["AuthWorkspaceRole"];
+    };
+    /** AuthResponse */
+    AuthResponse: {
+      /** @description Short-lived JWT access token. */
+      access_token: string;
+      /** @example 900 */
+      expires_in: number;
+      role: components["schemas"]["AuthWorkspaceRole"];
+      /**
+       * @example Bearer
+       * @enum {string}
+       */
+      token_type: "Bearer";
+      user: components["schemas"]["AuthUser"];
+      workspace: components["schemas"]["AuthWorkspace"];
+    };
+    /** WorkspaceInvitation */
+    WorkspaceInvitation: {
+      /**
+       * Format: email
+       * @example developer@example.com
+       */
+      email: string;
+      /** Format: date-time */
+      expires_at: string;
+      /** Format: uuid */
+      id: string;
+      /** Format: date-time */
+      invited_at: string;
+      role: components["schemas"]["AuthWorkspaceRole"];
+    };
+    /** AuthWorkspace */
+    AuthWorkspace: {
+      /** Format: uuid */
+      id: string;
+      /** @example Acme Cloud */
+      name: string;
+      /** @example acme-cloud */
+      slug: string;
+    };
+    /** WorkspaceMembersResponse */
+    WorkspaceMembersResponse: {
+      members: components["schemas"]["WorkspaceMember"][];
+    };
+    /** SignupTokenResponse */
+    SignupTokenResponse: {
+      /** @example 900 */
+      expires_in: number;
+      /** @description One-time credential for completing the verified signup. */
+      signup_token: string;
+    };
+    /** CompletePasswordResetRequest */
+    CompletePasswordResetRequest: {
+      /** Format: password */
+      password: string;
+      /** Format: password */
+      password_confirmation: string;
+      /** @description Short-lived credential issued after confirming a reset link. */
+      reset_token: string;
+    };
+    /**
+     * ServiceInfo
+     * @description API service metadata.
+     * @example {
+     *       "environment": "dev",
+     *       "name": "notify-api",
+     *       "version": "0.1.0"
+     *     }
+     */
+    ServiceInfo: {
+      /** @example dev */
+      environment: string;
+      /** @example notify-api */
+      name: string;
+      /** @example 0.1.0 */
+      version: string;
+    };
+    /** WorkspaceInvitationsResponse */
+    WorkspaceInvitationsResponse: {
+      invitations: components["schemas"]["WorkspaceInvitation"][];
+    };
+    /** WorkspaceMembershipSummary */
+    WorkspaceMembershipSummary: {
+      /** Format: uuid */
+      id: string;
+      /** @example Acme Cloud */
+      name: string;
+      role: components["schemas"]["AuthWorkspaceRole"];
+      /** @example acme-cloud */
+      slug: string;
+    };
+    /** WorkspaceListResponse */
+    WorkspaceListResponse: {
+      workspaces: components["schemas"]["WorkspaceMembershipSummary"][];
+    };
+    /** SignupRequest */
+    SignupRequest: {
+      /**
+       * Format: email
+       * @example owner@example.com
+       */
+      email: string;
+    };
+    /**
+     * AuthWorkspaceRole
+     * @example owner
+     * @enum {string}
+     */
+    AuthWorkspaceRole: "owner" | "admin" | "developer" | "viewer";
+    /** CurrentUserResponse */
+    CurrentUserResponse: {
+      role: components["schemas"]["AuthWorkspaceRole"];
+      user: components["schemas"]["AuthUser"];
+      workspace: components["schemas"]["AuthWorkspace"];
+    };
+    /**
+     * DatabaseCheck
+     * @description Database readiness check result.
+     * @example {
+     *       "ready": true
+     *     }
+     */
+    DatabaseCheck: {
+      /** @example true */
+      ready: boolean;
+    };
     /** LoginRequest */
     LoginRequest: {
       /**
@@ -433,6 +599,11 @@ export interface components {
        */
       remember: boolean;
     };
+    /** SwitchWorkspaceRequest */
+    SwitchWorkspaceRequest: {
+      /** @example notify-labs */
+      workspace_slug: string;
+    };
     /** PasswordResetCompletionResponse */
     PasswordResetCompletionResponse: {
       /**
@@ -440,29 +611,6 @@ export interface components {
        * @enum {string}
        */
       status: "password_reset";
-    };
-    /** PasswordResetRequest */
-    PasswordResetRequest: {
-      /**
-       * Format: email
-       * @example owner@example.com
-       */
-      email: string;
-    };
-    /** PasswordResetRequestResponse */
-    PasswordResetRequestResponse: {
-      /**
-       * @example password_reset_requested
-       * @enum {string}
-       */
-      status: "password_reset_requested";
-    };
-    /** PasswordResetTokenResponse */
-    PasswordResetTokenResponse: {
-      /** @example 900 */
-      expires_in: number;
-      /** @description One-time credential for completing a password reset. */
-      reset_token: string;
     };
     /**
      * ReadinessChecks
@@ -475,6 +623,63 @@ export interface components {
      */
     ReadinessChecks: {
       database: components["schemas"]["DatabaseCheck"];
+    };
+    /** ErrorDetails */
+    ErrorDetails: {
+      /** @example invalid_credentials */
+      code: string;
+      /** @example Email or password is invalid. */
+      detail: string;
+    };
+    /** AuthUser */
+    AuthUser: {
+      /**
+       * Format: email
+       * @example owner@example.com
+       */
+      email: string;
+      /** Format: uuid */
+      id: string;
+    };
+    /** ResendVerificationRequest */
+    ResendVerificationRequest: {
+      /**
+       * Format: email
+       * @example owner@example.com
+       */
+      email: string;
+    };
+    /** ValidationErrorDetails */
+    ValidationErrorDetails: {
+      /** @enum {string} */
+      code: "validation_failed";
+      detail: string;
+      fields: {
+        [key: string]: string[];
+      };
+    };
+    /**
+     * VersionResponse
+     * @description API version response.
+     * @example {
+     *       "name": "notify-api",
+     *       "version": "0.1.0"
+     *     }
+     */
+    VersionResponse: {
+      /** @example notify-api */
+      name: string;
+      /** @example 0.1.0 */
+      version: string;
+    };
+    /** CreateWorkspaceInvitationRequest */
+    CreateWorkspaceInvitationRequest: {
+      /**
+       * Format: email
+       * @example developer@example.com
+       */
+      email: string;
+      role: components["schemas"]["AuthWorkspaceRole"];
     };
     /**
      * ReadinessResponse
@@ -502,99 +707,13 @@ export interface components {
        */
       status: "ok" | "degraded";
     };
-    /** ResendVerificationRequest */
-    ResendVerificationRequest: {
+    /** PasswordResetRequest */
+    PasswordResetRequest: {
       /**
        * Format: email
        * @example owner@example.com
        */
       email: string;
-    };
-    /**
-     * ServiceInfo
-     * @description API service metadata.
-     * @example {
-     *       "environment": "dev",
-     *       "name": "notify-api",
-     *       "version": "0.1.0"
-     *     }
-     */
-    ServiceInfo: {
-      /** @example dev */
-      environment: string;
-      /** @example notify-api */
-      name: string;
-      /** @example 0.1.0 */
-      version: string;
-    };
-    /** SignupCompletionResponse */
-    SignupCompletionResponse: {
-      /**
-       * @example account_created
-       * @enum {string}
-       */
-      status: "account_created";
-    };
-    /** SignupRequest */
-    SignupRequest: {
-      /**
-       * Format: email
-       * @example owner@example.com
-       */
-      email: string;
-    };
-    /** SignupTokenResponse */
-    SignupTokenResponse: {
-      /** @example 900 */
-      expires_in: number;
-      /** @description One-time credential for completing the verified signup. */
-      signup_token: string;
-    };
-    /** SwitchWorkspaceRequest */
-    SwitchWorkspaceRequest: {
-      /** @example notify-labs */
-      workspace_slug: string;
-    };
-    /** ValidationErrorDetails */
-    ValidationErrorDetails: {
-      /** @enum {string} */
-      code: "validation_failed";
-      detail: string;
-      fields: {
-        [key: string]: string[];
-      };
-    };
-    /** ValidationErrorResponse */
-    ValidationErrorResponse: {
-      errors: components["schemas"]["ValidationErrorDetails"];
-    };
-    /**
-     * VersionResponse
-     * @description API version response.
-     * @example {
-     *       "name": "notify-api",
-     *       "version": "0.1.0"
-     *     }
-     */
-    VersionResponse: {
-      /** @example notify-api */
-      name: string;
-      /** @example 0.1.0 */
-      version: string;
-    };
-    /** WorkspaceListResponse */
-    WorkspaceListResponse: {
-      workspaces: components["schemas"]["WorkspaceMembershipSummary"][];
-    };
-    /** WorkspaceMembershipSummary */
-    WorkspaceMembershipSummary: {
-      /** Format: uuid */
-      id: string;
-      /** @example Acme Cloud */
-      name: string;
-      role: components["schemas"]["AuthWorkspaceRole"];
-      /** @example acme-cloud */
-      slug: string;
     };
   };
   responses: never;
@@ -1231,6 +1350,309 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  listWorkspaceInvitations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Pending invitations */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceInvitationsResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Workspace unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  createWorkspaceInvitation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+      };
+      cookie?: never;
+    };
+    /** @description Invitation details */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateWorkspaceInvitationRequest"];
+      };
+    };
+    responses: {
+      /** @description Invitation created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceInvitation"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Workspace unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Already an active member */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+      /** @description Invitation delivery failed */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  revokeWorkspaceInvitation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+        /** @description Invitation ID */
+        invitationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Invitation revoked */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Invitation unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  listWorkspaceMembers: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Active members */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceMembersResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Workspace unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  removeWorkspaceMember: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+        /** @description Membership ID */
+        membershipId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Member removed */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Member unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Last owner */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  updateWorkspaceMemberRole: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+        /** @description Membership ID */
+        membershipId: string;
+      };
+      cookie?: never;
+    };
+    /** @description New workspace role */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateWorkspaceMemberRoleRequest"];
+      };
+    };
+    responses: {
+      /** @description Updated member */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceMember"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Member unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
         };
       };
     };
