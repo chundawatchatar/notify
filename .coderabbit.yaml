@@ -14,3 +14,10 @@ reviews:
     labels:
       - "!do-not-review"
     description_keyword: ""
+  pre_merge_checks:
+    title:
+      mode: error
+      requirements: >-
+        Ticketed pull request titles must follow `[NFY-123] Concise title`.
+        Repository maintenance work without a Linear ticket may use
+        `[Chore] Concise title`.
