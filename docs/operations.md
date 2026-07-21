@@ -96,7 +96,8 @@ In development, verification, password-reset, and invitation messages are
 written as `.eml` files under `.tmp/dev-emails`. The adapters log the recipient
 and absolute file path, but keep the raw link in the file. `.tmp/` is gitignored.
 Override the location with `DEV_EMAIL_OUTBOX_DIR` when needed. Do not enable
-these adapters in production.
+these adapters in production. Development outbox files contain live one-time
+links; keep the directory local and do not share or serve its contents.
 
 ## CI Policy
 
