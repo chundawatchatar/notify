@@ -50,7 +50,7 @@ request explicitly changes it:
 
 1. Read the issue requirements, related documentation, and the smallest
    applicable repository playbooks before editing.
-2. Create a dedicated Git worktree below `../nptify-worktrees`. Do not start
+2. Create a dedicated Git worktree below `../notify-worktrees`. Do not start
    containers from a worktree, because they duplicate local service containers.
    Run `pnpm install` there only when dependencies are unavailable.
 3. Branch from the current `develop` branch. Use a descriptive ticket branch
