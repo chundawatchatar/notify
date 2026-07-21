@@ -97,6 +97,7 @@ function WorkspaceMembersPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
       setActionError(undefined);
       await invalidateMembers();
     },
+    onMutate: () => setActionError(undefined),
     onError: (error) => setActionError(memberActionError(error)),
   });
   const removeMemberMutation = useMutation({
@@ -109,6 +110,7 @@ function WorkspaceMembersPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
       setConfirmation(undefined);
       await invalidateMembers();
     },
+    onMutate: () => setActionError(undefined),
     onError: (error) => setActionError(memberActionError(error)),
   });
   const revokeInvitationMutation = useMutation({
@@ -121,10 +123,11 @@ function WorkspaceMembersPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
       setConfirmation(undefined);
       await invalidateInvitations();
     },
+    onMutate: () => setActionError(undefined),
     onError: (error) => setActionError(requestErrorMessage(error)),
   });
   const form = useForm({
-    defaultValues: { email: "", role: roleOptions[0] ?? "viewer" },
+    defaultValues: { email: "", role: defaultInviteRole(roleOptions) },
     onSubmit: async ({ value }) => {
       inviteMutation.reset();
 
@@ -286,6 +289,7 @@ function WorkspaceMembersPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
 
       <ConfirmationDialog
         confirmation={confirmation}
+        error={actionError}
         isPending={removeMemberMutation.isPending || revokeInvitationMutation.isPending}
         onConfirm={() => {
           if (confirmation?.kind === "remove-member") {
@@ -463,11 +467,13 @@ function WorkspaceMembersPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
 
 function ConfirmationDialog({
   confirmation,
+  error,
   isPending,
   onConfirm,
   onOpenChange,
 }: Readonly<{
   confirmation?: Confirmation;
+  error?: string;
   isPending: boolean;
   onConfirm: () => void;
   onOpenChange: (open: boolean) => void;
@@ -491,6 +497,12 @@ function ConfirmationDialog({
               : `${subject} will no longer be able to use this invitation link.`}
           </DialogDescription>
         </DialogHeader>
+        {error ? (
+          <Alert severity="error">
+            <AlertTitle>Action failed</AlertTitle>
+            {error}
+          </Alert>
+        ) : null}
         <DialogFooter showCloseButton>
           <Button disabled={isPending} onClick={onConfirm} variant="destructive">
             {isPending ? "Working..." : removingMember ? "Remove member" : "Revoke invitation"}
@@ -522,6 +534,10 @@ function FormField({
 
 function grantableRoles(role: WorkspaceRole | undefined) {
   return role === "owner" ? workspaceRoles : role === "admin" ? workspaceRoles.slice(1) : [];
+}
+
+function defaultInviteRole(roleOptions: readonly WorkspaceRole[]): WorkspaceRole {
+  return roleOptions[roleOptions.length - 1] ?? "viewer";
 }
 
 function roleLabel(role: WorkspaceRole) {
@@ -575,4 +591,4 @@ function formSubmitHandler(handleSubmit: () => Promise<void>) {
   };
 }
 
-export { WorkspaceMembersPage };
+export { defaultInviteRole, grantableRoles, memberActionError, WorkspaceMembersPage };
