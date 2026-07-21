@@ -432,6 +432,46 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.CompletePasswordResetRequest",
         "x-validate": null
       },
+      "CompleteInvitationSignupRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "accept_terms": {
+            "enum": [true],
+            "example": true,
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "password": {
+            "format": "password",
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "password_confirmation": {
+            "format": "password",
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "token": {
+            "example": "invitation-token",
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["token", "password", "password_confirmation", "accept_terms"],
+        "title": "CompleteInvitationSignupRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.CompleteInvitationSignupRequest",
+        "x-validate": null
+      },
       "ServiceInfo": {
         "description": "API service metadata.",
         "example": {
@@ -529,6 +569,23 @@
         "title": "WorkspaceListResponse",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceListResponse",
+        "x-validate": null
+      },
+      "AcceptInvitationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "example": "invitation-token",
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["token"],
+        "title": "AcceptInvitationRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.AcceptInvitationRequest",
         "x-validate": null
       },
       "SignupRequest": {
@@ -984,6 +1041,177 @@
           }
         },
         "summary": "Resend email verification instructions",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/invitations/accept": {
+      "post": {
+        "callbacks": {},
+        "operationId": "acceptInvitation",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationRequest"
+              }
+            }
+          },
+          "description": "Invitation token",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "Authenticated invitation session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "HttpOnly refresh-token cookie for the invited workspace",
+                "schema": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation invalid or expired"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation email does not match or origin is rejected"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "User is already an active member"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Accept a workspace invitation for the authenticated user",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/invitations/signup": {
+      "post": {
+        "callbacks": {},
+        "operationId": "completeInvitationSignup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteInvitationSignupRequest"
+              }
+            }
+          },
+          "description": "Invitation signup details",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "Authenticated invitation session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "HttpOnly refresh-token cookie for the invited workspace",
+                "schema": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation invalid or expired"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Email already registered"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Create an invited account and join its workspace",
         "tags": ["authentication"]
       }
     },

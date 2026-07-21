@@ -1,11 +1,14 @@
 import type {
+  ApiAcceptInvitationRequest,
   ApiAuthResponse,
+  ApiCompleteInvitationSignupRequest,
   ApiCompletePasswordResetRequest,
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
   ApiConfirmPasswordResetRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
+  ApiInvitationSignupResponse,
   ApiLoginRequest,
   ApiPasswordResetCompletionResponse,
   ApiPasswordResetRequest,
@@ -50,6 +53,21 @@ function completeSignup(body: ApiCompleteSignupRequest) {
   return post<ApiSignupCompletionResponse, ApiCompleteSignupRequest>(
     "/api/auth/signup/complete",
     body,
+  );
+}
+
+function acceptInvitation(accessToken: string, body: ApiAcceptInvitationRequest) {
+  return post<ApiAuthResponse, ApiAcceptInvitationRequest>("/api/auth/invitations/accept", body, {
+    accessToken,
+    credentials: "include",
+  });
+}
+
+function completeInvitationSignup(body: ApiCompleteInvitationSignupRequest) {
+  return post<ApiInvitationSignupResponse, ApiCompleteInvitationSignupRequest>(
+    "/api/auth/invitations/signup",
+    body,
+    { credentials: "include" },
   );
 }
 
@@ -179,6 +197,8 @@ function getApiVersion() {
 
 export {
   ApiRequestError,
+  acceptInvitation,
+  completeInvitationSignup,
   completePasswordReset,
   completeSignup,
   confirmEmail,

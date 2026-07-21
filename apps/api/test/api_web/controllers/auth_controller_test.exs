@@ -4,6 +4,7 @@ defmodule ApiWeb.AuthControllerTest do
   alias Api.Accounts.User
   alias Api.Accounts.AccessToken
   alias Api.Repo
+  alias Api.Workspaces.Membership
 
   @origin "http://localhost:3100"
   @password "correct-password"
@@ -43,6 +44,85 @@ defmodule ApiWeb.AuthControllerTest do
     assert confirmation_response["expires_in"] == 900
     assert completion_response["status"] == "account_created"
     assert Repo.get_by!(User, email: "owner@example.com").confirmed_at
+  end
+
+  test "invitation signup issues a target-workspace session without creating an owner workspace",
+       %{
+         conn: conn
+       } do
+    inviter = insert(:membership)
+
+    assert {:ok, %{token: token}} =
+             Api.Workspaces.create_invitation(inviter, %{
+               email: "invited@example.com",
+               role: "developer"
+             })
+
+    signup_conn =
+      conn
+      |> with_origin()
+      |> post(~p"/api/auth/invitations/signup", %{
+        token: token,
+        password: @password,
+        password_confirmation: @password,
+        accept_terms: true
+      })
+
+    response = json_response(signup_conn, 201)
+
+    assert response["user"]["email"] == "invited@example.com"
+    assert response["workspace"]["id"] == inviter.workspace_id
+    assert response["role"] == "developer"
+    assert signup_conn.resp_cookies["_notify_refresh"].http_only
+
+    invited_user = Repo.get_by!(User, email: "invited@example.com")
+
+    assert [%Membership{workspace_id: workspace_id, role: "developer", status: "active"}] =
+             Repo.all(Membership)
+             |> Enum.filter(&(&1.user_id == invited_user.id))
+
+    assert workspace_id == inviter.workspace_id
+  end
+
+  test "an authenticated matching user accepts an invitation into its workspace", %{conn: conn} do
+    inviter = insert(:membership)
+    invited_user = insert(:user, email: "invited@example.com")
+    insert(:membership, user: invited_user)
+
+    assert {:ok, %{token: token}} =
+             Api.Workspaces.create_invitation(inviter, %{
+               email: invited_user.email,
+               role: "viewer"
+             })
+
+    {_login_conn, login_response} = login(conn, invited_user.email)
+
+    acceptance_conn =
+      build_conn()
+      |> with_origin()
+      |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
+      |> post(~p"/api/auth/invitations/accept", %{token: token})
+
+    response = json_response(acceptance_conn, 200)
+
+    assert response["workspace"]["id"] == inviter.workspace_id
+    assert response["role"] == "viewer"
+    assert acceptance_conn.resp_cookies["_notify_refresh"].http_only
+  end
+
+  test "invitation acceptance returns a safe error for an invalid token", %{conn: conn} do
+    membership = insert(:membership)
+
+    {_login_conn, login_response} = login(conn, membership.user.email)
+
+    response =
+      build_conn()
+      |> with_origin()
+      |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
+      |> post(~p"/api/auth/invitations/accept", %{token: "invalid"})
+      |> json_response(400)
+
+    assert response["errors"]["code"] == "invalid_or_expired_invitation"
   end
 
   test "login does not reveal unknown credentials but requires verification after a valid password",

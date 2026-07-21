@@ -8,7 +8,9 @@ defmodule ApiWeb.AuthController do
   alias ApiWeb.AuthError
 
   alias NotifyOpenApi.AuthSchemas.{
+    AcceptInvitationRequest,
     AuthResponse,
+    CompleteInvitationSignupRequest,
     CompletePasswordResetRequest,
     CompleteSignupRequest,
     ConfirmEmailRequest,
@@ -41,6 +43,8 @@ defmodule ApiWeb.AuthController do
               :request_password_reset,
               :confirm_password_reset,
               :complete_password_reset,
+              :accept_invitation,
+              :complete_invitation_signup,
               :refresh,
               :delete_session,
               :switch_workspace
@@ -91,6 +95,115 @@ defmodule ApiWeb.AuthController do
       %{email: ["is required"]}
     )
   end
+
+  operation :accept_invitation,
+    summary: "Accept a workspace invitation for the authenticated user",
+    operation_id: "acceptInvitation",
+    security: [%{"bearerAuth" => []}],
+    request_body:
+      {"Invitation token", "application/json", AcceptInvitationRequest, required: true},
+    responses: [
+      ok:
+        {"Authenticated invitation session", "application/json", AuthResponse,
+         headers: %{
+           "Set-Cookie" => %Header{
+             description: "HttpOnly refresh-token cookie for the invited workspace",
+             schema: %Schema{type: :string}
+           }
+         }},
+      bad_request: {"Invitation invalid or expired", "application/json", ErrorResponse},
+      unauthorized: {"Authentication required", "application/json", ErrorResponse},
+      forbidden:
+        {"Invitation email does not match or origin is rejected", "application/json",
+         ErrorResponse},
+      conflict: {"User is already an active member", "application/json", ErrorResponse}
+    ]
+
+  def accept_invitation(conn, %{"token" => token})
+      when is_binary(token) and byte_size(token) > 0 do
+    case Accounts.accept_invitation(conn.assigns.current_user, token) do
+      {:ok, result} ->
+        conn
+        |> put_refresh_cookie(result)
+        |> json(auth_payload(result))
+
+      {:error, :email_mismatch} ->
+        AuthError.render(
+          conn,
+          :forbidden,
+          "invitation_email_mismatch",
+          "This invitation belongs to a different email address."
+        )
+
+      {:error, :already_active_member} ->
+        AuthError.render(
+          conn,
+          :conflict,
+          "already_active_member",
+          "This account already belongs to the invited workspace."
+        )
+
+      {:error, _reason} ->
+        invalid_invitation(conn)
+    end
+  end
+
+  def accept_invitation(conn, _params), do: invalid_invitation(conn)
+
+  operation :complete_invitation_signup,
+    summary: "Create an invited account and join its workspace",
+    operation_id: "completeInvitationSignup",
+    request_body:
+      {"Invitation signup details", "application/json", CompleteInvitationSignupRequest,
+       required: true},
+    responses: [
+      created:
+        {"Authenticated invitation session", "application/json", AuthResponse,
+         headers: %{
+           "Set-Cookie" => %Header{
+             description: "HttpOnly refresh-token cookie for the invited workspace",
+             schema: %Schema{type: :string}
+           }
+         }},
+      bad_request: {"Invitation invalid or expired", "application/json", ErrorResponse},
+      conflict: {"Email already registered", "application/json", ErrorResponse},
+      forbidden: {"Origin rejected", "application/json", ErrorResponse},
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+    ]
+
+  def complete_invitation_signup(conn, %{"token" => token} = params)
+      when is_binary(token) and byte_size(token) > 0 do
+    case Accounts.complete_invitation_signup(token, params) do
+      {:ok, result} ->
+        conn
+        |> put_status(:created)
+        |> put_refresh_cookie(result)
+        |> json(auth_payload(result))
+
+      {:error, :invalid_or_expired_invitation} ->
+        invalid_invitation(conn)
+
+      {:error, :user, changeset} ->
+        if unique_email_error?(changeset) do
+          AuthError.render(
+            conn,
+            :conflict,
+            "email_taken",
+            "An account with this email already exists."
+          )
+        else
+          AuthError.validation(conn, changeset)
+        end
+
+      {:error, _operation, %Ecto.Changeset{} = changeset} ->
+        AuthError.validation(conn, changeset)
+
+      {:error, _reason} ->
+        invalid_invitation(conn)
+    end
+  end
+
+  def complete_invitation_signup(conn, _params), do: invalid_invitation(conn)
 
   operation :resend_verification,
     summary: "Resend email verification instructions",
@@ -589,6 +702,15 @@ defmodule ApiWeb.AuthController do
       :bad_request,
       "invalid_password_reset_token",
       "Password reset token is invalid or expired."
+    )
+  end
+
+  defp invalid_invitation(conn) do
+    AuthError.render(
+      conn,
+      :bad_request,
+      "invalid_or_expired_invitation",
+      "Invitation is invalid or expired."
     )
   end
 

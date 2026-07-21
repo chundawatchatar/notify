@@ -46,6 +46,42 @@ defmodule NotifyOpenApi.AuthSchemas do
     })
   end
 
+  defmodule AcceptInvitationRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "AcceptInvitationRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        token: %Schema{type: :string, minLength: 1, example: "invitation-token"}
+      },
+      required: [:token]
+    })
+  end
+
+  defmodule CompleteInvitationSignupRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "CompleteInvitationSignupRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        token: %Schema{type: :string, minLength: 1, example: "invitation-token"},
+        password: %Schema{type: :string, format: :password, minLength: 8, maxLength: 72},
+        password_confirmation: %Schema{
+          type: :string,
+          format: :password,
+          minLength: 8,
+          maxLength: 72
+        },
+        accept_terms: %Schema{type: :boolean, enum: [true], example: true}
+      },
+      required: [:token, :password, :password_confirmation, :accept_terms]
+    })
+  end
+
   defmodule LoginRequest do
     require OpenApiSpex
 
