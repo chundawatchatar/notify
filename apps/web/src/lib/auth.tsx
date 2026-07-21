@@ -50,6 +50,7 @@ class AuthClient {
   private listeners = new Set<() => void>();
   private refreshPromise: Promise<ApiAuthResponse> | null = null;
   private switchPromise: Promise<AuthState> | null = null;
+  private switchPromiseSlug: string | null = null;
   private refreshTimer: number | undefined;
   private started = false;
   private state: AuthState = { status: "initializing" };
@@ -167,30 +168,29 @@ class AuthClient {
     }
 
     if (this.switchPromise) {
-      return this.switchPromise;
-    }
-
-    const promise = navigator.locks.request(refreshLockName, async () => {
-      const accessToken = this.state.accessToken;
-
-      if (!accessToken) {
-        throw new ApiRequestError(401, "invalid_session", "Authentication is required.");
+      if (this.switchPromiseSlug === workspaceSlug) {
+        return this.switchPromise;
       }
 
-      const response = await requestSwitchWorkspace(accessToken, {
-        workspace_slug: workspaceSlug,
-      });
-      this.applyAuthResponse(response);
-      this.channel?.postMessage({ type: "workspace-switch" });
-      return this.state;
-    });
+      try {
+        await this.switchPromise;
+      } catch {
+        // The next requested workspace still deserves its own attempt.
+      }
+
+      return this.switchWorkspace(workspaceSlug);
+    }
+
+    const promise = this.performWorkspaceSwitch(workspaceSlug);
 
     this.switchPromise = promise;
+    this.switchPromiseSlug = workspaceSlug;
 
     try {
       return await promise;
     } finally {
       this.switchPromise = null;
+      this.switchPromiseSlug = null;
     }
   };
 
@@ -241,6 +241,40 @@ class AuthClient {
 
   private clearSession(reason?: "expired") {
     this.setState({ reason, status: "anonymous" });
+  }
+
+  private async performWorkspaceSwitch(workspaceSlug: string): Promise<AuthState> {
+    if (!this.state.accessToken || !this.state.expiresAt || this.state.expiresAt <= Date.now()) {
+      await this.refreshCredential();
+    }
+
+    try {
+      return await this.requestWorkspaceSwitch(workspaceSlug);
+    } catch (error) {
+      if (!(error instanceof ApiRequestError) || error.status !== 401) {
+        throw error;
+      }
+
+      await this.refreshCredential();
+      return this.requestWorkspaceSwitch(workspaceSlug);
+    }
+  }
+
+  private async requestWorkspaceSwitch(workspaceSlug: string): Promise<AuthState> {
+    return navigator.locks.request(refreshLockName, async () => {
+      const accessToken = this.state.accessToken;
+
+      if (!accessToken) {
+        throw new ApiRequestError(401, "invalid_session", "Authentication is required.");
+      }
+
+      const response = await requestSwitchWorkspace(accessToken, {
+        workspace_slug: workspaceSlug,
+      });
+      this.applyAuthResponse(response);
+      this.channel?.postMessage({ type: "workspace-switch" });
+      return this.state;
+    });
   }
 
   private async refreshCredential() {

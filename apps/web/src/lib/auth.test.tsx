@@ -118,6 +118,42 @@ describe("authentication session", () => {
 
     expect(switchAuthorization).toBe("Bearer refreshed-access-token");
   });
+
+  it("processes a later request for a different workspace after the active switch", async () => {
+    expect.hasAssertions();
+    installBrowserCoordination();
+    const requestedWorkspaces: string[] = [];
+
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/refresh`, () => HttpResponse.json(authResponse())),
+      http.post(`${apiBaseUrl}/api/auth/workspace/switch`, async ({ request }) => {
+        const body = (await request.json()) as { workspace_slug: string };
+        requestedWorkspaces.push(body.workspace_slug);
+
+        return HttpResponse.json(
+          authResponse({
+            workspace:
+              body.workspace_slug === "notify-labs"
+                ? { name: "Notify Labs", slug: "notify-labs" }
+                : { name: "Other Workspace", slug: "other-workspace" },
+          }),
+        );
+      }),
+    );
+
+    const container = render(
+      <AuthProvider client={createAuthClient()}>
+        <AuthHarness />
+      </AuthProvider>,
+    );
+
+    await waitForText(container, "authenticated:Acme Cloud");
+    click(container.querySelector("button[value='switch']") as HTMLButtonElement);
+    click(container.querySelector("button[value='switch-other']") as HTMLButtonElement);
+    await waitForText(container, "authenticated:Other Workspace");
+
+    expect(requestedWorkspaces).toEqual(["notify-labs", "other-workspace"]);
+  });
 });
 
 function AuthHarness() {
@@ -133,6 +169,13 @@ function AuthHarness() {
       </button>
       <button onClick={() => void auth.switchWorkspace("notify-labs")} type="button" value="switch">
         Switch workspace
+      </button>
+      <button
+        onClick={() => void auth.switchWorkspace("other-workspace")}
+        type="button"
+        value="switch-other"
+      >
+        Switch other workspace
       </button>
       <button onClick={() => void auth.signOut()} type="button" value="logout">
         Sign out

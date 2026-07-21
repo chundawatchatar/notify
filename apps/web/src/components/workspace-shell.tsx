@@ -519,7 +519,17 @@ function WorkspaceSidebarFooterControls({
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {showWorkspaceSwitcher ? (
+          {workspacesQuery.isError ? (
+            <>
+              <p className="px-2 py-1 text-destructive text-xs" role="alert">
+                {workspacesQuery.error.message}
+              </p>
+              <DropdownMenuItem onSelect={() => void workspacesQuery.refetch()}>
+                Retry workspace list
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          ) : showWorkspaceSwitcher ? (
             <>
               <DropdownMenuLabel className="text-muted-foreground text-xs">
                 Switch workspace
