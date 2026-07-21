@@ -68,4 +68,29 @@ defmodule Api.Workspaces.InvitationTest do
     assert {:ok, %Membership{status: "removed"}} = Workspaces.remove_membership(membership)
     assert Repo.get!(AuthSession, session.id).revoked_at
   end
+
+  test "rejects invitations from roles without invitation permission" do
+    owner = insert(:membership)
+    developer = insert(:membership, workspace: owner.workspace, role: "developer")
+
+    assert {:error, :forbidden} =
+             Workspaces.create_invitation(developer, %{
+               email: "invitee@example.com",
+               role: "viewer"
+             })
+  end
+
+  test "revoking a pending invitation prevents acceptance" do
+    inviter = insert(:membership)
+    invited_user = insert(:user, email: "invitee@example.com")
+
+    assert {:ok, %{invitation: invitation, token: token}} =
+             Workspaces.create_invitation(inviter, %{email: invited_user.email, role: "viewer"})
+
+    assert {:ok, revoked_invitation} = Workspaces.revoke_invitation(invitation)
+    assert revoked_invitation.revoked_at
+
+    assert {:error, :invalid_or_expired_invitation} =
+             Workspaces.accept_invitation(token, invited_user)
+  end
 end

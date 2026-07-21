@@ -429,7 +429,7 @@ defmodule Api.Accounts do
         where:
           session.id == ^session_id and is_nil(session.revoked_at) and
             session.expires_at > ^now and membership.status == "active",
-        preload: [workspace_membership: [:user, :workspace]]
+        preload: [workspace_membership: {membership, [:user, :workspace]}]
     )
   end
 
@@ -441,7 +441,7 @@ defmodule Api.Accounts do
           where: session.id == ^session_id,
           where: membership.status == "active",
           lock: "FOR UPDATE",
-          preload: [workspace_membership: [:user, :workspace]]
+          preload: [workspace_membership: {membership, [:user, :workspace]}]
       )
 
     cond do

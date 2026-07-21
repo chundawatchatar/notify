@@ -51,14 +51,13 @@ defmodule Api.Factory do
   def invitation_factory do
     membership = build(:membership)
 
-    {_token, invitation} =
-      Invitation.build(%{
-        email: sequence(:invitation_email, &"invitee-#{&1}@example.com"),
-        invited_by_membership_id: membership.id,
-        role: "developer",
-        workspace_id: membership.workspace_id
-      })
-
-    %{invitation | invited_by_membership: membership, workspace: membership.workspace}
+    %Invitation{
+      email: sequence(:invitation_email, &"invitee-#{&1}@example.com"),
+      expires_at: DateTime.add(DateTime.utc_now(:second), 7, :day),
+      invited_by_membership: membership,
+      role: "developer",
+      token_hash: :crypto.hash(:sha256, :crypto.strong_rand_bytes(32)),
+      workspace: membership.workspace
+    }
   end
 end

@@ -45,17 +45,7 @@ defmodule Api.Workspaces.Invitation do
 
   def changeset(invitation, attrs) do
     invitation
-    |> cast(attrs, [
-      :id,
-      :workspace_id,
-      :email,
-      :role,
-      :invited_by_membership_id,
-      :token_hash,
-      :expires_at,
-      :accepted_at,
-      :revoked_at
-    ])
+    |> cast(attrs, [:workspace_id, :email, :role, :invited_by_membership_id])
     |> update_change(:email, &User.normalize_email/1)
     |> validate_required([
       :id,
