@@ -4,6 +4,7 @@ defmodule ApiWeb.AuthControllerTest do
   alias Api.Accounts.User
   alias Api.Accounts.AccessToken
   alias Api.Repo
+  alias Api.Workspaces.Membership
 
   @origin "http://localhost:3100"
   @password "correct-password"
@@ -73,6 +74,14 @@ defmodule ApiWeb.AuthControllerTest do
     assert response["workspace"]["id"] == inviter.workspace_id
     assert response["role"] == "developer"
     assert signup_conn.resp_cookies["_notify_refresh"].http_only
+
+    invited_user = Repo.get_by!(User, email: "invited@example.com")
+
+    assert [%Membership{workspace_id: workspace_id, role: "developer", status: "active"}] =
+             Repo.all(Membership)
+             |> Enum.filter(&(&1.user_id == invited_user.id))
+
+    assert workspace_id == inviter.workspace_id
   end
 
   test "an authenticated matching user accepts an invitation into its workspace", %{conn: conn} do
