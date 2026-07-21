@@ -12,7 +12,7 @@ defmodule Api.Workspaces.OwnerProtection do
 
   Call this inside the transaction that changes or removes a membership.
   """
-  def ensure_owner_retained(_repo, %Membership{role: "owner"}, "owner"), do: :ok
+  def ensure_owner_retained(_repo, %Membership{role: "owner"}, "owner"), do: {:ok, :retained}
 
   def ensure_owner_retained(repo, %Membership{role: "owner", workspace_id: workspace_id}, _role) do
     owner_ids =
@@ -25,8 +25,8 @@ defmodule Api.Workspaces.OwnerProtection do
           select: membership.id
       )
 
-    if length(owner_ids) > 1, do: :ok, else: {:error, :last_active_owner}
+    if length(owner_ids) > 1, do: {:ok, :retained}, else: {:error, :last_active_owner}
   end
 
-  def ensure_owner_retained(_repo, _membership, _role), do: :ok
+  def ensure_owner_retained(_repo, _membership, _role), do: {:ok, :retained}
 end
