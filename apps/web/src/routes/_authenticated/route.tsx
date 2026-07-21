@@ -3,8 +3,8 @@ import {
   AuthenticatedRoute,
   AuthenticatedRouteError,
   AuthenticatedRoutePending,
-  productRedirectPath,
 } from "@/components/auth-route";
+import { productRedirectPath } from "@/lib/workspace-paths";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async ({ context, location }) => {

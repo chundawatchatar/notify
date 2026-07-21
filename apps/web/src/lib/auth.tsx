@@ -25,7 +25,7 @@ type AuthContextValue = AuthState & {
     request: (accessToken: string) => Promise<Result>,
   ) => Promise<Result>;
   retrySession: () => Promise<AuthState>;
-  signIn: (request: ApiLoginRequest) => Promise<void>;
+  signIn: (request: ApiLoginRequest) => Promise<AuthState>;
   signOut: () => Promise<void>;
 };
 
@@ -145,6 +145,7 @@ class AuthClient {
 
     const response = await requestLogin(request);
     this.applyAuthResponse(response);
+    return this.state;
   };
 
   signOut = async () => {

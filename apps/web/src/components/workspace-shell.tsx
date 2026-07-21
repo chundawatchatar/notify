@@ -248,6 +248,8 @@ function WorkspaceNavigation({
   expanded: boolean;
   onNavigate?: () => void;
 }>) {
+  const workspaceSlug = useWorkspaceSlug();
+
   return (
     <AppShellNav className="py-3">
       {workspaceNavItems.map((item) => {
@@ -255,8 +257,11 @@ function WorkspaceNavigation({
         const active = activeItem === item.id;
         const routeProps =
           item.id === "dashboard"
-            ? ({ to: "/dashboard" } as const)
-            : ({ params: { section: item.id }, to: "/$section" } as const);
+            ? ({ params: { workspaceSlug }, to: "/w/$workspaceSlug/dashboard" } as const)
+            : ({
+                params: { section: item.id, workspaceSlug },
+                to: "/w/$workspaceSlug/$section",
+              } as const);
 
         return (
           <SidebarNavItem active={active} asChild collapsed={!expanded} key={item.id}>
@@ -419,6 +424,7 @@ function WorkspaceSidebarFooterControls({
   const navigate = useNavigate();
   const email = auth.principal?.user.email ?? "Account";
   const workspaceName = auth.principal?.workspace.name ?? "Workspace";
+  const workspaceSlug = useWorkspaceSlug();
   const initials = accountInitials(email);
   const logoutMutation = useMutation({
     mutationFn: auth.signOut,
@@ -476,7 +482,11 @@ function WorkspaceSidebarFooterControls({
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link onClick={onNavigate} params={{ section: "settings" }} to="/$section">
+            <Link
+              onClick={onNavigate}
+              params={{ section: "settings", workspaceSlug }}
+              to="/w/$workspaceSlug/$section"
+            >
               <Settings />
               Settings
             </Link>
@@ -516,6 +526,17 @@ function WorkspaceName() {
       {auth.principal?.workspace.name ?? "Workspace"}
     </p>
   );
+}
+
+function useWorkspaceSlug() {
+  const auth = useAuth();
+  const workspaceSlug = auth.principal?.workspace.slug;
+
+  if (!workspaceSlug) {
+    throw new Error("Workspace navigation requires an active workspace.");
+  }
+
+  return workspaceSlug;
 }
 
 function accountInitials(email: string) {

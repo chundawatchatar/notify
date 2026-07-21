@@ -1,17 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { AuthShell, LoginForm } from "@/components/auth-page";
-
-const productRouteSchema = z.enum([
-  "/",
-  "/analytics",
-  "/apps",
-  "/dashboard",
-  "/ingress",
-  "/security",
-  "/settings",
-  "/subscription",
-]);
+import { productRedirectPath } from "@/lib/workspace-paths";
 
 const loginSearchSchema = z.object({
   created: z
@@ -26,7 +16,11 @@ const loginSearchSchema = z.object({
     .union([z.boolean(), z.literal("true")])
     .optional()
     .catch(undefined),
-  redirect: productRouteSchema.optional().catch(undefined),
+  redirect: z
+    .string()
+    .optional()
+    .transform((redirect) => (redirect ? productRedirectPath(redirect) : undefined))
+    .catch(undefined),
 });
 
 export const Route = createFileRoute("/auth/login")({
