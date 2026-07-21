@@ -1092,6 +1092,16 @@
             },
             "description": "Invitation invalid or expired"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
           "403": {
             "content": {
               "application/json": {
@@ -1100,7 +1110,7 @@
                 }
               }
             },
-            "description": "Invitation email does not match"
+            "description": "Invitation email does not match or origin is rejected"
           },
           "409": {
             "content": {

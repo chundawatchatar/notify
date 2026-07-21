@@ -448,6 +448,9 @@ defmodule Api.Workspaces do
   defp normalize_invitation_signup_result({:error, :invitation, _reason, _changes}),
     do: {:error, :invalid_or_expired_invitation}
 
+  defp normalize_invitation_signup_result({:error, :workspace, _reason, _changes}),
+    do: {:error, :invalid_or_expired_invitation}
+
   defp normalize_invitation_signup_result({:error, operation, reason, _changes}),
     do: {:error, operation, reason}
 

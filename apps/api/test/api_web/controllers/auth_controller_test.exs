@@ -101,6 +101,21 @@ defmodule ApiWeb.AuthControllerTest do
     assert acceptance_conn.resp_cookies["_notify_refresh"].http_only
   end
 
+  test "invitation acceptance returns a safe error for an invalid token", %{conn: conn} do
+    membership = insert(:membership)
+
+    {_login_conn, login_response} = login(conn, membership.user.email)
+
+    response =
+      build_conn()
+      |> with_origin()
+      |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
+      |> post(~p"/api/auth/invitations/accept", %{token: "invalid"})
+      |> json_response(400)
+
+    assert response["errors"]["code"] == "invalid_or_expired_invitation"
+  end
+
   test "login does not reveal unknown credentials but requires verification after a valid password",
        %{conn: conn} do
     membership = insert(:membership, user: build(:user, confirmed_at: nil))

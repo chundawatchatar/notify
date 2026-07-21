@@ -168,6 +168,21 @@ defmodule Api.AccountsTest do
     assert result.session.workspace_membership_id == result.membership.id
   end
 
+  test "a different confirmed user cannot accept an invitation" do
+    inviter = insert(:membership)
+    invited_user = insert(:user, email: "invited@example.com")
+    other_user = insert(:user, email: "other@example.com")
+
+    assert {:ok, %{invitation: invitation, token: token}} =
+             Api.Workspaces.create_invitation(inviter, %{
+               email: invited_user.email,
+               role: "viewer"
+             })
+
+    assert {:error, :email_mismatch} = Accounts.accept_invitation(other_user, token)
+    assert Repo.get!(Invitation, invitation.id).accepted_at == nil
+  end
+
   test "resending verification invalidates the previous token" do
     assert :ok = Accounts.request_signup(@email)
     assert_receive {:verification_email, _, first_url}

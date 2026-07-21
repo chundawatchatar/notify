@@ -112,7 +112,10 @@ defmodule ApiWeb.AuthController do
            }
          }},
       bad_request: {"Invitation invalid or expired", "application/json", ErrorResponse},
-      forbidden: {"Invitation email does not match", "application/json", ErrorResponse},
+      unauthorized: {"Authentication required", "application/json", ErrorResponse},
+      forbidden:
+        {"Invitation email does not match or origin is rejected", "application/json",
+         ErrorResponse},
       conflict: {"User is already an active member", "application/json", ErrorResponse}
     ]
 
