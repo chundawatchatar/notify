@@ -1126,6 +1126,15 @@ export interface operations {
           "application/json": components["schemas"]["ValidationErrorResponse"];
         };
       };
+      /** @description Workspace switch failed */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
     };
   };
   getApiLiveness: {

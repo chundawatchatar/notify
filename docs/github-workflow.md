@@ -57,12 +57,15 @@ request explicitly changes it:
    name such as `nfy-123-short-description`; do not include a username.
 4. Implement the ticket and regenerate contract outputs rather than editing
    generated files directly.
-5. Run the verification required by the ticket. If the requester requires the
-   full suite, run `pnpm test` before pushing.
-6. Inspect the final diff and commit only the ticket-related files with a
-   single-line Conventional Commit message.
-7. Push the branch and open a pull request targeting `develop`, with a clear
-   title and description that link the Linear issue and list verification.
+5. When the requester explicitly authorizes verification, run the checks
+   required by the ticket. If they require the full suite, run `pnpm test`
+   before pushing.
+6. When the requester explicitly authorizes a commit, inspect the final diff
+   and commit only the ticket-related files with a single-line Conventional
+   Commit message.
+7. When the requester explicitly authorizes publishing, push the branch and
+   open a pull request targeting `develop`, with a clear title and description
+   that link the Linear issue and list verification.
 8. Update the Linear issue with the pull request URL, move it to the appropriate
    in-progress or review state, and assign it to the requester when asked.
 9. Wait for review. Address actionable feedback, rerun affected verification,

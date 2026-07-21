@@ -268,6 +268,19 @@ defmodule ApiWeb.AuthControllerTest do
     assert response["errors"]["code"] == "workspace_not_found"
   end
 
+  test "workspace switching rejects a missing origin before rotating credentials", %{conn: conn} do
+    membership = insert(:membership)
+    {_login_conn, login_response} = login(conn, membership.user.email)
+
+    response =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
+      |> post(~p"/api/auth/workspace/switch", %{workspace_slug: membership.workspace.slug})
+      |> json_response(403)
+
+    assert response["errors"]["code"] == "origin_not_allowed"
+  end
+
   test "password reset requests do not reveal whether an account exists", %{conn: conn} do
     membership = insert(:membership)
 

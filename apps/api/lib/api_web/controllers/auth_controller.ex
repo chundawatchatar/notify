@@ -464,6 +464,7 @@ defmodule ApiWeb.AuthController do
       forbidden: {"Origin rejected", "application/json", ErrorResponse},
       not_found: {"Workspace unavailable", "application/json", ErrorResponse},
       unauthorized: {"Access token invalid", "application/json", ErrorResponse},
+      internal_server_error: {"Workspace switch failed", "application/json", ErrorResponse},
       unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
     ]
 
@@ -481,6 +482,16 @@ defmodule ApiWeb.AuthController do
           :not_found,
           "workspace_not_found",
           "Workspace is unavailable."
+        )
+
+      {:error, reason} ->
+        Logger.error("Workspace switch failed: #{inspect(reason)}")
+
+        AuthError.render(
+          conn,
+          :internal_server_error,
+          "workspace_switch_failed",
+          "Unable to switch workspace."
         )
     end
   end

@@ -1385,6 +1385,16 @@
               }
             },
             "description": "Validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace switch failed"
           }
         },
         "security": [

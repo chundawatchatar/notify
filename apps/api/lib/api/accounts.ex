@@ -249,9 +249,6 @@ defmodule Api.Accounts do
            Repo.transaction(fn -> switch_session(current_session.id, workspace_slug, now) end),
          {:ok, access_token} <- issue_access_token(session) do
       {:ok, auth_result(session, access_token, refresh_token)}
-    else
-      {:error, :workspace_not_found} -> {:error, :workspace_not_found}
-      _invalid -> {:error, :workspace_not_found}
     end
   end
 
