@@ -297,6 +297,60 @@ defmodule NotifyOpenApi.AuthSchemas do
     })
   end
 
+  defmodule WorkspaceMembershipSummary do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "WorkspaceMembershipSummary",
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, format: :uuid},
+        name: %Schema{type: :string, example: "Acme Cloud"},
+        slug: %Schema{
+          type: :string,
+          maxLength: 50,
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          example: "acme-cloud"
+        },
+        role: WorkspaceRole
+      },
+      required: [:id, :name, :slug, :role]
+    })
+  end
+
+  defmodule WorkspaceListResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "WorkspaceListResponse",
+      type: :object,
+      properties: %{
+        workspaces: %Schema{type: :array, items: WorkspaceMembershipSummary}
+      },
+      required: [:workspaces]
+    })
+  end
+
+  defmodule SwitchWorkspaceRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "SwitchWorkspaceRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        workspace_slug: %Schema{
+          type: :string,
+          minLength: 1,
+          maxLength: 50,
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          example: "notify-labs"
+        }
+      },
+      required: [:workspace_slug]
+    })
+  end
+
   defmodule MeResponse do
     require OpenApiSpex
 

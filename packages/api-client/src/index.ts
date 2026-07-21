@@ -41,6 +41,8 @@ type ApiPasswordResetCompletionResponse = JsonResponse<"completePasswordReset", 
 type ApiLoginRequest = JsonRequestBody<"login">;
 type ApiAuthResponse = JsonResponse<"login", 200>;
 type ApiCurrentUserResponse = JsonResponse<"getCurrentUser", 200>;
+type ApiWorkspaceListResponse = JsonResponse<"listWorkspaces", 200>;
+type ApiSwitchWorkspaceRequest = JsonRequestBody<"switchWorkspace">;
 type ApiErrorResponse = JsonResponse<"login", 401>;
 type ApiValidationErrorResponse = JsonResponse<"login", 422>;
 
@@ -69,8 +71,10 @@ export type {
   ApiSignupRequest,
   ApiSignupResponse,
   ApiSignupTokenResponse,
+  ApiSwitchWorkspaceRequest,
   ApiValidationErrorResponse,
   ApiVersionResponse,
+  ApiWorkspaceListResponse,
   JsonRequestBody,
   JsonResponse,
 };

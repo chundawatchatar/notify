@@ -33,6 +33,8 @@ defmodule ApiWeb.Router do
     pipe_through [:api, :authenticated_api]
 
     get "/auth/me", AuthController, :me
+    get "/workspaces", AuthController, :list_workspaces
+    post "/auth/workspace/switch", AuthController, :switch_workspace
   end
 
   scope "/api" do

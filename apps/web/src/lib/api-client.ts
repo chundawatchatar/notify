@@ -16,7 +16,9 @@ import type {
   ApiSignupRequest,
   ApiSignupResponse,
   ApiSignupTokenResponse,
+  ApiSwitchWorkspaceRequest,
   ApiVersionResponse,
+  ApiWorkspaceListResponse,
 } from "@notify/api-client";
 import { ApiRequestError, deleteRequest, get, post } from "./http-client";
 
@@ -82,6 +84,17 @@ function getCurrentUser(accessToken: string) {
   return get<ApiCurrentUserResponse>("/api/auth/me", { accessToken });
 }
 
+function listWorkspaces(accessToken: string) {
+  return get<ApiWorkspaceListResponse>("/api/workspaces", { accessToken });
+}
+
+function switchWorkspace(accessToken: string, body: ApiSwitchWorkspaceRequest) {
+  return post<ApiAuthResponse, ApiSwitchWorkspaceRequest>("/api/auth/workspace/switch", body, {
+    accessToken,
+    credentials: "include",
+  });
+}
+
 function logout(accessToken?: string) {
   return deleteRequest<void>("/api/auth/session", undefined, {
     accessToken,
@@ -106,10 +119,12 @@ export {
   getApiReadiness,
   getApiVersion,
   getCurrentUser,
+  listWorkspaces,
   login,
   logout,
   refreshSession,
   requestPasswordReset,
   resendVerification,
   startSignup,
+  switchWorkspace,
 };

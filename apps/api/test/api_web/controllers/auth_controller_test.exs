@@ -2,6 +2,7 @@ defmodule ApiWeb.AuthControllerTest do
   use ApiWeb.ConnCase, async: true
 
   alias Api.Accounts.User
+  alias Api.Accounts.AccessToken
   alias Api.Repo
 
   @origin "http://localhost:3100"
@@ -152,6 +153,119 @@ defmodule ApiWeb.AuthControllerTest do
     |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
     |> get(~p"/api/auth/me")
     |> json_response(401)
+  end
+
+  test "lists only active memberships for the authenticated user", %{conn: conn} do
+    membership = insert(:membership)
+    other_workspace_owner = insert(:membership)
+
+    active_membership =
+      insert(:membership,
+        user: membership.user,
+        workspace: other_workspace_owner.workspace,
+        role: "developer"
+      )
+
+    removed_workspace_owner = insert(:membership)
+
+    insert(:membership,
+      user: membership.user,
+      workspace: removed_workspace_owner.workspace,
+      role: "viewer",
+      status: "removed",
+      removed_at: DateTime.utc_now(:second)
+    )
+
+    {_login_conn, login_response} = login(conn, membership.user.email)
+
+    response =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
+      |> get(~p"/api/workspaces")
+      |> json_response(200)
+
+    assert Enum.sort(response["workspaces"], &(&1["id"] <= &2["id"])) ==
+             Enum.sort(
+               [
+                 %{
+                   "id" => membership.workspace.id,
+                   "name" => membership.workspace.name,
+                   "slug" => membership.workspace.slug,
+                   "role" => membership.role
+                 },
+                 %{
+                   "id" => active_membership.workspace.id,
+                   "name" => active_membership.workspace.name,
+                   "slug" => active_membership.workspace.slug,
+                   "role" => "developer"
+                 }
+               ],
+               &(&1["id"] <= &2["id"])
+             )
+  end
+
+  test "switching workspaces revokes the old session and rotates credentials", %{conn: conn} do
+    membership = insert(:membership)
+    target_workspace_owner = insert(:membership)
+
+    target_membership =
+      insert(:membership,
+        user: membership.user,
+        workspace: target_workspace_owner.workspace,
+        role: "developer"
+      )
+
+    {login_conn, login_response} = login(conn, membership.user.email)
+    old_refresh_token = login_conn.resp_cookies["_notify_refresh"].value
+
+    switch_conn =
+      build_conn()
+      |> with_origin()
+      |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
+      |> post(~p"/api/auth/workspace/switch", %{workspace_slug: target_membership.workspace.slug})
+
+    response = json_response(switch_conn, 200)
+
+    assert response["workspace"] == %{
+             "id" => target_membership.workspace.id,
+             "name" => target_membership.workspace.name,
+             "slug" => target_membership.workspace.slug
+           }
+
+    assert response["role"] == "developer"
+    refute switch_conn.resp_cookies["_notify_refresh"].value == old_refresh_token
+
+    {:ok, claims} = AccessToken.verify_access(response["access_token"])
+    assert claims["sub"] == membership.user.id
+    assert claims["wid"] == target_membership.workspace.id
+    refute Map.has_key?(claims, "role")
+    refute Map.has_key?(claims, "slug")
+
+    build_conn()
+    |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
+    |> get(~p"/api/auth/me")
+    |> json_response(401)
+
+    build_conn()
+    |> with_origin()
+    |> put_req_cookie("_notify_refresh", old_refresh_token)
+    |> post(~p"/api/auth/refresh", %{})
+    |> json_response(401)
+  end
+
+  test "switching to an inaccessible workspace fails without exposing it", %{conn: conn} do
+    membership = insert(:membership)
+    inaccessible_workspace = insert(:workspace)
+    {_login_conn, login_response} = login(conn, membership.user.email)
+
+    response =
+      build_conn()
+      |> with_origin()
+      |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")
+      |> post(~p"/api/auth/workspace/switch", %{workspace_slug: inaccessible_workspace.slug})
+      |> json_response(404)
+
+    assert response["errors"]["code"] == "workspace_not_found"
   end
 
   test "password reset requests do not reveal whether an account exists", %{conn: conn} do

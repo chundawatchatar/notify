@@ -33,6 +33,20 @@ defmodule Api.Accounts.AuthSession do
     {encode(id, secret), session}
   end
 
+  def build_with_expiry(membership, expires_at) do
+    id = Ecto.UUID.generate()
+    secret = :crypto.strong_rand_bytes(@rand_size)
+
+    session = %__MODULE__{
+      id: id,
+      workspace_membership_id: membership.id,
+      refresh_token_hash: hash(secret),
+      expires_at: expires_at
+    }
+
+    {encode(id, secret), session}
+  end
+
   def changeset(session, attrs) do
     session
     |> cast(attrs, [

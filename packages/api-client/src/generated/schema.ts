@@ -191,6 +191,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/auth/workspace/switch": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Switch the authenticated session to another workspace */
+    post: operations["switchWorkspace"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/health/live": {
     parameters: {
       query?: never;
@@ -243,6 +260,23 @@ export interface paths {
      * @description Returns the API service name and application version.
      */
     get: operations["getApiVersion"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/workspaces": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List active workspaces for the authenticated user */
+    get: operations["listWorkspaces"];
     put?: never;
     post?: never;
     delete?: never;
@@ -516,6 +550,11 @@ export interface components {
       /** @description One-time credential for completing the verified signup. */
       signup_token: string;
     };
+    /** SwitchWorkspaceRequest */
+    SwitchWorkspaceRequest: {
+      /** @example notify-labs */
+      workspace_slug: string;
+    };
     /** ValidationErrorDetails */
     ValidationErrorDetails: {
       /** @enum {string} */
@@ -542,6 +581,20 @@ export interface components {
       name: string;
       /** @example 0.1.0 */
       version: string;
+    };
+    /** WorkspaceListResponse */
+    WorkspaceListResponse: {
+      workspaces: components["schemas"]["WorkspaceMembershipSummary"][];
+    };
+    /** WorkspaceMembershipSummary */
+    WorkspaceMembershipSummary: {
+      /** Format: uuid */
+      id: string;
+      /** @example Acme Cloud */
+      name: string;
+      role: components["schemas"]["AuthWorkspaceRole"];
+      /** @example acme-cloud */
+      slug: string;
     };
   };
   responses: never;
@@ -1012,6 +1065,69 @@ export interface operations {
       };
     };
   };
+  switchWorkspace: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Target workspace */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SwitchWorkspaceRequest"];
+      };
+    };
+    responses: {
+      /** @description Switched workspace session */
+      200: {
+        headers: {
+          /** @description Rotated HttpOnly refresh-token cookie */
+          "Set-Cookie"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Origin rejected */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Workspace unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
   getApiLiveness: {
     parameters: {
       query?: never;
@@ -1077,6 +1193,35 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["VersionResponse"];
+        };
+      };
+    };
+  };
+  listWorkspaces: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Active workspace memberships */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceListResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
         };
       };
     };
