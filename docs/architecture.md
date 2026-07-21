@@ -138,6 +138,11 @@ immediately. See `docs/authentication.md` for session behavior,
 `docs/database.md` for persistence constraints, and `docs/frontend.md` for URL
 and client conventions.
 
+Security-sensitive collaboration mutations create append-only audit records in
+the owning transaction. The audit model records workspace and actor scope,
+action, target, and safe structured metadata, but never credentials or token
+material. Audit activity has no dashboard UI in this phase.
+
 Departments or teams, custom roles, and notification-app-specific grants are
 explicitly deferred.
 

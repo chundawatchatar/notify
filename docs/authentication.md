@@ -80,6 +80,8 @@ The selected workspace is always represented by a membership-scoped session.
 Switching to another workspace creates a new session for that membership,
 issues a new access JWT and refresh token, and rotates the browser cookie. The
 previous workspace session is not reused as proof of access to the new one.
+The switch is recorded as a workspace-scoped audit event without recording the
+old or new credential material.
 
 ## Invitation Acceptance
 
@@ -100,6 +102,8 @@ browser storage.
 Both endpoints set the normal HttpOnly refresh cookie and require an allowed
 dashboard origin. Invitation tokens are hashed at rest, expire, and remain
 unconsumed if signup validation or persistence fails.
+Invitation creation, revocation, and acceptance are recorded in the workspace
+audit trail without storing the raw invitation token or its hash in metadata.
 
 ## Replay Protection
 

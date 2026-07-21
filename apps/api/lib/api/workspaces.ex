@@ -7,7 +7,7 @@ defmodule Api.Workspaces do
 
   alias Api.Accounts.{AuthSession, User}
   alias Api.Repo
-  alias Api.Workspaces.{Invitation, Membership, OwnerProtection, Workspace}
+  alias Api.Workspaces.{AuditEvent, Invitation, Membership, OwnerProtection, Workspace}
   alias Domain.WorkspacePermissions
   alias Ecto.Multi
 
@@ -87,6 +87,38 @@ defmodule Api.Workspaces do
     |> Multi.update(:updated_membership, fn %{membership: membership} ->
       Membership.role_changeset(membership, role)
     end)
+    |> Multi.insert(:membership_role_changed_audit, fn %{actor: actor, membership: membership} ->
+      audit_changeset(
+        actor.workspace_id,
+        actor.id,
+        "membership_role_changed",
+        "workspace_membership",
+        membership.id,
+        %{
+          "previous_role" => membership.role,
+          "role" => role
+        }
+      )
+    end)
+    |> Multi.run(:owner_changed_audit, fn repo, %{actor: actor, membership: membership} ->
+      if membership.role == "owner" or role == "owner" do
+        repo.insert(
+          audit_changeset(
+            actor.workspace_id,
+            actor.id,
+            "workspace_owner_changed",
+            "workspace_membership",
+            membership.id,
+            %{
+              "previous_role" => membership.role,
+              "role" => role
+            }
+          )
+        )
+      else
+        {:ok, nil}
+      end
+    end)
     |> Repo.transaction()
     |> normalize_membership_result(:updated_membership)
   end
@@ -122,6 +154,18 @@ defmodule Api.Workspaces do
     end)
     |> Multi.run(:revoked_sessions, fn repo, %{membership: membership} ->
       revoke_membership_sessions(repo, membership.id, now)
+    end)
+    |> Multi.insert(:membership_removed_audit, fn %{actor: actor, membership: membership} ->
+      audit_changeset(
+        actor.workspace_id,
+        actor.id,
+        "membership_removed",
+        "workspace_membership",
+        membership.id,
+        %{
+          "role" => membership.role
+        }
+      )
     end)
     |> Repo.transaction()
     |> normalize_membership_result(:removed_membership)
@@ -170,6 +214,19 @@ defmodule Api.Workspaces do
       |> Multi.insert(:invitation, fn %{invitation_token: {_token, invitation_changeset}} ->
         invitation_changeset
       end)
+      |> Multi.insert(:invitation_created_audit, fn %{
+                                                      inviter: current_inviter,
+                                                      invitation: invitation
+                                                    } ->
+        audit_changeset(
+          current_inviter.workspace_id,
+          current_inviter.id,
+          "invitation_created",
+          "workspace_invitation",
+          invitation.id,
+          %{"email" => invitation.email, "role" => invitation.role}
+        )
+      end)
       |> Repo.transaction()
       |> normalize_invitation_creation()
     else
@@ -179,7 +236,12 @@ defmodule Api.Workspaces do
 
   def create_invitation(_, _), do: {:error, :invalid_invitation}
 
-  def revoke_invitation(%Invitation{id: invitation_id, workspace_id: workspace_id}) do
+  def revoke_invitation(%Invitation{} = invitation), do: revoke_invitation(invitation, nil)
+
+  def revoke_invitation(
+        %Invitation{id: invitation_id, workspace_id: workspace_id},
+        actor_membership_id
+      ) do
     now = DateTime.utc_now(:second)
 
     Multi.new()
@@ -187,6 +249,16 @@ defmodule Api.Workspaces do
     |> Multi.run(:invitation, fn repo, _changes -> lock_invitation(repo, invitation_id) end)
     |> Multi.update(:revoked_invitation, fn %{invitation: invitation} ->
       Invitation.revoke_changeset(invitation, now)
+    end)
+    |> Multi.insert(:invitation_revoked_audit, fn %{invitation: invitation} ->
+      audit_changeset(
+        workspace_id,
+        actor_membership_id,
+        "invitation_revoked",
+        "workspace_invitation",
+        invitation.id,
+        %{"email" => invitation.email, "role" => invitation.role}
+      )
     end)
     |> Repo.transaction()
     |> normalize_invitation_result(:revoked_invitation)
@@ -251,6 +323,39 @@ defmodule Api.Workspaces do
       |> Multi.update(:accepted_invitation, fn %{invitation: invitation} ->
         Invitation.accept_changeset(invitation, now)
       end)
+      |> Multi.insert(:invitation_accepted_audit, fn %{
+                                                       invitation: invitation,
+                                                       accepted_membership: membership
+                                                     } ->
+        audit_changeset(
+          invitation.workspace_id,
+          membership.id,
+          "invitation_accepted",
+          "workspace_invitation",
+          invitation.id,
+          %{"membership_id" => membership.id, "role" => membership.role}
+        )
+      end)
+      |> Multi.run(:membership_reactivated_audit, fn repo,
+                                                     %{
+                                                       membership: previous_membership,
+                                                       accepted_membership: membership
+                                                     } ->
+        if previous_membership do
+          repo.insert(
+            audit_changeset(
+              membership.workspace_id,
+              membership.id,
+              "membership_reactivated",
+              "workspace_membership",
+              membership.id,
+              %{"role" => membership.role}
+            )
+          )
+        else
+          {:ok, nil}
+        end
+      end)
       |> Repo.transaction()
       |> normalize_invitation_result(:accepted_membership)
     else
@@ -296,6 +401,19 @@ defmodule Api.Workspaces do
       end)
       |> Multi.update(:accepted_invitation, fn %{invitation: invitation} ->
         Invitation.accept_changeset(invitation, now)
+      end)
+      |> Multi.insert(:invitation_accepted_audit, fn %{
+                                                       invitation: invitation,
+                                                       membership: membership
+                                                     } ->
+        audit_changeset(
+          invitation.workspace_id,
+          membership.id,
+          "invitation_accepted",
+          "workspace_invitation",
+          invitation.id,
+          %{"membership_id" => membership.id, "role" => membership.role}
+        )
       end)
       |> Repo.transaction()
       |> normalize_invitation_signup_result()
@@ -420,6 +538,24 @@ defmodule Api.Workspaces do
       )
 
     {:ok, count}
+  end
+
+  defp audit_changeset(
+         workspace_id,
+         actor_membership_id,
+         action,
+         target_type,
+         target_id,
+         metadata
+       ) do
+    AuditEvent.changeset(%AuditEvent{}, %{
+      workspace_id: workspace_id,
+      actor_workspace_membership_id: actor_membership_id,
+      action: action,
+      target_type: target_type,
+      target_id: target_id,
+      metadata: metadata
+    })
   end
 
   defp normalize_membership_result({:ok, result}, result_key),

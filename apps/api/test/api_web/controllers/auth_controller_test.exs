@@ -4,7 +4,7 @@ defmodule ApiWeb.AuthControllerTest do
   alias Api.Accounts.User
   alias Api.Accounts.AccessToken
   alias Api.Repo
-  alias Api.Workspaces.Membership
+  alias Api.Workspaces.{AuditEvent, Membership}
 
   @origin "http://localhost:3100"
   @password "correct-password"
@@ -297,6 +297,7 @@ defmodule ApiWeb.AuthControllerTest do
 
     {login_conn, login_response} = login(conn, membership.user.email)
     old_refresh_token = login_conn.resp_cookies["_notify_refresh"].value
+    {:ok, old_claims} = AccessToken.verify_access(login_response["access_token"])
 
     switch_conn =
       build_conn()
@@ -320,6 +321,19 @@ defmodule ApiWeb.AuthControllerTest do
     assert claims["wid"] == target_membership.workspace.id
     refute Map.has_key?(claims, "role")
     refute Map.has_key?(claims, "slug")
+
+    assert %AuditEvent{
+             action: "workspace_switched",
+             workspace_id: workspace_id,
+             actor_workspace_membership_id: actor_id,
+             target_id: target_id,
+             metadata: %{"previous_workspace_id" => previous_workspace_id}
+           } = Repo.get_by(AuditEvent, action: "workspace_switched")
+
+    assert workspace_id == target_membership.workspace.id
+    assert actor_id == target_membership.id
+    assert target_id == target_membership.workspace.id
+    assert previous_workspace_id == old_claims["wid"]
 
     build_conn()
     |> put_req_header("authorization", "Bearer #{login_response["access_token"]}")

@@ -14,7 +14,7 @@ defmodule Api.Accounts do
 
   alias Api.Repo
   alias Api.Workspaces
-  alias Api.Workspaces.{Membership, Workspace}
+  alias Api.Workspaces.{AuditEvent, Membership, Workspace}
   alias Ecto.Multi
 
   @auth_challenge_replace_fields [
@@ -514,6 +514,20 @@ defmodule Api.Accounts do
         AuthSession.build_with_expiry(target_membership, current_session.expires_at)
 
       {:ok, session} = Repo.insert(AuthSession.changeset(session, %{}))
+
+      {:ok, _audit_event} =
+        Repo.insert(
+          AuditEvent.changeset(%AuditEvent{}, %{
+            workspace_id: target_membership.workspace_id,
+            actor_workspace_membership_id: target_membership.id,
+            action: "workspace_switched",
+            target_type: "workspace",
+            target_id: target_membership.workspace_id,
+            metadata: %{
+              "previous_workspace_id" => current_session.workspace_membership.workspace_id
+            }
+          })
+        )
 
       {%{session | workspace_membership: target_membership}, refresh_token}
     else

@@ -48,8 +48,10 @@ Workspace switching uses membership-scoped sessions. Every product route below
 uses the canonical `/w/:workspaceSlug` prefix; the listed unscoped path is a
 temporary legacy alias that redirects to the canonical URL after the workspace
 routing migration. Invitations will support expiring, revocable, single-use
-email tokens. Departments or teams, custom roles, and app-specific grants are
-deferred. The authoritative model is in `docs/architecture.md`.
+email tokens. Security-sensitive collaboration mutations write append-only,
+workspace-scoped audit events, but an audit-log UI is deferred. Departments or
+teams, custom roles, and app-specific grants are deferred. The authoritative
+model is in `docs/architecture.md`.
 
 ## Dashboard
 
@@ -169,14 +171,14 @@ Responsibilities:
 - key rotation
 - trusted origins
 - socket token policy
-- audit activity
+- future audit activity view
 
 Expected future backend ownership:
 
 - API key storage and hashing
 - key rotation lifecycle
 - origin enforcement
-- audit log records
+- audit-event retrieval and retention policy
 
 ## Settings
 
