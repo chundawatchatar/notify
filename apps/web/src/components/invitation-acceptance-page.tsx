@@ -95,12 +95,12 @@ function InvitationForm({
       return;
     }
 
-    onComplete();
     await navigate({
       params: { workspaceSlug },
       replace: true,
       to: "/w/$workspaceSlug/dashboard",
     });
+    onComplete();
   };
   const form = useForm({
     defaultValues: { acceptTerms: false, confirmPassword: "", password: "" },
@@ -115,8 +115,10 @@ function InvitationForm({
           token: state.token,
         });
         await finish(session.principal?.workspace.slug);
-      } catch {
-        /* Render the API error without clearing values. */
+      } catch (error) {
+        setCompletionError(
+          error instanceof Error ? error : new Error("Unable to complete the request. Try again."),
+        );
       }
     },
   });
@@ -152,7 +154,13 @@ function InvitationForm({
                 void acceptMutation
                   .mutateAsync()
                   .then((session) => finish(session.principal?.workspace.slug))
-                  .catch(() => undefined);
+                  .catch((error) => {
+                    setCompletionError(
+                      error instanceof Error
+                        ? error
+                        : new Error("Unable to complete the request. Try again."),
+                    );
+                  });
               }}
               type="button"
             >
