@@ -27,6 +27,10 @@ function parseProductRedirect(pathname: string | undefined): ProductRedirect | u
 
   const [, workspaceSlug, destination] = match;
 
+  if (!workspaceSlug || !destination) {
+    return undefined;
+  }
+
   if (destination === "dashboard") {
     return { kind: "dashboard", workspaceSlug };
   }

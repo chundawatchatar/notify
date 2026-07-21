@@ -5,9 +5,8 @@ import { isWorkspaceSection } from "@/lib/workspace-sections";
 export const Route = createFileRoute("/_authenticated/w/$workspaceSlug/$section")({
   component: WorkspaceSectionRoute,
   params: {
-    parse: ({ section, workspaceSlug }) =>
-      isWorkspaceSection(section) ? { section, workspaceSlug } : false,
-    stringify: ({ section, workspaceSlug }) => ({ section, workspaceSlug }),
+    parse: ({ section }) => (isWorkspaceSection(section) ? { section } : false),
+    stringify: ({ section }) => ({ section }),
   },
 });
 
