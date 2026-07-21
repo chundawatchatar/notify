@@ -154,7 +154,7 @@ defmodule Api.Workspaces do
         revoke_pending_invitation(repo, current_inviter.workspace_id, normalized_email, now)
       end)
       |> Multi.run(:invitation_token, fn _repo, %{inviter: current_inviter} ->
-        {token, invitation} =
+        {token, invitation_changeset} =
           Invitation.build(
             %{
               email: normalized_email,
@@ -165,10 +165,10 @@ defmodule Api.Workspaces do
             now
           )
 
-        {:ok, {token, invitation}}
+        {:ok, {token, invitation_changeset}}
       end)
-      |> Multi.insert(:invitation, fn %{invitation_token: {_token, invitation}} ->
-        Invitation.changeset(invitation, %{})
+      |> Multi.insert(:invitation, fn %{invitation_token: {_token, invitation_changeset}} ->
+        invitation_changeset
       end)
       |> Repo.transaction()
       |> normalize_invitation_creation()
