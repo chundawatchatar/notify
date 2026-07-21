@@ -28,6 +28,16 @@ defmodule Api.Workspaces.OwnerProtectionTest do
     assert owner_target_id == membership.id
   end
 
+  test "does not audit an unchanged role" do
+    membership = insert(:membership)
+
+    assert {:ok, unchanged_membership} =
+             Workspaces.update_membership_role(membership, membership.role)
+
+    assert unchanged_membership.role == membership.role
+    assert Repo.aggregate(AuditEvent, :count, :id) == 0
+  end
+
   test "rejects removing the final workspace owner" do
     membership = insert(:membership)
 

@@ -87,21 +87,28 @@ defmodule Api.Workspaces do
     |> Multi.update(:updated_membership, fn %{membership: membership} ->
       Membership.role_changeset(membership, role)
     end)
-    |> Multi.insert(:membership_role_changed_audit, fn %{actor: actor, membership: membership} ->
-      audit_changeset(
-        actor.workspace_id,
-        actor.id,
-        "membership_role_changed",
-        "workspace_membership",
-        membership.id,
-        %{
-          "previous_role" => membership.role,
-          "role" => role
-        }
-      )
+    |> Multi.run(:membership_role_changed_audit, fn repo,
+                                                    %{actor: actor, membership: membership} ->
+      if role_changed?(membership, role) do
+        repo.insert(
+          audit_changeset(
+            actor.workspace_id,
+            actor.id,
+            "membership_role_changed",
+            "workspace_membership",
+            membership.id,
+            %{
+              "previous_role" => membership.role,
+              "role" => role
+            }
+          )
+        )
+      else
+        {:ok, nil}
+      end
     end)
     |> Multi.run(:owner_changed_audit, fn repo, %{actor: actor, membership: membership} ->
-      if membership.role == "owner" or role == "owner" do
+      if role_changed?(membership, role) and (membership.role == "owner" or role == "owner") do
         repo.insert(
           audit_changeset(
             actor.workspace_id,
@@ -550,6 +557,8 @@ defmodule Api.Workspaces do
       end
     end)
   end
+
+  defp role_changed?(membership, role), do: membership.role != role
 
   defp revoke_membership_sessions(repo, membership_id, now) do
     {count, _} =
