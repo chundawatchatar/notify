@@ -93,4 +93,11 @@ defmodule Api.Workspaces.InvitationTest do
     assert {:error, :invalid_or_expired_invitation} =
              Workspaces.accept_invitation(token, invited_user)
   end
+
+  test "invitation factory persists its shared workspace once" do
+    invitation = insert(:invitation)
+    membership = Repo.get!(Membership, invitation.invited_by_membership_id)
+
+    assert membership.workspace_id == invitation.workspace_id
+  end
 end

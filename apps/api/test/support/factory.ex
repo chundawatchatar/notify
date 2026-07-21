@@ -49,7 +49,8 @@ defmodule Api.Factory do
   end
 
   def invitation_factory do
-    membership = build(:membership)
+    workspace = insert(:workspace)
+    membership = build(:membership, workspace: workspace)
 
     %Invitation{
       email: sequence(:invitation_email, &"invitee-#{&1}@example.com"),
@@ -57,7 +58,7 @@ defmodule Api.Factory do
       invited_by_membership: membership,
       role: "developer",
       token_hash: :crypto.hash(:sha256, :crypto.strong_rand_bytes(32)),
-      workspace: membership.workspace
+      workspace: workspace
     }
   end
 end
