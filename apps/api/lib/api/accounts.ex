@@ -13,6 +13,7 @@ defmodule Api.Accounts do
   }
 
   alias Api.Repo
+  alias Api.Workspaces
   alias Api.Workspaces.{Membership, Workspace}
   alias Ecto.Multi
 
@@ -173,6 +174,33 @@ defmodule Api.Accounts do
       _invalid -> {:error, :invalid_or_expired_signup_token}
     end
   end
+
+  def accept_invitation(%User{} = user, token) when is_binary(token) do
+    with {:ok, membership} <- Workspaces.accept_invitation(token, user),
+         %Membership{} = membership <- active_membership(membership.id),
+         {:ok, result} <- create_session(membership, false) do
+      {:ok, result}
+    else
+      {:error, reason} -> {:error, reason}
+      nil -> {:error, :workspace_membership_not_found}
+    end
+  end
+
+  def accept_invitation(_, _), do: {:error, :invalid_or_expired_invitation}
+
+  def complete_invitation_signup(token, attrs) when is_binary(token) and is_map(attrs) do
+    with {:ok, result} <- Workspaces.complete_invitation_signup(token, attrs),
+         membership = %{result.membership | user: result.user, workspace: result.workspace},
+         session = %{result.session | workspace_membership: membership},
+         {:ok, access_token} <- issue_access_token(session) do
+      {:ok, auth_result(session, access_token, result.refresh_token)}
+    else
+      {:error, reason} -> {:error, reason}
+      {:error, operation, reason} -> {:error, operation, reason}
+    end
+  end
+
+  def complete_invitation_signup(_, _), do: {:error, :invalid_or_expired_invitation}
 
   def login(email, password, remember) when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: User.normalize_email(email))
@@ -419,6 +447,14 @@ defmodule Api.Accounts do
         where: membership.status == "active",
         order_by: [asc: membership.inserted_at, asc: membership.id],
         limit: 1,
+        preload: [:user, :workspace]
+    )
+  end
+
+  defp active_membership(membership_id) do
+    Repo.one(
+      from membership in Membership,
+        where: membership.id == ^membership_id and membership.status == "active",
         preload: [:user, :workspace]
     )
   end

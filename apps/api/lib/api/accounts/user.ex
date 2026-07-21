@@ -48,6 +48,28 @@ defmodule Api.Accounts.User do
     |> maybe_hash_password()
   end
 
+  def invitation_signup_changeset(user, attrs, email, confirmed_at) do
+    attrs = Map.put(attrs, "email", email)
+
+    user
+    |> cast(attrs, [:email, :password, :password_confirmation, :accept_terms])
+    |> update_change(:email, &normalize_email/1)
+    |> validate_required([:email, :password, :password_confirmation, :accept_terms])
+    |> validate_format(:email, ~r/^[^@,;\s]+@[^@,;\s]+$/,
+      message: "must have the @ sign and no spaces"
+    )
+    |> validate_length(:email, max: 160)
+    |> validate_length(:password, min: 8, max: 72)
+    |> validate_confirmation(:password, required: true)
+    |> validate_acceptance(:accept_terms, message: "must be accepted")
+    |> unique_constraint(:email)
+    |> check_constraint(:email, name: :users_email_normalized)
+    |> check_constraint(:email, name: :users_email_length)
+    |> put_terms_acceptance()
+    |> put_change(:confirmed_at, confirmed_at)
+    |> maybe_hash_password()
+  end
+
   def last_login_changeset(user, now), do: change(user, last_login_at: now)
 
   def password_reset_changeset(user, attrs) do

@@ -260,6 +260,52 @@ defmodule Api.Workspaces do
 
   def accept_invitation(_, _), do: {:error, :invalid_or_expired_invitation}
 
+  def complete_invitation_signup(token, attrs) when is_map(attrs) do
+    now = DateTime.utc_now(:second)
+    attrs = Map.new(attrs, fn {key, value} -> {to_string(key), value} end)
+
+    with {:ok, invitation_id, secret} <- Invitation.decode(token) do
+      Multi.new()
+      |> Multi.run(:invitation_lookup, fn repo, _changes ->
+        find_invitation(repo, invitation_id)
+      end)
+      |> Multi.run(:workspace, fn repo, %{invitation_lookup: invitation} ->
+        lock_workspace(repo, invitation.workspace_id)
+      end)
+      |> Multi.run(:invitation, fn repo, _changes ->
+        lock_active_invitation(repo, invitation_id, secret, now)
+      end)
+      |> Multi.insert(:user, fn %{invitation: invitation} ->
+        User.invitation_signup_changeset(%User{}, attrs, invitation.email, now)
+      end)
+      |> Multi.insert(:membership, fn %{invitation: invitation, user: user} ->
+        Membership.changeset(%Membership{}, %{
+          user_id: user.id,
+          workspace_id: invitation.workspace_id,
+          role: invitation.role,
+          status: "active",
+          joined_at: now
+        })
+      end)
+      |> Multi.run(:session_token, fn _repo, %{membership: membership} ->
+        {refresh_token, session} = AuthSession.build(membership, false, now)
+        {:ok, {refresh_token, session}}
+      end)
+      |> Multi.insert(:session, fn %{session_token: {_refresh_token, session}} ->
+        AuthSession.changeset(session, %{})
+      end)
+      |> Multi.update(:accepted_invitation, fn %{invitation: invitation} ->
+        Invitation.accept_changeset(invitation, now)
+      end)
+      |> Repo.transaction()
+      |> normalize_invitation_signup_result()
+    else
+      _invalid -> {:error, :invalid_or_expired_invitation}
+    end
+  end
+
+  def complete_invitation_signup(_, _), do: {:error, :invalid_or_expired_invitation}
+
   defp lock_user_membership(repo, user_id, workspace_id) do
     {:ok,
      repo.one(
@@ -334,7 +380,7 @@ defmodule Api.Workspaces do
              where: workspace.id == ^workspace_id,
              lock: "FOR UPDATE"
          ) do
-      %Workspace{} -> {:ok, :locked}
+      %Workspace{} = workspace -> {:ok, workspace}
       nil -> {:error, :workspace_not_found}
     end
   end
@@ -390,6 +436,20 @@ defmodule Api.Workspaces do
 
   defp normalize_membership_result({:error, _operation, value, _changes}, _result_key),
     do: {:error, value}
+
+  defp normalize_invitation_signup_result({:ok, result}) do
+    {refresh_token, _session} = result.session_token
+    {:ok, Map.put(result, :refresh_token, refresh_token)}
+  end
+
+  defp normalize_invitation_signup_result({:error, :invitation_lookup, _reason, _changes}),
+    do: {:error, :invalid_or_expired_invitation}
+
+  defp normalize_invitation_signup_result({:error, :invitation, _reason, _changes}),
+    do: {:error, :invalid_or_expired_invitation}
+
+  defp normalize_invitation_signup_result({:error, operation, reason, _changes}),
+    do: {:error, operation, reason}
 
   defp normalize_invitation_creation(
          {:ok, %{invitation: invitation, invitation_token: {token, _}}}

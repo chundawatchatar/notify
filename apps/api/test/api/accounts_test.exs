@@ -2,8 +2,8 @@ defmodule Api.AccountsTest do
   use Api.DataCase, async: false
 
   alias Api.Accounts
-  alias Api.Accounts.{AuthChallenge, User}
-  alias Api.Workspaces.{Membership, Workspace}
+  alias Api.Accounts.{AuthChallenge, AuthSession, User}
+  alias Api.Workspaces.{Invitation, Membership, Workspace}
 
   defmodule FailingEmailAdapter do
     @behaviour Api.Accounts.VerificationEmail
@@ -102,6 +102,70 @@ defmodule Api.AccountsTest do
              })
 
     assert Repo.get!(Workspace, result.workspace.id).slug == truncated_slug <> "-3"
+  end
+
+  test "invitation signup creates a confirmed user, target membership, and session without a workspace" do
+    inviter = insert(:membership)
+
+    assert {:ok, %{invitation: invitation, token: token}} =
+             Api.Workspaces.create_invitation(inviter, %{
+               email: "invited@example.com",
+               role: "developer"
+             })
+
+    assert {:ok, result} =
+             Accounts.complete_invitation_signup(token, %{
+               password: @completion_attrs["password"],
+               password_confirmation: @completion_attrs["password"],
+               accept_terms: true
+             })
+
+    assert result.user.email == "invited@example.com"
+    assert result.user.confirmed_at
+    assert result.membership.workspace_id == inviter.workspace_id
+    assert result.membership.role == "developer"
+    assert result.workspace.id == inviter.workspace_id
+    assert result.session.workspace_membership_id == result.membership.id
+    assert Repo.get!(Invitation, invitation.id).accepted_at
+    assert Repo.get!(AuthSession, result.session.id).refresh_token_hash
+    assert Repo.aggregate(Workspace, :count) == 1
+  end
+
+  test "failed invitation signup leaves the invitation available" do
+    inviter = insert(:membership)
+
+    assert {:ok, %{invitation: invitation, token: token}} =
+             Api.Workspaces.create_invitation(inviter, %{
+               email: "invited@example.com",
+               role: "viewer"
+             })
+
+    assert {:error, :user, changeset} =
+             Accounts.complete_invitation_signup(token, %{
+               password: @completion_attrs["password"],
+               password_confirmation: "different-password",
+               accept_terms: true
+             })
+
+    assert "does not match confirmation" in errors_on(changeset).password_confirmation
+    assert Repo.get!(Invitation, invitation.id).accepted_at == nil
+    assert Repo.get_by(User, email: "invited@example.com") == nil
+  end
+
+  test "matching existing users receive a target-workspace session when accepting" do
+    inviter = insert(:membership)
+    invited_user = insert(:user, email: "invited@example.com")
+
+    assert {:ok, %{token: token}} =
+             Api.Workspaces.create_invitation(inviter, %{
+               email: invited_user.email,
+               role: "viewer"
+             })
+
+    assert {:ok, result} = Accounts.accept_invitation(invited_user, token)
+    assert result.membership.workspace_id == inviter.workspace_id
+    assert result.membership.role == "viewer"
+    assert result.session.workspace_membership_id == result.membership.id
   end
 
   test "resending verification invalidates the previous token" do

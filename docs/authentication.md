@@ -81,6 +81,26 @@ Switching to another workspace creates a new session for that membership,
 issues a new access JWT and refresh token, and rotates the browser cookie. The
 previous workspace session is not reused as proof of access to the new one.
 
+## Invitation Acceptance
+
+An invitation link carries a single-use token in `/auth/invitations/accept`.
+The dashboard captures that token only long enough to call an acceptance API and
+removes it from the URL immediately. It never writes invitation tokens to
+browser storage.
+
+- An authenticated user sends the token to `POST /api/auth/invitations/accept`.
+  The API requires the user's confirmed normalized email to match the invitation,
+  consumes the invitation and creates or reactivates the membership atomically,
+  then returns a membership-scoped session for the invited workspace.
+- A user without an account sends the token, password, password confirmation,
+  and accepted terms to `POST /api/auth/invitations/signup`. The API creates the
+  confirmed user, membership, session, and consumed invitation in one
+  transaction. This flow never creates a personal owner workspace.
+
+Both endpoints set the normal HttpOnly refresh cookie and require an allowed
+dashboard origin. Invitation tokens are hashed at rest, expire, and remain
+unconsumed if signup validation or persistence fails.
+
 ## Replay Protection
 
 A refresh token can be used successfully only once. If an old token is used

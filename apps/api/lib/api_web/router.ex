@@ -19,6 +19,7 @@ defmodule ApiWeb.Router do
 
     post "/auth/signup", AuthController, :signup
     post "/auth/signup/complete", AuthController, :complete_signup
+    post "/auth/invitations/signup", AuthController, :complete_invitation_signup
     post "/auth/email-verification/resend", AuthController, :resend_verification
     post "/auth/email-verification/confirm", AuthController, :confirm_email
     post "/auth/password-reset", AuthController, :request_password_reset
@@ -34,6 +35,7 @@ defmodule ApiWeb.Router do
 
     get "/auth/me", AuthController, :me
     get "/workspaces", AuthController, :list_workspaces
+    post "/auth/invitations/accept", AuthController, :accept_invitation
     post "/auth/workspace/switch", AuthController, :switch_workspace
 
     get "/workspaces/:workspaceSlug/members", WorkspaceMemberController, :index

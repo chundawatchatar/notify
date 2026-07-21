@@ -38,6 +38,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/auth/invitations/accept": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Accept a workspace invitation for the authenticated user */
+    post: operations["acceptInvitation"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/invitations/signup": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Create an invited account and join its workspace */
+    post: operations["completeInvitationSignup"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/auth/login": {
     parameters: {
       query?: never;
@@ -522,6 +556,20 @@ export interface components {
       /** @description Short-lived credential issued after confirming a reset link. */
       reset_token: string;
     };
+    /** CompleteInvitationSignupRequest */
+    CompleteInvitationSignupRequest: {
+      /**
+       * @example true
+       * @enum {boolean}
+       */
+      accept_terms: true;
+      /** Format: password */
+      password: string;
+      /** Format: password */
+      password_confirmation: string;
+      /** @example invitation-token */
+      token: string;
+    };
     /**
      * ServiceInfo
      * @description API service metadata.
@@ -556,6 +604,11 @@ export interface components {
     /** WorkspaceListResponse */
     WorkspaceListResponse: {
       workspaces: components["schemas"]["WorkspaceMembershipSummary"][];
+    };
+    /** AcceptInvitationRequest */
+    AcceptInvitationRequest: {
+      /** @example invitation-token */
+      token: string;
     };
     /** SignupRequest */
     SignupRequest: {
@@ -801,6 +854,123 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  acceptInvitation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Invitation token */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AcceptInvitationRequest"];
+      };
+    };
+    responses: {
+      /** @description Authenticated invitation session */
+      200: {
+        headers: {
+          /** @description HttpOnly refresh-token cookie for the invited workspace */
+          "Set-Cookie"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Invitation invalid or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Invitation email does not match */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description User is already an active member */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  completeInvitationSignup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Invitation signup details */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompleteInvitationSignupRequest"];
+      };
+    };
+    responses: {
+      /** @description Authenticated invitation session */
+      201: {
+        headers: {
+          /** @description HttpOnly refresh-token cookie for the invited workspace */
+          "Set-Cookie"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Invitation invalid or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Origin rejected */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Email already registered */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
         };
       };
     };
