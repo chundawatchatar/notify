@@ -958,9 +958,9 @@ function FormField({
   );
 }
 
-function FieldError({ message }: Readonly<{ message?: string }>) {
+function FieldError({ id, message }: Readonly<{ id?: string; message?: string }>) {
   return message ? (
-    <p className="text-destructive text-sm" role="alert">
+    <p className="text-destructive text-sm" id={id} role="alert">
       {message}
     </p>
   ) : null;
@@ -1021,8 +1021,11 @@ function formSubmitHandler(handleSubmit: () => Promise<void>) {
 export {
   AuthShell,
   CompleteSignupForm,
+  FieldError,
   ForgotPasswordForm,
+  firstFieldError,
   LoginForm,
+  MutationMessage,
   PasswordResetFlow,
   ResetPasswordForm,
   SignupForm,

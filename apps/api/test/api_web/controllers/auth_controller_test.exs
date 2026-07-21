@@ -102,6 +102,13 @@ defmodule ApiWeb.AuthControllerTest do
     assert response["email"] == "invited@example.com"
     assert response["role"] == "developer"
     assert response["expires_at"]
+
+    still_resolvable =
+      build_conn()
+      |> post(~p"/api/auth/invitations/resolve", %{token: token})
+      |> json_response(200)
+
+    assert still_resolvable["email"] == "invited@example.com"
   end
 
   test "an authenticated matching user accepts an invitation into its workspace", %{conn: conn} do

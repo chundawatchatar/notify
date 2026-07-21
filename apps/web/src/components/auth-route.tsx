@@ -4,6 +4,8 @@ import { useAuth } from "@/lib/auth";
 import { productRedirectPath } from "@/lib/workspace-paths";
 import { PageLoader } from "./page-loader";
 
+const invitationAcceptancePath = "/auth/invitations/accept";
+
 function GuestRoute() {
   const auth = useAuth();
   const location = useLocation();
@@ -12,11 +14,11 @@ function GuestRoute() {
     return <PageLoader label="Checking for an existing Notify session." />;
   }
 
-  if (
-    auth.status === "authenticated" &&
-    auth.principal &&
-    location.pathname !== "/auth/invitations/accept"
-  ) {
+  if (auth.status === "authenticated" && location.pathname === invitationAcceptancePath) {
+    return <Outlet />;
+  }
+
+  if (auth.status === "authenticated" && auth.principal) {
     return (
       <Navigate
         replace

@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { AuthShell } from "@/components/auth-page";
+import { AuthShell, FieldError, firstFieldError, MutationMessage } from "@/components/auth-page";
 import { useAuth } from "@/lib/auth";
 import type { InvitationAcceptanceState } from "@/lib/invitation-acceptance";
 
@@ -84,20 +84,29 @@ function InvitationForm({
 }>) {
   const auth = useAuth();
   const navigate = useNavigate();
+  const [completionError, setCompletionError] = useState<Error>();
   const acceptMutation = useMutation({ mutationFn: () => auth.acceptInvitation(state.token) });
   const signupMutation = useMutation({ mutationFn: auth.completeInvitationSignup });
   const finish = async (workspaceSlug?: string) => {
+    if (!workspaceSlug) {
+      setCompletionError(
+        new Error("Your account does not have an active workspace. Contact support to continue."),
+      );
+      return;
+    }
+
     onComplete();
-    if (workspaceSlug)
-      await navigate({
-        params: { workspaceSlug },
-        replace: true,
-        to: "/w/$workspaceSlug/dashboard",
-      });
+    await navigate({
+      params: { workspaceSlug },
+      replace: true,
+      to: "/w/$workspaceSlug/dashboard",
+    });
   };
   const form = useForm({
     defaultValues: { acceptTerms: false, confirmPassword: "", password: "" },
     onSubmit: async ({ value }) => {
+      setCompletionError(undefined);
+
       try {
         const session = await signupMutation.mutateAsync({
           accept_terms: value.acceptTerms as true,
@@ -138,17 +147,18 @@ function InvitationForm({
             <Button
               className="w-full"
               disabled={acceptMutation.isPending}
-              onClick={() =>
+              onClick={() => {
+                setCompletionError(undefined);
                 void acceptMutation
                   .mutateAsync()
                   .then((session) => finish(session.principal?.workspace.slug))
-                  .catch(() => undefined)
-              }
+                  .catch(() => undefined);
+              }}
               type="button"
             >
               {acceptMutation.isPending ? "Accepting invitation" : "Accept invitation"}
             </Button>
-            {acceptMutation.error ? <ApiError error={acceptMutation.error} /> : null}
+            <MutationMessage error={completionError ?? acceptMutation.error} />
           </>
         ) : (
           <>
@@ -277,41 +287,13 @@ function InvitationForm({
                   </Button>
                 )}
               </form.Subscribe>
-              {signupMutation.error ? <ApiError error={signupMutation.error} /> : null}
+              <MutationMessage error={completionError ?? signupMutation.error} />
             </form>
           </>
         )}
       </div>
     </AuthShell>
   );
-}
-
-function ApiError({ error }: Readonly<{ error: unknown }>) {
-  return (
-    <Alert severity="error">
-      <AlertTitle>Unable to accept invitation</AlertTitle>
-      {error instanceof Error ? error.message : "Try again."}
-    </Alert>
-  );
-}
-
-function FieldError({ id, message }: Readonly<{ id: string; message?: string }>) {
-  return message ? (
-    <p className="text-destructive text-sm" id={id} role="alert">
-      {message}
-    </p>
-  ) : null;
-}
-
-function firstFieldError(errors: unknown[]) {
-  const [error] = errors;
-
-  if (!error) return undefined;
-  if (typeof error === "string") return error;
-  if (typeof error === "object" && error !== null && "message" in error) {
-    return String(error.message);
-  }
-  return String(error);
 }
 
 export { InvitationAcceptancePage };
