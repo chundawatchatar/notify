@@ -24,6 +24,7 @@ import { Route as AuthenticatedWWorkspaceSlugRouteRouteImport } from './routes/_
 import { Route as AuthenticatedWWorkspaceSlugIndexRouteImport } from './routes/_authenticated/w/$workspaceSlug/index'
 import { Route as AuthenticatedWWorkspaceSlugDashboardRouteImport } from './routes/_authenticated/w/$workspaceSlug/dashboard'
 import { Route as AuthenticatedWWorkspaceSlugSectionRouteImport } from './routes/_authenticated/w/$workspaceSlug/$section'
+import { Route as AuthenticatedWWorkspaceSlugSettingsMembersRouteImport } from './routes/_authenticated/w/$workspaceSlug/settings/members'
 
 const R404Route = R404RouteImport.update({
   id: '/404',
@@ -105,6 +106,12 @@ const AuthenticatedWWorkspaceSlugSectionRoute =
     path: '/$section',
     getParentRoute: () => AuthenticatedWWorkspaceSlugRouteRoute,
   } as any)
+const AuthenticatedWWorkspaceSlugSettingsMembersRoute =
+  AuthenticatedWWorkspaceSlugSettingsMembersRouteImport.update({
+    id: '/settings/members',
+    path: '/settings/members',
+    getParentRoute: () => AuthenticatedWWorkspaceSlugRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/w/$workspaceSlug/$section': typeof AuthenticatedWWorkspaceSlugSectionRoute
   '/w/$workspaceSlug/dashboard': typeof AuthenticatedWWorkspaceSlugDashboardRoute
   '/w/$workspaceSlug/': typeof AuthenticatedWWorkspaceSlugIndexRoute
+  '/w/$workspaceSlug/settings/members': typeof AuthenticatedWWorkspaceSlugSettingsMembersRoute
 }
 export interface FileRoutesByTo {
   '/404': typeof R404Route
@@ -135,6 +143,7 @@ export interface FileRoutesByTo {
   '/w/$workspaceSlug/$section': typeof AuthenticatedWWorkspaceSlugSectionRoute
   '/w/$workspaceSlug/dashboard': typeof AuthenticatedWWorkspaceSlugDashboardRoute
   '/w/$workspaceSlug': typeof AuthenticatedWWorkspaceSlugIndexRoute
+  '/w/$workspaceSlug/settings/members': typeof AuthenticatedWWorkspaceSlugSettingsMembersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -153,6 +162,7 @@ export interface FileRoutesById {
   '/_authenticated/w/$workspaceSlug/$section': typeof AuthenticatedWWorkspaceSlugSectionRoute
   '/_authenticated/w/$workspaceSlug/dashboard': typeof AuthenticatedWWorkspaceSlugDashboardRoute
   '/_authenticated/w/$workspaceSlug/': typeof AuthenticatedWWorkspaceSlugIndexRoute
+  '/_authenticated/w/$workspaceSlug/settings/members': typeof AuthenticatedWWorkspaceSlugSettingsMembersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/w/$workspaceSlug/$section'
     | '/w/$workspaceSlug/dashboard'
     | '/w/$workspaceSlug/'
+    | '/w/$workspaceSlug/settings/members'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/404'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/w/$workspaceSlug/$section'
     | '/w/$workspaceSlug/dashboard'
     | '/w/$workspaceSlug'
+    | '/w/$workspaceSlug/settings/members'
   id:
     | '__root__'
     | '/_authenticated'
@@ -202,6 +214,7 @@ export interface FileRouteTypes {
     | '/_authenticated/w/$workspaceSlug/$section'
     | '/_authenticated/w/$workspaceSlug/dashboard'
     | '/_authenticated/w/$workspaceSlug/'
+    | '/_authenticated/w/$workspaceSlug/settings/members'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -317,6 +330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWWorkspaceSlugSectionRouteImport
       parentRoute: typeof AuthenticatedWWorkspaceSlugRouteRoute
     }
+    '/_authenticated/w/$workspaceSlug/settings/members': {
+      id: '/_authenticated/w/$workspaceSlug/settings/members'
+      path: '/settings/members'
+      fullPath: '/w/$workspaceSlug/settings/members'
+      preLoaderRoute: typeof AuthenticatedWWorkspaceSlugSettingsMembersRouteImport
+      parentRoute: typeof AuthenticatedWWorkspaceSlugRouteRoute
+    }
   }
 }
 
@@ -324,6 +344,7 @@ interface AuthenticatedWWorkspaceSlugRouteRouteChildren {
   AuthenticatedWWorkspaceSlugSectionRoute: typeof AuthenticatedWWorkspaceSlugSectionRoute
   AuthenticatedWWorkspaceSlugDashboardRoute: typeof AuthenticatedWWorkspaceSlugDashboardRoute
   AuthenticatedWWorkspaceSlugIndexRoute: typeof AuthenticatedWWorkspaceSlugIndexRoute
+  AuthenticatedWWorkspaceSlugSettingsMembersRoute: typeof AuthenticatedWWorkspaceSlugSettingsMembersRoute
 }
 
 const AuthenticatedWWorkspaceSlugRouteRouteChildren: AuthenticatedWWorkspaceSlugRouteRouteChildren =
@@ -334,6 +355,8 @@ const AuthenticatedWWorkspaceSlugRouteRouteChildren: AuthenticatedWWorkspaceSlug
       AuthenticatedWWorkspaceSlugDashboardRoute,
     AuthenticatedWWorkspaceSlugIndexRoute:
       AuthenticatedWWorkspaceSlugIndexRoute,
+    AuthenticatedWWorkspaceSlugSettingsMembersRoute:
+      AuthenticatedWWorkspaceSlugSettingsMembersRoute,
   }
 
 const AuthenticatedWWorkspaceSlugRouteRouteWithChildren =
