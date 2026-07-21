@@ -9,7 +9,7 @@ import {
 import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, createAuthClient } from "@/lib/auth";
-import { blur, change, cleanup, click, render, waitForText } from "@/test/render";
+import { blur, change, cleanup, click, render, waitFor, waitForText } from "@/test/render";
 import { server } from "@/test/server";
 import {
   CompleteSignupForm,
@@ -64,7 +64,7 @@ describe("authentication forms", () => {
     expect(container.textContent).toContain("owner@example.com");
   });
 
-  it("does not apply signup password-length rules during login", () => {
+  it("does not apply signup password-length rules during login", async () => {
     expect.hasAssertions();
     installBrowserCoordination();
     server.use(
@@ -76,7 +76,7 @@ describe("authentication forms", () => {
       ),
     );
 
-    const container = renderLogin();
+    const container = await renderLogin();
     const password = container.querySelector<HTMLInputElement>(
       'input[autocomplete="current-password"]',
     );
@@ -128,12 +128,7 @@ describe("authentication forms", () => {
       }),
     );
 
-    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
-    const container = render(
-      <QueryClientProvider client={queryClient}>
-        <ForgotPasswordForm />
-      </QueryClientProvider>,
-    );
+    const container = await renderForgotPassword();
     const email = container.querySelector<HTMLInputElement>('input[type="email"]');
     const submit = container.querySelector<HTMLButtonElement>('button[type="submit"]');
 
@@ -158,7 +153,7 @@ describe("authentication forms", () => {
       }),
     );
 
-    const container = renderResetPassword();
+    const container = await renderResetPassword();
     const [password, confirmation] = container.querySelectorAll<HTMLInputElement>(
       'input[autocomplete="new-password"]',
     );
@@ -201,7 +196,7 @@ function renderCompleteSignup() {
   );
 }
 
-function renderLogin() {
+async function renderLogin() {
   const rootRoute = createRootRoute();
   const loginRoute = createRoute({
     component: LoginForm,
@@ -214,21 +209,59 @@ function renderLogin() {
   });
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
 
-  return render(
+  const container = render(
     <AuthProvider client={createAuthClient()}>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>
     </AuthProvider>,
   );
+
+  await waitFor(
+    () => container.querySelector('input[autocomplete="current-password"]') !== null,
+    "login form",
+  );
+
+  return container;
 }
 
-function renderResetPassword() {
+async function renderForgotPassword() {
+  const rootRoute = createRootRoute();
+  const forgotPasswordRoute = createRoute({
+    component: ForgotPasswordForm,
+    getParentRoute: () => rootRoute,
+    path: "/auth/forgot-password",
+  });
+  const loginRoute = createRoute({
+    component: () => <p>Login</p>,
+    getParentRoute: () => rootRoute,
+    path: "/auth/login",
+  });
+  const router = createRouter({
+    history: createMemoryHistory({ initialEntries: ["/auth/forgot-password"] }),
+    routeTree: rootRoute.addChildren([forgotPasswordRoute, loginRoute]),
+  });
+  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+  const container = render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  );
+
+  await waitFor(
+    () => container.querySelector('input[type="email"]') !== null,
+    "forgot password form",
+  );
+
+  return container;
+}
+
+async function renderResetPassword() {
   const rootRoute = createRootRoute();
   const resetRoute = createRoute({
     component: () => <ResetPasswordForm resetToken="reset-token" />,
     getParentRoute: () => rootRoute,
-    path: "/auth/forgot-password",
+    path: "/auth/reset-password",
   });
   const loginRoute = createRoute({
     component: () => <p>Password reset complete</p>,
@@ -237,16 +270,23 @@ function renderResetPassword() {
     validateSearch: (search) => ({ reset: search.reset === true }),
   });
   const router = createRouter({
-    history: createMemoryHistory({ initialEntries: ["/auth/forgot-password"] }),
+    history: createMemoryHistory({ initialEntries: ["/auth/reset-password"] }),
     routeTree: rootRoute.addChildren([resetRoute, loginRoute]),
   });
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
 
-  return render(
+  const container = render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   );
+
+  await waitFor(
+    () => container.querySelector('input[autocomplete="new-password"]') !== null,
+    "reset password form",
+  );
+
+  return container;
 }
 
 function installBrowserCoordination() {
