@@ -159,7 +159,9 @@ defmodule Api.Accounts do
         Membership.changeset(%Membership{}, %{
           user_id: user.id,
           workspace_id: workspace.id,
-          role: "owner"
+          role: "owner",
+          status: "active",
+          joined_at: now
         })
       end)
       |> Multi.update(:consumed_challenge, fn %{challenge: challenge} ->
@@ -393,6 +395,7 @@ defmodule Api.Accounts do
     Repo.one(
       from membership in Membership,
         where: membership.user_id == ^user.id,
+        where: membership.status == "active",
         order_by: [asc: membership.inserted_at, asc: membership.id],
         limit: 1,
         preload: [:user, :workspace]
@@ -422,10 +425,11 @@ defmodule Api.Accounts do
   defp active_session(session_id, now) do
     Repo.one(
       from session in AuthSession,
+        join: membership in assoc(session, :workspace_membership),
         where:
           session.id == ^session_id and is_nil(session.revoked_at) and
-            session.expires_at > ^now,
-        preload: [workspace_membership: [:user, :workspace]]
+            session.expires_at > ^now and membership.status == "active",
+        preload: [workspace_membership: {membership, [:user, :workspace]}]
     )
   end
 
@@ -433,9 +437,11 @@ defmodule Api.Accounts do
     session =
       Repo.one(
         from session in AuthSession,
+          join: membership in assoc(session, :workspace_membership),
           where: session.id == ^session_id,
+          where: membership.status == "active",
           lock: "FOR UPDATE",
-          preload: [workspace_membership: [:user, :workspace]]
+          preload: [workspace_membership: {membership, [:user, :workspace]}]
       )
 
     cond do

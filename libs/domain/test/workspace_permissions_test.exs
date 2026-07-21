@@ -18,4 +18,11 @@ defmodule Domain.WorkspacePermissionsTest do
     refute WorkspacePermissions.allowed?("viewer", :unknown_action)
     refute WorkspacePermissions.allowed?(:owner, :view_workspace)
   end
+
+  test "limits invitation roles to the inviter's authority" do
+    assert WorkspacePermissions.grantable_role?("owner", "owner")
+    assert WorkspacePermissions.grantable_role?("admin", "developer")
+    refute WorkspacePermissions.grantable_role?("admin", "owner")
+    refute WorkspacePermissions.grantable_role?("developer", "viewer")
+  end
 end

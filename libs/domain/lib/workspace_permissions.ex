@@ -61,4 +61,16 @@ defmodule Domain.WorkspacePermissions do
   end
 
   def allowed?(_role, _action), do: false
+
+  @doc """
+  Returns whether a membership role may invite the target role.
+  """
+  @spec grantable_role?(term(), term()) :: boolean()
+  def grantable_role?(role, target_role) when is_binary(target_role) do
+    allowed?(role, :invite_members) and
+      (target_role != "owner" or allowed?(role, :manage_owners)) and
+      target_role in @roles
+  end
+
+  def grantable_role?(_role, _target_role), do: false
 end

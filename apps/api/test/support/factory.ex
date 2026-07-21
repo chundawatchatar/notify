@@ -4,7 +4,7 @@ defmodule Api.Factory do
   use ExMachina.Ecto, repo: Api.Repo
 
   alias Api.Accounts.{AuthChallenge, AuthSession, User}
-  alias Api.Workspaces.{Membership, Workspace}
+  alias Api.Workspaces.{Invitation, Membership, Workspace}
 
   def user_factory do
     %User{
@@ -25,7 +25,9 @@ defmodule Api.Factory do
     %Membership{
       user: build(:user),
       workspace: build(:workspace),
-      role: "owner"
+      role: "owner",
+      status: "active",
+      joined_at: DateTime.utc_now(:second)
     }
   end
 
@@ -44,5 +46,19 @@ defmodule Api.Factory do
       )
 
     challenge
+  end
+
+  def invitation_factory do
+    workspace = insert(:workspace)
+    membership = build(:membership, workspace: workspace)
+
+    %Invitation{
+      email: sequence(:invitation_email, &"invitee-#{&1}@example.com"),
+      expires_at: DateTime.add(DateTime.utc_now(:second), 7, :day),
+      invited_by_membership: membership,
+      role: "developer",
+      token_hash: :crypto.hash(:sha256, :crypto.strong_rand_bytes(32)),
+      workspace: workspace
+    }
   end
 end

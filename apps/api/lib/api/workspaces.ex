@@ -5,8 +5,10 @@ defmodule Api.Workspaces do
 
   import Ecto.Query
 
+  alias Api.Accounts.{AuthSession, User}
   alias Api.Repo
-  alias Api.Workspaces.{Membership, OwnerProtection, Workspace}
+  alias Api.Workspaces.{Invitation, Membership, OwnerProtection, Workspace}
+  alias Domain.WorkspacePermissions
   alias Ecto.Multi
 
   @doc """
@@ -30,16 +32,156 @@ defmodule Api.Workspaces do
   Removes a membership without allowing the final owner to be removed.
   """
   def remove_membership(%Membership{id: membership_id, workspace_id: workspace_id}) do
+    now = DateTime.utc_now(:second)
+
     Multi.new()
     |> Multi.run(:workspace, fn repo, _changes -> lock_workspace(repo, workspace_id) end)
     |> Multi.run(:membership, fn repo, _changes -> lock_membership(repo, membership_id) end)
     |> Multi.run(:owner_protection, fn repo, %{membership: membership} ->
       OwnerProtection.ensure_owner_retained(repo, membership, nil)
     end)
-    |> Multi.delete(:removed_membership, fn %{membership: membership} -> membership end)
+    |> Multi.update(:removed_membership, fn %{membership: membership} ->
+      Membership.removal_changeset(membership, now)
+    end)
+    |> Multi.run(:revoked_sessions, fn repo, %{membership: membership} ->
+      revoke_membership_sessions(repo, membership.id, now)
+    end)
     |> Repo.transaction()
     |> normalize_membership_result(:removed_membership)
   end
+
+  def create_invitation(%Membership{} = inviter, attrs) when is_map(attrs) do
+    now = DateTime.utc_now(:second)
+    attrs = Map.new(attrs, fn {key, value} -> {to_string(key), value} end)
+
+    with email when is_binary(email) <- attrs["email"],
+         role when is_binary(role) <- attrs["role"] do
+      normalized_email = User.normalize_email(email)
+
+      Multi.new()
+      |> Multi.run(:workspace, fn repo, _changes -> lock_workspace(repo, inviter.workspace_id) end)
+      |> Multi.run(:inviter, fn repo, _changes ->
+        lock_active_membership(repo, inviter.id, inviter.workspace_id)
+      end)
+      |> Multi.run(:permission, fn _repo, %{inviter: current_inviter} ->
+        if WorkspacePermissions.grantable_role?(current_inviter.role, role),
+          do: {:ok, :granted},
+          else: {:error, :forbidden}
+      end)
+      |> Multi.run(:active_membership, fn repo, %{inviter: current_inviter} ->
+        if active_membership_email?(repo, current_inviter.workspace_id, normalized_email),
+          do: {:error, :already_active_member},
+          else: {:ok, :none}
+      end)
+      |> Multi.run(:revoked_pending_invitation, fn repo, %{inviter: current_inviter} ->
+        revoke_pending_invitation(repo, current_inviter.workspace_id, normalized_email, now)
+      end)
+      |> Multi.run(:invitation_token, fn _repo, %{inviter: current_inviter} ->
+        {token, invitation} =
+          Invitation.build(
+            %{
+              email: normalized_email,
+              invited_by_membership_id: current_inviter.id,
+              role: role,
+              workspace_id: current_inviter.workspace_id
+            },
+            now
+          )
+
+        {:ok, {token, invitation}}
+      end)
+      |> Multi.insert(:invitation, fn %{invitation_token: {_token, invitation}} ->
+        Invitation.changeset(invitation, %{})
+      end)
+      |> Repo.transaction()
+      |> normalize_invitation_creation()
+    else
+      _invalid -> {:error, :invalid_invitation}
+    end
+  end
+
+  def create_invitation(_, _), do: {:error, :invalid_invitation}
+
+  def revoke_invitation(%Invitation{id: invitation_id, workspace_id: workspace_id}) do
+    now = DateTime.utc_now(:second)
+
+    Multi.new()
+    |> Multi.run(:workspace, fn repo, _changes -> lock_workspace(repo, workspace_id) end)
+    |> Multi.run(:invitation, fn repo, _changes -> lock_invitation(repo, invitation_id) end)
+    |> Multi.update(:revoked_invitation, fn %{invitation: invitation} ->
+      Invitation.revoke_changeset(invitation, now)
+    end)
+    |> Repo.transaction()
+    |> normalize_invitation_result(:revoked_invitation)
+  end
+
+  def validate_invitation(token) do
+    now = DateTime.utc_now(:second)
+
+    with {:ok, invitation_id, secret} <- Invitation.decode(token),
+         %Invitation{} = invitation <- Repo.get(Invitation, invitation_id),
+         true <- Invitation.active?(invitation, now),
+         true <- Invitation.valid_secret?(invitation, secret) do
+      {:ok, invitation}
+    else
+      _invalid -> {:error, :invalid_or_expired_invitation}
+    end
+  end
+
+  def accept_invitation(token, %User{} = user) do
+    now = DateTime.utc_now(:second)
+
+    with {:ok, invitation_id, secret} <- Invitation.decode(token) do
+      Multi.new()
+      |> Multi.run(:invitation_lookup, fn repo, _changes ->
+        find_invitation(repo, invitation_id)
+      end)
+      |> Multi.run(:workspace, fn repo, %{invitation_lookup: invitation} ->
+        lock_workspace(repo, invitation.workspace_id)
+      end)
+      |> Multi.run(:invitation, fn repo, _changes ->
+        lock_active_invitation(repo, invitation_id, secret, now)
+      end)
+      |> Multi.run(:email_match, fn _repo, %{invitation: invitation} ->
+        if user.confirmed_at && user.email == invitation.email,
+          do: {:ok, :matched},
+          else: {:error, :email_mismatch}
+      end)
+      |> Multi.run(:membership, fn repo, %{invitation: invitation} ->
+        lock_user_membership(repo, user.id, invitation.workspace_id)
+      end)
+      |> Multi.run(:active_membership, fn _repo, %{membership: membership} ->
+        if membership && membership.status == "active",
+          do: {:error, :already_active_member},
+          else: {:ok, membership}
+      end)
+      |> Multi.insert_or_update(:accepted_membership, fn %{
+                                                           invitation: invitation,
+                                                           membership: membership
+                                                         } ->
+        if membership do
+          Membership.reactivation_changeset(membership, invitation.role, now)
+        else
+          Membership.changeset(%Membership{}, %{
+            user_id: user.id,
+            workspace_id: invitation.workspace_id,
+            role: invitation.role,
+            status: "active",
+            joined_at: now
+          })
+        end
+      end)
+      |> Multi.update(:accepted_invitation, fn %{invitation: invitation} ->
+        Invitation.accept_changeset(invitation, now)
+      end)
+      |> Repo.transaction()
+      |> normalize_invitation_result(:accepted_membership)
+    else
+      _invalid -> {:error, :invalid_or_expired_invitation}
+    end
+  end
+
+  def accept_invitation(_, _), do: {:error, :invalid_or_expired_invitation}
 
   defp lock_membership(repo, membership_id) do
     case repo.one(
@@ -52,6 +194,64 @@ defmodule Api.Workspaces do
     end
   end
 
+  defp lock_user_membership(repo, user_id, workspace_id) do
+    {:ok,
+     repo.one(
+       from membership in Membership,
+         where: membership.user_id == ^user_id and membership.workspace_id == ^workspace_id,
+         lock: "FOR UPDATE"
+     )}
+  end
+
+  defp lock_active_membership(repo, membership_id, workspace_id) do
+    case repo.one(
+           from membership in Membership,
+             where:
+               membership.id == ^membership_id and membership.workspace_id == ^workspace_id and
+                 membership.status == "active",
+             lock: "FOR UPDATE"
+         ) do
+      %Membership{} = membership -> {:ok, membership}
+      nil -> {:error, :inviter_not_active}
+    end
+  end
+
+  defp lock_invitation(repo, invitation_id) do
+    case repo.one(
+           from invitation in Invitation,
+             where: invitation.id == ^invitation_id,
+             lock: "FOR UPDATE"
+         ) do
+      %Invitation{} = invitation -> {:ok, invitation}
+      nil -> {:error, :invitation_not_found}
+    end
+  end
+
+  defp find_invitation(repo, invitation_id) do
+    case repo.get(Invitation, invitation_id) do
+      %Invitation{} = invitation -> {:ok, invitation}
+      nil -> {:error, :invalid_or_expired_invitation}
+    end
+  end
+
+  defp lock_active_invitation(repo, invitation_id, secret, now) do
+    case repo.one(
+           from invitation in Invitation,
+             where: invitation.id == ^invitation_id,
+             lock: "FOR UPDATE"
+         ) do
+      %Invitation{} = invitation ->
+        if Invitation.active?(invitation, now) and Invitation.valid_secret?(invitation, secret) do
+          {:ok, invitation}
+        else
+          {:error, :invalid_or_expired_invitation}
+        end
+
+      _invalid ->
+        {:error, :invalid_or_expired_invitation}
+    end
+  end
+
   defp lock_workspace(repo, workspace_id) do
     case repo.one(
            from workspace in Workspace,
@@ -61,6 +261,43 @@ defmodule Api.Workspaces do
       %Workspace{} -> {:ok, :locked}
       nil -> {:error, :workspace_not_found}
     end
+  end
+
+  defp active_membership_email?(repo, workspace_id, email) do
+    repo.exists?(
+      from membership in Membership,
+        join: user in User,
+        on: user.id == membership.user_id,
+        where:
+          membership.workspace_id == ^workspace_id and membership.status == "active" and
+            user.email == ^email
+    )
+  end
+
+  defp revoke_pending_invitation(repo, workspace_id, email, now) do
+    {count, _} =
+      repo.update_all(
+        from(invitation in Invitation,
+          where:
+            invitation.workspace_id == ^workspace_id and invitation.email == ^email and
+              is_nil(invitation.accepted_at) and is_nil(invitation.revoked_at)
+        ),
+        set: [revoked_at: now, updated_at: now]
+      )
+
+    {:ok, count}
+  end
+
+  defp revoke_membership_sessions(repo, membership_id, now) do
+    {count, _} =
+      repo.update_all(
+        from(session in AuthSession,
+          where: session.workspace_membership_id == ^membership_id and is_nil(session.revoked_at)
+        ),
+        set: [revoked_at: now, updated_at: now]
+      )
+
+    {:ok, count}
   end
 
   defp normalize_membership_result({:ok, result}, result_key),
@@ -77,4 +314,17 @@ defmodule Api.Workspaces do
 
   defp normalize_membership_result({:error, _operation, value, _changes}, _result_key),
     do: {:error, value}
+
+  defp normalize_invitation_creation(
+         {:ok, %{invitation: invitation, invitation_token: {token, _}}}
+       ),
+       do: {:ok, %{invitation: invitation, token: token}}
+
+  defp normalize_invitation_creation({:error, _operation, reason, _changes}), do: {:error, reason}
+
+  defp normalize_invitation_result({:ok, result}, result_key),
+    do: {:ok, Map.fetch!(result, result_key)}
+
+  defp normalize_invitation_result({:error, _operation, reason, _changes}, _result_key),
+    do: {:error, reason}
 end
