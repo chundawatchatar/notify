@@ -36,7 +36,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@notify/ui";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -55,7 +55,9 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useId, useLayoutEffect, useState } from "react";
+import { ApiRequestError, listWorkspaces } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
+import { accountWorkspacesQueryKey, isWorkspaceQuery } from "@/lib/workspace-queries";
 
 type WorkspaceNavId =
   | "dashboard"
@@ -426,6 +428,14 @@ function WorkspaceSidebarFooterControls({
   const workspaceName = auth.principal?.workspace.name ?? "Workspace";
   const workspaceSlug = useWorkspaceSlug();
   const initials = accountInitials(email);
+  const queryClient = useQueryClient();
+  const accountId = auth.principal?.user.id;
+  const workspaceListQueryKey = accountId ? accountWorkspacesQueryKey(accountId) : undefined;
+  const workspacesQuery = useQuery({
+    enabled: Boolean(accountId),
+    queryFn: () => auth.authenticatedRequest(listWorkspaces),
+    queryKey: workspaceListQueryKey ?? ["account", "anonymous", "workspaces"],
+  });
   const logoutMutation = useMutation({
     mutationFn: auth.signOut,
     onSuccess: async () => {
@@ -433,6 +443,31 @@ function WorkspaceSidebarFooterControls({
       await navigate({ to: "/auth/login", replace: true });
     },
   });
+  const switchWorkspaceMutation = useMutation({
+    mutationFn: auth.switchWorkspace,
+    onError: async (error) => {
+      if (
+        workspaceListQueryKey &&
+        error instanceof ApiRequestError &&
+        (error.status === 403 || error.status === 404)
+      ) {
+        await queryClient.invalidateQueries({ queryKey: workspaceListQueryKey });
+      }
+    },
+    onSuccess: async (_state, targetWorkspaceSlug) => {
+      queryClient.removeQueries({
+        predicate: (query) => isWorkspaceQuery(query.queryKey, workspaceSlug),
+      });
+      onNavigate?.();
+      await navigate({
+        params: { workspaceSlug: targetWorkspaceSlug },
+        replace: true,
+        to: "/w/$workspaceSlug/dashboard",
+      });
+    },
+  });
+  const workspaces = workspacesQuery.data?.workspaces ?? [];
+  const showWorkspaceSwitcher = workspaces.length > 1;
 
   return (
     <div className={expanded ? "grid min-w-0 gap-2" : "grid min-w-0 justify-items-center gap-2"}>
@@ -474,6 +509,9 @@ function WorkspaceSidebarFooterControls({
               </Avatar>
               <div className="min-w-0">
                 <p className="truncate font-medium">{workspaceName}</p>
+                <p className="mt-1 text-muted-foreground text-xs capitalize">
+                  {auth.principal?.role}
+                </p>
                 <p className="truncate text-muted-foreground text-xs" title={email}>
                   {email}
                 </p>
@@ -481,6 +519,42 @@ function WorkspaceSidebarFooterControls({
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {workspacesQuery.isError ? (
+            <>
+              <p className="px-2 py-1 text-destructive text-xs" role="alert">
+                {workspacesQuery.error.message}
+              </p>
+              <DropdownMenuItem onSelect={() => void workspacesQuery.refetch()}>
+                Retry workspace list
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          ) : showWorkspaceSwitcher ? (
+            <>
+              <DropdownMenuLabel className="text-muted-foreground text-xs">
+                Switch workspace
+              </DropdownMenuLabel>
+              {workspaces.map((workspace) => {
+                const activeWorkspace = workspace.slug === workspaceSlug;
+
+                return (
+                  <DropdownMenuItem
+                    disabled={activeWorkspace || switchWorkspaceMutation.isPending}
+                    key={workspace.id}
+                    onSelect={() => switchWorkspaceMutation.mutate(workspace.slug)}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate">{workspace.name}</span>
+                      <span className="block truncate text-muted-foreground text-xs capitalize">
+                        {activeWorkspace ? "Current workspace" : workspace.role}
+                      </span>
+                    </span>
+                  </DropdownMenuItem>
+                );
+              })}
+              <DropdownMenuSeparator />
+            </>
+          ) : null}
           <DropdownMenuItem asChild>
             <Link
               onClick={onNavigate}
@@ -491,6 +565,11 @@ function WorkspaceSidebarFooterControls({
               Settings
             </Link>
           </DropdownMenuItem>
+          {switchWorkspaceMutation.isError ? (
+            <p className="px-2 py-1 text-destructive text-xs" role="alert">
+              {switchWorkspaceMutation.error.message}
+            </p>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
 
