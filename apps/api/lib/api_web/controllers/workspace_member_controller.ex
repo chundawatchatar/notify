@@ -249,7 +249,8 @@ defmodule ApiWeb.WorkspaceMemberController do
     with :ok <- current_workspace?(conn, workspace_slug),
          %Invitation{} = invitation <-
            Workspaces.get_unaccepted_invitation(conn.assigns.current_workspace.id, invitation_id),
-         {:ok, _revoked_invitation} <- Workspaces.revoke_invitation(invitation) do
+         {:ok, _revoked_invitation} <-
+           Workspaces.revoke_invitation(invitation, conn.assigns.current_membership.id) do
       send_resp(conn, :no_content, "")
     else
       nil -> invitation_not_found(conn)

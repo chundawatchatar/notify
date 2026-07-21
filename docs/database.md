@@ -102,6 +102,11 @@ code.
   removal timestamps. Initial roles are `owner`, `admin`, `developer`, and
   `viewer`.
 - `auth_sessions`: membership-scoped refresh digest, expiry, and revocation.
+- `workspace_audit_events`: append-only workspace-scoped records for
+  collaboration security mutations. Each record stores the workspace, optional
+  acting membership, action, target type and optional target ID, bounded JSON
+  metadata, and UTC insertion time. Metadata must not contain raw invitation,
+  password, access-token, refresh-token, or token-hash material.
 
 An active membership is one that has not been removed or deactivated. It is the
 only membership that can authorize a request, own a session, or count as a
@@ -139,7 +144,6 @@ Likely next tables:
 - notification_events
 - delivery_attempts
 - subscription_plans or workspace_subscriptions
-- audit_events
 
 Confirm product flow and API contracts before adding tables.
 

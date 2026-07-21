@@ -4,7 +4,7 @@ defmodule Api.Factory do
   use ExMachina.Ecto, repo: Api.Repo
 
   alias Api.Accounts.{AuthChallenge, AuthSession, User}
-  alias Api.Workspaces.{Invitation, Membership, Workspace}
+  alias Api.Workspaces.{AuditEvent, Invitation, Membership, Workspace}
 
   def user_factory do
     %User{
@@ -59,6 +59,19 @@ defmodule Api.Factory do
       role: "developer",
       token_hash: :crypto.hash(:sha256, :crypto.strong_rand_bytes(32)),
       workspace: workspace
+    }
+  end
+
+  def audit_event_factory do
+    membership = build(:membership)
+
+    %AuditEvent{
+      workspace: membership.workspace,
+      actor_workspace_membership: membership,
+      action: "membership_role_changed",
+      target_type: "workspace_membership",
+      target_id: Ecto.UUID.generate(),
+      metadata: %{"role" => "developer"}
     }
   end
 end

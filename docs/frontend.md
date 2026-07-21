@@ -59,6 +59,10 @@ switch receives a new membership-scoped access token and refresh token before
 the route context changes. See `docs/architecture.md` for the collaboration
 model and `docs/authentication.md` for credential rotation.
 
+The security section may describe audit posture, but it does not query or
+display audit records in the current phase. Audit persistence is backend-owned
+and no audit credential or event metadata belongs in browser storage.
+
 Shared dashboard layout lives in:
 
 ```text
