@@ -60,6 +60,35 @@ defmodule NotifyOpenApi.AuthSchemas do
     })
   end
 
+  defmodule ResolveInvitationRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ResolveInvitationRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{token: %Schema{type: :string, minLength: 1, example: "invitation-token"}},
+      required: [:token]
+    })
+  end
+
+  defmodule InvitationPreviewResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "InvitationPreviewResponse",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        email: %Schema{type: :string, format: :email},
+        expires_at: %Schema{type: :string, format: :date_time},
+        role: %Schema{type: :string, enum: ["owner", "admin", "developer", "viewer"]},
+        workspace_name: %Schema{type: :string}
+      },
+      required: [:email, :expires_at, :role, :workspace_name]
+    })
+  end
+
   defmodule CompleteInvitationSignupRequest do
     require OpenApiSpex
 

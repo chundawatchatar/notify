@@ -1,7 +1,13 @@
-import type { ApiAuthResponse, ApiLoginRequest } from "@notify/api-client";
+import type {
+  ApiAuthResponse,
+  ApiCompleteInvitationSignupRequest,
+  ApiLoginRequest,
+} from "@notify/api-client";
 import { createContext, type ReactNode, useContext, useSyncExternalStore } from "react";
 import {
   ApiRequestError,
+  acceptInvitation as requestAcceptInvitation,
+  completeInvitationSignup as requestCompleteInvitationSignup,
   login as requestLogin,
   logout as requestLogout,
   refreshSession as requestRefreshSession,
@@ -22,9 +28,11 @@ type AuthState = {
 };
 
 type AuthContextValue = AuthState & {
+  acceptInvitation: (token: string) => Promise<AuthState>;
   authenticatedRequest: <Result>(
     request: (accessToken: string) => Promise<Result>,
   ) => Promise<Result>;
+  completeInvitationSignup: (request: ApiCompleteInvitationSignupRequest) => Promise<AuthState>;
   retrySession: () => Promise<AuthState>;
   signIn: (request: ApiLoginRequest) => Promise<AuthState>;
   signOut: () => Promise<void>;
@@ -152,6 +160,20 @@ class AuthClient {
     }
 
     const response = await requestLogin(request);
+    this.applyAuthResponse(response);
+    return this.state;
+  };
+
+  acceptInvitation = async (token: string) => {
+    const response = await this.authenticatedRequest((accessToken) =>
+      requestAcceptInvitation(accessToken, { token }),
+    );
+    this.applyAuthResponse(response);
+    return this.state;
+  };
+
+  completeInvitationSignup = async (request: ApiCompleteInvitationSignupRequest) => {
+    const response = await requestCompleteInvitationSignup(request);
     this.applyAuthResponse(response);
     return this.state;
   };
@@ -366,7 +388,9 @@ function AuthProvider({ children, client }: Readonly<{ children: ReactNode; clie
   const state = useSyncExternalStore(client.subscribe, client.getSnapshot, client.getSnapshot);
   const value: AuthContextValue = {
     ...state,
+    acceptInvitation: client.acceptInvitation,
     authenticatedRequest: client.authenticatedRequest,
+    completeInvitationSignup: client.completeInvitationSignup,
     retrySession: client.retrySession,
     signIn: client.signIn,
     signOut: client.signOut,

@@ -33,6 +33,8 @@ type ApiSignupTokenResponse = JsonResponse<"confirmEmail", 200>;
 type ApiCompleteSignupRequest = JsonRequestBody<"completeSignup">;
 type ApiSignupCompletionResponse = JsonResponse<"completeSignup", 201>;
 type ApiAcceptInvitationRequest = JsonRequestBody<"acceptInvitation">;
+type ApiResolveInvitationRequest = JsonRequestBody<"resolveInvitation">;
+type ApiInvitationPreviewResponse = JsonResponse<"resolveInvitation", 200>;
 type ApiCompleteInvitationSignupRequest = JsonRequestBody<"completeInvitationSignup">;
 type ApiInvitationSignupResponse = JsonResponse<"completeInvitationSignup", 201>;
 type ApiPasswordResetRequest = JsonRequestBody<"requestPasswordReset">;
@@ -66,6 +68,7 @@ export type {
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
   ApiErrorResponse,
+  ApiInvitationPreviewResponse,
   ApiInvitationSignupResponse,
   ApiLivenessResponse,
   ApiLoginRequest,
@@ -80,6 +83,7 @@ export type {
   ApiPaths,
   ApiReadinessResponse,
   ApiResendVerificationRequest,
+  ApiResolveInvitationRequest,
   ApiSignupCompletionResponse,
   ApiSignupRequest,
   ApiSignupResponse,

@@ -51,11 +51,13 @@ const acceptTermsSchema = z.literal(true, "Accept the terms to create a workspac
 
 function LoginForm({
   accountCreated = false,
+  invitation = false,
   passwordReset = false,
   redirectTo,
   sessionExpired = false,
 }: Readonly<{
   accountCreated?: boolean;
+  invitation?: boolean;
   passwordReset?: boolean;
   redirectTo?: string;
   sessionExpired?: boolean;
@@ -65,6 +67,11 @@ function LoginForm({
   const mutation = useMutation({
     mutationFn: auth.signIn,
     onSuccess: async (state) => {
+      if (invitation) {
+        await navigate({ replace: true, to: "/auth/invitations/accept" });
+        return;
+      }
+
       const workspaceSlug = state.principal?.workspace.slug;
 
       if (!workspaceSlug) {
@@ -811,6 +818,7 @@ function AuthShell({
   eyebrow,
   footerAction,
   footerHref,
+  footerInvitation = false,
   footerLabel,
   subtitle,
   title,
@@ -819,6 +827,7 @@ function AuthShell({
   eyebrow: string;
   footerAction: string;
   footerHref: "/auth/login" | "/auth/signup";
+  footerInvitation?: boolean;
   footerLabel: string;
   subtitle: string;
   title: string;
@@ -860,9 +869,19 @@ function AuthShell({
             <div className="mt-8">{children}</div>
             <p className="mt-8 text-center text-muted-foreground text-sm">
               {footerLabel}{" "}
-              <Link className="font-medium text-foreground hover:underline" to={footerHref}>
-                {footerAction}
-              </Link>
+              {footerInvitation ? (
+                <Link
+                  className="font-medium text-foreground hover:underline"
+                  search={{ invitation: true }}
+                  to="/auth/login"
+                >
+                  {footerAction}
+                </Link>
+              ) : (
+                <Link className="font-medium text-foreground hover:underline" to={footerHref}>
+                  {footerAction}
+                </Link>
+              )}
             </p>
           </div>
         </section>

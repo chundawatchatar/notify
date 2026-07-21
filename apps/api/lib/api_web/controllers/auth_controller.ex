@@ -17,12 +17,14 @@ defmodule ApiWeb.AuthController do
     ConfirmPasswordResetRequest,
     ErrorResponse,
     LoginRequest,
+    InvitationPreviewResponse,
     MeResponse,
     PasswordResetCompletionResponse,
     PasswordResetRequest,
     PasswordResetRequestResponse,
     PasswordResetTokenResponse,
     ResendVerificationRequest,
+    ResolveInvitationRequest,
     SignupCompletionResponse,
     SignupRequest,
     SignupTokenResponse,
@@ -149,6 +151,34 @@ defmodule ApiWeb.AuthController do
   end
 
   def accept_invitation(conn, _params), do: invalid_invitation(conn)
+
+  operation :resolve_invitation,
+    summary: "Resolve an invitation for acceptance",
+    operation_id: "resolveInvitation",
+    request_body:
+      {"Invitation token", "application/json", ResolveInvitationRequest, required: true},
+    responses: [
+      ok: {"Invitation details", "application/json", InvitationPreviewResponse},
+      bad_request: {"Invitation invalid or expired", "application/json", ErrorResponse}
+    ]
+
+  def resolve_invitation(conn, %{"token" => token})
+      when is_binary(token) and byte_size(token) > 0 do
+    case Accounts.resolve_invitation(token) do
+      {:ok, invitation} ->
+        json(conn, %{
+          email: invitation.email,
+          expires_at: invitation.expires_at,
+          role: invitation.role,
+          workspace_name: invitation.workspace.name
+        })
+
+      {:error, _reason} ->
+        invalid_invitation(conn)
+    end
+  end
+
+  def resolve_invitation(conn, _params), do: invalid_invitation(conn)
 
   operation :complete_invitation_signup,
     summary: "Create an invited account and join its workspace",

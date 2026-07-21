@@ -6,12 +6,17 @@ import { PageLoader } from "./page-loader";
 
 function GuestRoute() {
   const auth = useAuth();
+  const location = useLocation();
 
   if (auth.status === "initializing") {
     return <PageLoader label="Checking for an existing Notify session." />;
   }
 
-  if (auth.status === "authenticated" && auth.principal) {
+  if (
+    auth.status === "authenticated" &&
+    auth.principal &&
+    location.pathname !== "/auth/invitations/accept"
+  ) {
     return (
       <Navigate
         replace

@@ -19,6 +19,7 @@ defmodule ApiWeb.Router do
 
     post "/auth/signup", AuthController, :signup
     post "/auth/signup/complete", AuthController, :complete_signup
+    post "/auth/invitations/resolve", AuthController, :resolve_invitation
     post "/auth/invitations/signup", AuthController, :complete_invitation_signup
     post "/auth/email-verification/resend", AuthController, :resend_verification
     post "/auth/email-verification/confirm", AuthController, :confirm_email

@@ -55,6 +55,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/auth/invitations/resolve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Resolve an invitation for acceptance */
+    post: operations["resolveInvitation"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/auth/invitations/signup": {
     parameters: {
       query?: never;
@@ -470,6 +487,11 @@ export interface components {
       joined_at: string;
       role: components["schemas"]["AuthWorkspaceRole"];
     };
+    /** ResolveInvitationRequest */
+    ResolveInvitationRequest: {
+      /** @example invitation-token */
+      token: string;
+    };
     /** PasswordResetTokenResponse */
     PasswordResetTokenResponse: {
       /** @example 900 */
@@ -539,6 +561,16 @@ export interface components {
     /** WorkspaceMembersResponse */
     WorkspaceMembersResponse: {
       members: components["schemas"]["WorkspaceMember"][];
+    };
+    /** InvitationPreviewResponse */
+    InvitationPreviewResponse: {
+      /** Format: email */
+      email: string;
+      /** Format: date_time */
+      expires_at: string;
+      /** @enum {string} */
+      role: "owner" | "admin" | "developer" | "viewer";
+      workspace_name: string;
     };
     /** SignupTokenResponse */
     SignupTokenResponse: {
@@ -912,6 +944,40 @@ export interface operations {
       };
       /** @description User is already an active member */
       409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  resolveInvitation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Invitation token */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ResolveInvitationRequest"];
+      };
+    };
+    responses: {
+      /** @description Invitation details */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InvitationPreviewResponse"];
+        };
+      };
+      /** @description Invitation invalid or expired */
+      400: {
         headers: {
           [name: string]: unknown;
         };

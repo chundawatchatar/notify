@@ -12,6 +12,10 @@ const loginSearchSchema = z.object({
     .union([z.boolean(), z.literal("true")])
     .optional()
     .catch(undefined),
+  invitation: z
+    .union([z.boolean(), z.literal("true")])
+    .optional()
+    .catch(undefined),
   reset: z
     .union([z.boolean(), z.literal("true")])
     .optional()
@@ -42,6 +46,7 @@ function LoginPage() {
     >
       <LoginForm
         accountCreated={search.created === true || search.created === "true"}
+        invitation={search.invitation === true || search.invitation === "true"}
         passwordReset={search.reset === true || search.reset === "true"}
         redirectTo={search.redirect}
         sessionExpired={search.expired === true || search.expired === "true"}
