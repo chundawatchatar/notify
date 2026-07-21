@@ -43,6 +43,12 @@ type ApiAuthResponse = JsonResponse<"login", 200>;
 type ApiCurrentUserResponse = JsonResponse<"getCurrentUser", 200>;
 type ApiWorkspaceListResponse = JsonResponse<"listWorkspaces", 200>;
 type ApiSwitchWorkspaceRequest = JsonRequestBody<"switchWorkspace">;
+type ApiWorkspaceMembersResponse = JsonResponse<"listWorkspaceMembers", 200>;
+type ApiWorkspaceMember = JsonResponse<"updateWorkspaceMemberRole", 200>;
+type ApiUpdateWorkspaceMemberRoleRequest = JsonRequestBody<"updateWorkspaceMemberRole">;
+type ApiWorkspaceInvitationsResponse = JsonResponse<"listWorkspaceInvitations", 200>;
+type ApiWorkspaceInvitation = JsonResponse<"createWorkspaceInvitation", 201>;
+type ApiCreateWorkspaceInvitationRequest = JsonRequestBody<"createWorkspaceInvitation">;
 type ApiErrorResponse = JsonResponse<"login", 401>;
 type ApiValidationErrorResponse = JsonResponse<"login", 422>;
 
@@ -52,6 +58,7 @@ export type {
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
   ApiConfirmPasswordResetRequest,
+  ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
   ApiErrorResponse,
   ApiLivenessResponse,
@@ -72,9 +79,14 @@ export type {
   ApiSignupResponse,
   ApiSignupTokenResponse,
   ApiSwitchWorkspaceRequest,
+  ApiUpdateWorkspaceMemberRoleRequest,
   ApiValidationErrorResponse,
   ApiVersionResponse,
+  ApiWorkspaceInvitation,
+  ApiWorkspaceInvitationsResponse,
   ApiWorkspaceListResponse,
+  ApiWorkspaceMember,
+  ApiWorkspaceMembersResponse,
   JsonRequestBody,
   JsonResponse,
 };

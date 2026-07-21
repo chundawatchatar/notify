@@ -4,6 +4,7 @@ import type {
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
   ApiConfirmPasswordResetRequest,
+  ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
   ApiLoginRequest,
   ApiPasswordResetCompletionResponse,
@@ -17,10 +18,15 @@ import type {
   ApiSignupResponse,
   ApiSignupTokenResponse,
   ApiSwitchWorkspaceRequest,
+  ApiUpdateWorkspaceMemberRoleRequest,
   ApiVersionResponse,
+  ApiWorkspaceInvitation,
+  ApiWorkspaceInvitationsResponse,
   ApiWorkspaceListResponse,
+  ApiWorkspaceMember,
+  ApiWorkspaceMembersResponse,
 } from "@notify/api-client";
-import { ApiRequestError, deleteRequest, get, post } from "./http-client";
+import { ApiRequestError, deleteRequest, get, patch, post } from "./http-client";
 
 function startSignup(body: ApiSignupRequest) {
   return post<ApiSignupResponse, ApiSignupRequest>("/api/auth/signup", body);
@@ -95,6 +101,67 @@ function switchWorkspace(accessToken: string, body: ApiSwitchWorkspaceRequest) {
   });
 }
 
+function listWorkspaceMembers(accessToken: string, workspaceSlug: string) {
+  return get<ApiWorkspaceMembersResponse>(`/api/workspaces/${workspaceSlug}/members`, {
+    accessToken,
+  });
+}
+
+function updateWorkspaceMemberRole(
+  accessToken: string,
+  workspaceSlug: string,
+  membershipId: string,
+  body: ApiUpdateWorkspaceMemberRoleRequest,
+) {
+  return patch<ApiWorkspaceMember, ApiUpdateWorkspaceMemberRoleRequest>(
+    `/api/workspaces/${workspaceSlug}/members/${membershipId}`,
+    body,
+    { accessToken },
+  );
+}
+
+function removeWorkspaceMember(accessToken: string, workspaceSlug: string, membershipId: string) {
+  return deleteRequest<void>(
+    `/api/workspaces/${workspaceSlug}/members/${membershipId}`,
+    undefined,
+    {
+      accessToken,
+    },
+  );
+}
+
+function listWorkspaceInvitations(accessToken: string, workspaceSlug: string) {
+  return get<ApiWorkspaceInvitationsResponse>(`/api/workspaces/${workspaceSlug}/invitations`, {
+    accessToken,
+  });
+}
+
+function createWorkspaceInvitation(
+  accessToken: string,
+  workspaceSlug: string,
+  body: ApiCreateWorkspaceInvitationRequest,
+) {
+  return post<ApiWorkspaceInvitation, ApiCreateWorkspaceInvitationRequest>(
+    `/api/workspaces/${workspaceSlug}/invitations`,
+    body,
+    { accessToken },
+  );
+}
+
+function revokeWorkspaceInvitation(
+  accessToken: string,
+  workspaceSlug: string,
+  invitationId: string,
+) {
+  return deleteRequest<void>(
+    `/api/workspaces/${workspaceSlug}/invitations/${invitationId}`,
+    undefined,
+    {
+      accessToken,
+    },
+  );
+}
+
 function logout(accessToken?: string) {
   return deleteRequest<void>("/api/auth/session", undefined, {
     accessToken,
@@ -116,15 +183,21 @@ export {
   completeSignup,
   confirmEmail,
   confirmPasswordReset,
+  createWorkspaceInvitation,
   getApiReadiness,
   getApiVersion,
   getCurrentUser,
+  listWorkspaceInvitations,
+  listWorkspaceMembers,
   listWorkspaces,
   login,
   logout,
   refreshSession,
+  removeWorkspaceMember,
   requestPasswordReset,
   resendVerification,
+  revokeWorkspaceInvitation,
   startSignup,
   switchWorkspace,
+  updateWorkspaceMemberRole,
 };

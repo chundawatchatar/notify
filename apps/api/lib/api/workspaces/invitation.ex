@@ -32,15 +32,11 @@ defmodule Api.Workspaces.Invitation do
 
     invitation = %__MODULE__{
       id: id,
-      email: User.normalize_email(Map.fetch!(attrs, :email)),
-      role: Map.fetch!(attrs, :role),
-      workspace_id: Map.fetch!(attrs, :workspace_id),
-      invited_by_membership_id: Map.fetch!(attrs, :invited_by_membership_id),
       token_hash: hash(secret),
       expires_at: DateTime.add(now, @expiry_in_days, :day)
     }
 
-    {encode(id, secret), invitation}
+    {encode(id, secret), changeset(invitation, attrs)}
   end
 
   def changeset(invitation, attrs) do

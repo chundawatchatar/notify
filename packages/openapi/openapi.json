@@ -2,42 +2,61 @@
   "components": {
     "responses": {},
     "schemas": {
-      "AuthResponse": {
+      "ConfirmPasswordResetRequest": {
+        "additionalProperties": false,
         "properties": {
-          "access_token": {
-            "description": "Short-lived JWT access token.",
+          "token": {
+            "example": "password-reset-token",
+            "minLength": 1,
             "type": "string",
             "x-struct": null,
             "x-validate": null
-          },
-          "expires_in": {
-            "example": 900,
-            "minimum": 1,
-            "type": "integer",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "role": {
-            "$ref": "#/components/schemas/AuthWorkspaceRole"
-          },
-          "token_type": {
-            "enum": ["Bearer"],
-            "example": "Bearer",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "user": {
-            "$ref": "#/components/schemas/AuthUser"
-          },
-          "workspace": {
-            "$ref": "#/components/schemas/AuthWorkspace"
           }
         },
-        "required": ["access_token", "token_type", "expires_in", "user", "workspace", "role"],
-        "title": "AuthResponse",
+        "required": ["token"],
+        "title": "ConfirmPasswordResetRequest",
         "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.AuthResponse",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ConfirmPasswordResetRequest",
+        "x-validate": null
+      },
+      "LivenessResponse": {
+        "description": "API process liveness response.",
+        "example": {
+          "service": {
+            "environment": "dev",
+            "name": "notify-api",
+            "version": "0.1.0"
+          },
+          "status": "ok"
+        },
+        "properties": {
+          "service": {
+            "$ref": "#/components/schemas/ServiceInfo"
+          },
+          "status": {
+            "enum": ["ok"],
+            "example": "ok",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["status", "service"],
+        "title": "LivenessResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.LivenessResponse",
+        "x-validate": null
+      },
+      "ErrorResponse": {
+        "properties": {
+          "errors": {
+            "$ref": "#/components/schemas/ErrorDetails"
+          }
+        },
+        "required": ["errors"],
+        "title": "ErrorResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ErrorResponse",
         "x-validate": null
       },
       "AuthStatusResponse": {
@@ -54,98 +73,6 @@
         "title": "AuthStatusResponse",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.StatusResponse",
-        "x-validate": null
-      },
-      "AuthUser": {
-        "properties": {
-          "email": {
-            "example": "owner@example.com",
-            "format": "email",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "id": {
-            "format": "uuid",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["id", "email"],
-        "title": "AuthUser",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.UserSummary",
-        "x-validate": null
-      },
-      "AuthWorkspace": {
-        "properties": {
-          "id": {
-            "format": "uuid",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "name": {
-            "example": "Acme Cloud",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "slug": {
-            "example": "acme-cloud",
-            "maxLength": 50,
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["id", "name", "slug"],
-        "title": "AuthWorkspace",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceSummary",
-        "x-validate": null
-      },
-      "AuthWorkspaceRole": {
-        "enum": ["owner", "admin", "developer", "viewer"],
-        "example": "owner",
-        "title": "AuthWorkspaceRole",
-        "type": "string",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceRole",
-        "x-validate": null
-      },
-      "CompletePasswordResetRequest": {
-        "additionalProperties": false,
-        "properties": {
-          "password": {
-            "format": "password",
-            "maxLength": 72,
-            "minLength": 8,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "password_confirmation": {
-            "format": "password",
-            "maxLength": 72,
-            "minLength": 8,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "reset_token": {
-            "description": "Short-lived credential issued after confirming a reset link.",
-            "minLength": 1,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["reset_token", "password", "password_confirmation"],
-        "title": "CompletePasswordResetRequest",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.CompletePasswordResetRequest",
         "x-validate": null
       },
       "CompleteSignupRequest": {
@@ -205,21 +132,429 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ConfirmEmailRequest",
         "x-validate": null
       },
-      "ConfirmPasswordResetRequest": {
+      "ValidationErrorResponse": {
+        "properties": {
+          "errors": {
+            "$ref": "#/components/schemas/ValidationErrorDetails"
+          }
+        },
+        "required": ["errors"],
+        "title": "ValidationErrorResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ValidationErrorResponse",
+        "x-validate": null
+      },
+      "UpdateWorkspaceMemberRoleErrorResponse": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ValidationErrorResponse"
+          }
+        ],
+        "title": "UpdateWorkspaceMemberRoleErrorResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.UpdateMemberRoleErrorResponse",
+        "x-validate": null
+      },
+      "WorkspaceMember": {
+        "properties": {
+          "email": {
+            "example": "developer@example.com",
+            "format": "email",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "joined_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "role": {
+            "$ref": "#/components/schemas/AuthWorkspaceRole"
+          }
+        },
+        "required": ["id", "email", "role", "joined_at"],
+        "title": "WorkspaceMember",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.Member",
+        "x-validate": null
+      },
+      "PasswordResetTokenResponse": {
+        "properties": {
+          "expires_in": {
+            "example": 900,
+            "minimum": 1,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "reset_token": {
+            "description": "One-time credential for completing a password reset.",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["reset_token", "expires_in"],
+        "title": "PasswordResetTokenResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetTokenResponse",
+        "x-validate": null
+      },
+      "PasswordResetRequestResponse": {
+        "properties": {
+          "status": {
+            "enum": ["password_reset_requested"],
+            "example": "password_reset_requested",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["status"],
+        "title": "PasswordResetRequestResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetRequestResponse",
+        "x-validate": null
+      },
+      "SignupCompletionResponse": {
+        "properties": {
+          "status": {
+            "enum": ["account_created"],
+            "example": "account_created",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["status"],
+        "title": "SignupCompletionResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupCompletionResponse",
+        "x-validate": null
+      },
+      "UpdateWorkspaceMemberRoleRequest": {
         "additionalProperties": false,
         "properties": {
-          "token": {
-            "example": "password-reset-token",
+          "role": {
+            "$ref": "#/components/schemas/AuthWorkspaceRole"
+          }
+        },
+        "required": ["role"],
+        "title": "UpdateWorkspaceMemberRoleRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.UpdateMemberRoleRequest",
+        "x-validate": null
+      },
+      "AuthResponse": {
+        "properties": {
+          "access_token": {
+            "description": "Short-lived JWT access token.",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "expires_in": {
+            "example": 900,
+            "minimum": 1,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "role": {
+            "$ref": "#/components/schemas/AuthWorkspaceRole"
+          },
+          "token_type": {
+            "enum": ["Bearer"],
+            "example": "Bearer",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUser"
+          },
+          "workspace": {
+            "$ref": "#/components/schemas/AuthWorkspace"
+          }
+        },
+        "required": ["access_token", "token_type", "expires_in", "user", "workspace", "role"],
+        "title": "AuthResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.AuthResponse",
+        "x-validate": null
+      },
+      "WorkspaceInvitation": {
+        "properties": {
+          "email": {
+            "example": "developer@example.com",
+            "format": "email",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "expires_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "invited_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "role": {
+            "$ref": "#/components/schemas/AuthWorkspaceRole"
+          }
+        },
+        "required": ["id", "email", "role", "expires_at", "invited_at"],
+        "title": "WorkspaceInvitation",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.Invitation",
+        "x-validate": null
+      },
+      "AuthWorkspace": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "Acme Cloud",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "slug": {
+            "example": "acme-cloud",
+            "maxLength": 50,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "name", "slug"],
+        "title": "AuthWorkspace",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceSummary",
+        "x-validate": null
+      },
+      "WorkspaceMembersResponse": {
+        "properties": {
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceMember"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["members"],
+        "title": "WorkspaceMembersResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.MembersResponse",
+        "x-validate": null
+      },
+      "SignupTokenResponse": {
+        "properties": {
+          "expires_in": {
+            "example": 900,
+            "minimum": 1,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "signup_token": {
+            "description": "One-time credential for completing the verified signup.",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["signup_token", "expires_in"],
+        "title": "SignupTokenResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupTokenResponse",
+        "x-validate": null
+      },
+      "CompletePasswordResetRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "password": {
+            "format": "password",
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "password_confirmation": {
+            "format": "password",
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "reset_token": {
+            "description": "Short-lived credential issued after confirming a reset link.",
             "minLength": 1,
             "type": "string",
             "x-struct": null,
             "x-validate": null
           }
         },
-        "required": ["token"],
-        "title": "ConfirmPasswordResetRequest",
+        "required": ["reset_token", "password", "password_confirmation"],
+        "title": "CompletePasswordResetRequest",
         "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ConfirmPasswordResetRequest",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.CompletePasswordResetRequest",
+        "x-validate": null
+      },
+      "ServiceInfo": {
+        "description": "API service metadata.",
+        "example": {
+          "environment": "dev",
+          "name": "notify-api",
+          "version": "0.1.0"
+        },
+        "properties": {
+          "environment": {
+            "example": "dev",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "notify-api",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "version": {
+            "example": "0.1.0",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["name", "version", "environment"],
+        "title": "ServiceInfo",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.ServiceInfo",
+        "x-validate": null
+      },
+      "WorkspaceInvitationsResponse": {
+        "properties": {
+          "invitations": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceInvitation"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["invitations"],
+        "title": "WorkspaceInvitationsResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.InvitationsResponse",
+        "x-validate": null
+      },
+      "WorkspaceMembershipSummary": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "Acme Cloud",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "role": {
+            "$ref": "#/components/schemas/AuthWorkspaceRole"
+          },
+          "slug": {
+            "example": "acme-cloud",
+            "maxLength": 50,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "name", "slug", "role"],
+        "title": "WorkspaceMembershipSummary",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceMembershipSummary",
+        "x-validate": null
+      },
+      "WorkspaceListResponse": {
+        "properties": {
+          "workspaces": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceMembershipSummary"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["workspaces"],
+        "title": "WorkspaceListResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceListResponse",
+        "x-validate": null
+      },
+      "SignupRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "example": "owner@example.com",
+            "format": "email",
+            "maxLength": 160,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["email"],
+        "title": "SignupRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupRequest",
+        "x-validate": null
+      },
+      "AuthWorkspaceRole": {
+        "enum": ["owner", "admin", "developer", "viewer"],
+        "example": "owner",
+        "title": "AuthWorkspaceRole",
+        "type": "string",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceRole",
         "x-validate": null
       },
       "CurrentUserResponse": {
@@ -259,67 +594,6 @@
         "x-struct": "Elixir.NotifyOpenApi.Schemas.DatabaseCheck",
         "x-validate": null
       },
-      "ErrorDetails": {
-        "properties": {
-          "code": {
-            "example": "invalid_credentials",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "detail": {
-            "example": "Email or password is invalid.",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["code", "detail"],
-        "title": "ErrorDetails",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ErrorDetails",
-        "x-validate": null
-      },
-      "ErrorResponse": {
-        "properties": {
-          "errors": {
-            "$ref": "#/components/schemas/ErrorDetails"
-          }
-        },
-        "required": ["errors"],
-        "title": "ErrorResponse",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ErrorResponse",
-        "x-validate": null
-      },
-      "LivenessResponse": {
-        "description": "API process liveness response.",
-        "example": {
-          "service": {
-            "environment": "dev",
-            "name": "notify-api",
-            "version": "0.1.0"
-          },
-          "status": "ok"
-        },
-        "properties": {
-          "service": {
-            "$ref": "#/components/schemas/ServiceInfo"
-          },
-          "status": {
-            "enum": ["ok"],
-            "example": "ok",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["status", "service"],
-        "title": "LivenessResponse",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.Schemas.LivenessResponse",
-        "x-validate": null
-      },
       "LoginRequest": {
         "additionalProperties": false,
         "properties": {
@@ -353,6 +627,25 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.LoginRequest",
         "x-validate": null
       },
+      "SwitchWorkspaceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "workspace_slug": {
+            "example": "notify-labs",
+            "maxLength": 50,
+            "minLength": 1,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["workspace_slug"],
+        "title": "SwitchWorkspaceRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SwitchWorkspaceRequest",
+        "x-validate": null
+      },
       "PasswordResetCompletionResponse": {
         "properties": {
           "status": {
@@ -367,62 +660,6 @@
         "title": "PasswordResetCompletionResponse",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetCompletionResponse",
-        "x-validate": null
-      },
-      "PasswordResetRequest": {
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "example": "owner@example.com",
-            "format": "email",
-            "maxLength": 160,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["email"],
-        "title": "PasswordResetRequest",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetRequest",
-        "x-validate": null
-      },
-      "PasswordResetRequestResponse": {
-        "properties": {
-          "status": {
-            "enum": ["password_reset_requested"],
-            "example": "password_reset_requested",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["status"],
-        "title": "PasswordResetRequestResponse",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetRequestResponse",
-        "x-validate": null
-      },
-      "PasswordResetTokenResponse": {
-        "properties": {
-          "expires_in": {
-            "example": 900,
-            "minimum": 1,
-            "type": "integer",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "reset_token": {
-            "description": "One-time credential for completing a password reset.",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["reset_token", "expires_in"],
-        "title": "PasswordResetTokenResponse",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetTokenResponse",
         "x-validate": null
       },
       "ReadinessChecks": {
@@ -441,6 +678,149 @@
         "title": "ReadinessChecks",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessChecks",
+        "x-validate": null
+      },
+      "ErrorDetails": {
+        "properties": {
+          "code": {
+            "example": "invalid_credentials",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "detail": {
+            "example": "Email or password is invalid.",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["code", "detail"],
+        "title": "ErrorDetails",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ErrorDetails",
+        "x-validate": null
+      },
+      "AuthUser": {
+        "properties": {
+          "email": {
+            "example": "owner@example.com",
+            "format": "email",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "email"],
+        "title": "AuthUser",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.UserSummary",
+        "x-validate": null
+      },
+      "ResendVerificationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "example": "owner@example.com",
+            "format": "email",
+            "maxLength": 160,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["email"],
+        "title": "ResendVerificationRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ResendVerificationRequest",
+        "x-validate": null
+      },
+      "ValidationErrorDetails": {
+        "properties": {
+          "code": {
+            "enum": ["validation_failed"],
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "detail": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "fields": {
+            "additionalProperties": {
+              "items": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "type": "array",
+              "x-struct": null,
+              "x-validate": null
+            },
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["code", "detail", "fields"],
+        "title": "ValidationErrorDetails",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ValidationErrorDetails",
+        "x-validate": null
+      },
+      "VersionResponse": {
+        "description": "API version response.",
+        "example": {
+          "name": "notify-api",
+          "version": "0.1.0"
+        },
+        "properties": {
+          "name": {
+            "example": "notify-api",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "version": {
+            "example": "0.1.0",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["name", "version"],
+        "title": "VersionResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.VersionResponse",
+        "x-validate": null
+      },
+      "CreateWorkspaceInvitationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "example": "developer@example.com",
+            "format": "email",
+            "maxLength": 160,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "role": {
+            "$ref": "#/components/schemas/AuthWorkspaceRole"
+          }
+        },
+        "required": ["email", "role"],
+        "title": "CreateWorkspaceInvitationRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.CreateInvitationRequest",
         "x-validate": null
       },
       "ReadinessResponse": {
@@ -479,7 +859,7 @@
         "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessResponse",
         "x-validate": null
       },
-      "ResendVerificationRequest": {
+      "PasswordResetRequest": {
         "additionalProperties": false,
         "properties": {
           "email": {
@@ -492,239 +872,9 @@
           }
         },
         "required": ["email"],
-        "title": "ResendVerificationRequest",
+        "title": "PasswordResetRequest",
         "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ResendVerificationRequest",
-        "x-validate": null
-      },
-      "ServiceInfo": {
-        "description": "API service metadata.",
-        "example": {
-          "environment": "dev",
-          "name": "notify-api",
-          "version": "0.1.0"
-        },
-        "properties": {
-          "environment": {
-            "example": "dev",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "name": {
-            "example": "notify-api",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "version": {
-            "example": "0.1.0",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["name", "version", "environment"],
-        "title": "ServiceInfo",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.Schemas.ServiceInfo",
-        "x-validate": null
-      },
-      "SignupCompletionResponse": {
-        "properties": {
-          "status": {
-            "enum": ["account_created"],
-            "example": "account_created",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["status"],
-        "title": "SignupCompletionResponse",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupCompletionResponse",
-        "x-validate": null
-      },
-      "SignupRequest": {
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "example": "owner@example.com",
-            "format": "email",
-            "maxLength": 160,
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["email"],
-        "title": "SignupRequest",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupRequest",
-        "x-validate": null
-      },
-      "SignupTokenResponse": {
-        "properties": {
-          "expires_in": {
-            "example": 900,
-            "minimum": 1,
-            "type": "integer",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "signup_token": {
-            "description": "One-time credential for completing the verified signup.",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["signup_token", "expires_in"],
-        "title": "SignupTokenResponse",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupTokenResponse",
-        "x-validate": null
-      },
-      "SwitchWorkspaceRequest": {
-        "additionalProperties": false,
-        "properties": {
-          "workspace_slug": {
-            "example": "notify-labs",
-            "maxLength": 50,
-            "minLength": 1,
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["workspace_slug"],
-        "title": "SwitchWorkspaceRequest",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SwitchWorkspaceRequest",
-        "x-validate": null
-      },
-      "ValidationErrorDetails": {
-        "properties": {
-          "code": {
-            "enum": ["validation_failed"],
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "detail": {
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "fields": {
-            "additionalProperties": {
-              "items": {
-                "type": "string",
-                "x-struct": null,
-                "x-validate": null
-              },
-              "type": "array",
-              "x-struct": null,
-              "x-validate": null
-            },
-            "type": "object",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["code", "detail", "fields"],
-        "title": "ValidationErrorDetails",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ValidationErrorDetails",
-        "x-validate": null
-      },
-      "ValidationErrorResponse": {
-        "properties": {
-          "errors": {
-            "$ref": "#/components/schemas/ValidationErrorDetails"
-          }
-        },
-        "required": ["errors"],
-        "title": "ValidationErrorResponse",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ValidationErrorResponse",
-        "x-validate": null
-      },
-      "VersionResponse": {
-        "description": "API version response.",
-        "example": {
-          "name": "notify-api",
-          "version": "0.1.0"
-        },
-        "properties": {
-          "name": {
-            "example": "notify-api",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "version": {
-            "example": "0.1.0",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["name", "version"],
-        "title": "VersionResponse",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.Schemas.VersionResponse",
-        "x-validate": null
-      },
-      "WorkspaceListResponse": {
-        "properties": {
-          "workspaces": {
-            "items": {
-              "$ref": "#/components/schemas/WorkspaceMembershipSummary"
-            },
-            "type": "array",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["workspaces"],
-        "title": "WorkspaceListResponse",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceListResponse",
-        "x-validate": null
-      },
-      "WorkspaceMembershipSummary": {
-        "properties": {
-          "id": {
-            "format": "uuid",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "name": {
-            "example": "Acme Cloud",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          },
-          "role": {
-            "$ref": "#/components/schemas/AuthWorkspaceRole"
-          },
-          "slug": {
-            "example": "acme-cloud",
-            "maxLength": 50,
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            "type": "string",
-            "x-struct": null,
-            "x-validate": null
-          }
-        },
-        "required": ["id", "name", "slug", "role"],
-        "title": "WorkspaceMembershipSummary",
-        "type": "object",
-        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceMembershipSummary",
+        "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetRequest",
         "x-validate": null
       }
     },
@@ -1516,6 +1666,441 @@
         ],
         "summary": "List active workspaces for the authenticated user",
         "tags": ["authentication"]
+      }
+    },
+    "/api/workspaces/{workspaceSlug}/invitations": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listWorkspaceInvitations",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceInvitationsResponse"
+                }
+              }
+            },
+            "description": "Pending invitations"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List pending workspace invitations",
+        "tags": ["workspaces"]
+      },
+      "post": {
+        "callbacks": {},
+        "operationId": "createWorkspaceInvitation",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceInvitationRequest"
+              }
+            }
+          },
+          "description": "Invitation details",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceInvitation"
+                }
+              }
+            },
+            "description": "Invitation created"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Already an active member"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation delivery failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Invite a person to a workspace",
+        "tags": ["workspaces"]
+      }
+    },
+    "/api/workspaces/{workspaceSlug}/invitations/{invitationId}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "revokeWorkspaceInvitation",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Invitation ID",
+            "in": "path",
+            "name": "invitationId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Invitation revoked"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revoke a pending workspace invitation",
+        "tags": ["workspaces"]
+      }
+    },
+    "/api/workspaces/{workspaceSlug}/members": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listWorkspaceMembers",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceMembersResponse"
+                }
+              }
+            },
+            "description": "Active members"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List active workspace members",
+        "tags": ["workspaces"]
+      }
+    },
+    "/api/workspaces/{workspaceSlug}/members/{membershipId}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "removeWorkspaceMember",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Membership ID",
+            "in": "path",
+            "name": "membershipId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member removed"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Member unavailable"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Last owner"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove a workspace member",
+        "tags": ["workspaces"]
+      },
+      "patch": {
+        "callbacks": {},
+        "operationId": "updateWorkspaceMemberRole",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Membership ID",
+            "in": "path",
+            "name": "membershipId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceMemberRoleRequest"
+              }
+            }
+          },
+          "description": "New workspace role",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceMember"
+                }
+              }
+            },
+            "description": "Updated member"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Member unavailable"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateWorkspaceMemberRoleErrorResponse"
+                }
+              }
+            },
+            "description": "Validation or owner protection failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Change a workspace member role",
+        "tags": ["workspaces"]
       }
     }
   },

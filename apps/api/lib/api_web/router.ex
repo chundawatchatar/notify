@@ -35,6 +35,16 @@ defmodule ApiWeb.Router do
     get "/auth/me", AuthController, :me
     get "/workspaces", AuthController, :list_workspaces
     post "/auth/workspace/switch", AuthController, :switch_workspace
+
+    get "/workspaces/:workspaceSlug/members", WorkspaceMemberController, :index
+    patch "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :update
+    delete "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :delete
+    get "/workspaces/:workspaceSlug/invitations", WorkspaceMemberController, :list_invitations
+    post "/workspaces/:workspaceSlug/invitations", WorkspaceMemberController, :create_invitation
+
+    delete "/workspaces/:workspaceSlug/invitations/:invitationId",
+           WorkspaceMemberController,
+           :revoke_invitation
   end
 
   scope "/api" do

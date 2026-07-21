@@ -47,8 +47,10 @@ domain library.
 - `docs/product-map.md`: product modules and intended flows.
 - `docs/database.md`: database ownership, migrations, and safety rules.
 - `docs/development.md`: local setup and runtime versions.
+- `docs/ticket-delivery.md`: required Linear ticket lifecycle, authorization
+  gates, review, merge, and worktree cleanup.
 - `docs/operations.md`: releases, health probes, metrics, and Kubernetes deployment.
-- `docs/github-workflow.md`: required ticket delivery, review, and merge flow.
+- `docs/github-workflow.md`: GitHub checks, merge queue, release, and hotfix flow.
 
 ## Universal AI Playbooks
 
@@ -56,8 +58,9 @@ Project playbooks use plain Markdown and YAML under `.agents/skills`; they do
 not require a vendor-specific agent or manifest. When a task matches a
 repeatable workflow, read `.agents/skills/index.yaml` and load only the smallest
 matching playbook set. An agent without native skill discovery must open the
-selected `SKILL.md` files directly. Follow recipe order for cross-boundary work
-and include `notify-verify-change` before reporting completion or committing.
+selected `SKILL.md` files directly. Start assigned Linear implementation tickets
+with `notify-ticket-delivery`, follow recipe order for task-specific work, and
+include `notify-verify-change` before reporting completion or committing.
 
 Keep playbook instructions and the index current when repository ownership,
 commands, generated files, or deployment policy changes.

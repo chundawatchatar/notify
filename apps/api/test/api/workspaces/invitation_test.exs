@@ -65,7 +65,9 @@ defmodule Api.Workspaces.InvitationTest do
     membership = insert(:membership, workspace: owner.workspace, role: "developer")
     session = insert(:auth_session, workspace_membership: membership)
 
-    assert {:ok, %Membership{status: "removed"}} = Workspaces.remove_membership(membership)
+    assert {:ok, %Membership{status: "removed"}} =
+             Workspaces.remove_membership(owner, membership)
+
     assert Repo.get!(AuthSession, session.id).revoked_at
   end
 
