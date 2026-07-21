@@ -194,8 +194,27 @@ defmodule Api.Workspaces do
           do: {:error, :already_active_member},
           else: {:ok, :none}
       end)
-      |> Multi.run(:revoked_pending_invitation, fn repo, %{inviter: current_inviter} ->
+      |> Multi.run(:revoked_pending_invitations, fn repo, %{inviter: current_inviter} ->
         revoke_pending_invitation(repo, current_inviter.workspace_id, normalized_email, now)
+      end)
+      |> Multi.merge(fn %{
+                          inviter: current_inviter,
+                          revoked_pending_invitations: invitations
+                        } ->
+        Enum.reduce(invitations, Multi.new(), fn invitation, multi ->
+          Multi.insert(
+            multi,
+            {:superseded_invitation_revoked_audit, invitation.id},
+            audit_changeset(
+              current_inviter.workspace_id,
+              current_inviter.id,
+              "invitation_revoked",
+              "workspace_invitation",
+              invitation.id,
+              %{"email" => invitation.email, "role" => invitation.role}
+            )
+          )
+        end)
       end)
       |> Multi.run(:invitation_token, fn _repo, %{inviter: current_inviter} ->
         {token, invitation_changeset} =
@@ -515,17 +534,21 @@ defmodule Api.Workspaces do
   end
 
   defp revoke_pending_invitation(repo, workspace_id, email, now) do
-    {count, _} =
-      repo.update_all(
-        from(invitation in Invitation,
+    invitations =
+      repo.all(
+        from invitation in Invitation,
           where:
             invitation.workspace_id == ^workspace_id and invitation.email == ^email and
-              is_nil(invitation.accepted_at) and is_nil(invitation.revoked_at)
-        ),
-        set: [revoked_at: now, updated_at: now]
+              is_nil(invitation.accepted_at) and is_nil(invitation.revoked_at),
+          lock: "FOR UPDATE"
       )
 
-    {:ok, count}
+    Enum.reduce_while(invitations, {:ok, invitations}, fn invitation, {:ok, _invitations} ->
+      case repo.update(Invitation.revoke_changeset(invitation, now)) do
+        {:ok, _revoked_invitation} -> {:cont, {:ok, invitations}}
+        {:error, changeset} -> {:halt, {:error, changeset}}
+      end
+    end)
   end
 
   defp revoke_membership_sessions(repo, membership_id, now) do

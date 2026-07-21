@@ -122,6 +122,31 @@ defmodule Api.Workspaces.InvitationTest do
              Workspaces.accept_invitation(token, invited_user)
   end
 
+  test "re-inviting a pending email audits the superseded invitation revocation" do
+    inviter = insert(:membership)
+
+    assert {:ok, %{invitation: first_invitation}} =
+             Workspaces.create_invitation(inviter, %{email: "invitee@example.com", role: "viewer"})
+
+    assert {:ok, %{invitation: second_invitation}} =
+             Workspaces.create_invitation(inviter, %{
+               email: "invitee@example.com",
+               role: "developer"
+             })
+
+    assert Repo.get!(Invitation, first_invitation.id).revoked_at
+    assert second_invitation.revoked_at == nil
+
+    assert %AuditEvent{actor_workspace_membership_id: actor_id, metadata: metadata} =
+             Repo.get_by(AuditEvent,
+               action: "invitation_revoked",
+               target_id: first_invitation.id
+             )
+
+    assert actor_id == inviter.id
+    assert metadata == %{"email" => "invitee@example.com", "role" => "viewer"}
+  end
+
   test "invitation factory persists its shared workspace once" do
     invitation = insert(:invitation)
     membership = Repo.get!(Membership, invitation.invited_by_membership_id)

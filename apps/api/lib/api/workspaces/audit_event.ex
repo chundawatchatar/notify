@@ -46,10 +46,14 @@ defmodule Api.Workspaces.AuditEvent do
 
   defp validate_metadata_size(changeset) do
     validate_change(changeset, :metadata, fn :metadata, metadata ->
-      case Jason.encode(metadata) do
-        {:ok, encoded} when byte_size(encoded) <= @metadata_max_bytes -> []
-        {:ok, _encoded} -> [metadata: "must be at most #{@metadata_max_bytes} bytes"]
-        {:error, _reason} -> [metadata: "must be JSON encodable"]
+      try do
+        case Jason.encode(metadata) do
+          {:ok, encoded} when byte_size(encoded) <= @metadata_max_bytes -> []
+          {:ok, _encoded} -> [metadata: "must be at most #{@metadata_max_bytes} bytes"]
+          {:error, _reason} -> [metadata: "must be JSON encodable"]
+        end
+      rescue
+        Protocol.UndefinedError -> [metadata: "must be JSON encodable"]
       end
     end)
   end
@@ -66,9 +70,7 @@ defmodule Api.Workspaces.AuditEvent do
 
   defp contains_forbidden_metadata_key?(metadata) when is_map(metadata) do
     Enum.any?(metadata, fn {key, value} ->
-      normalized_key = key |> to_string() |> String.downcase()
-
-      Enum.any?(@forbidden_metadata_key_fragments, &String.contains?(normalized_key, &1)) or
+      forbidden_metadata_key?(key) or
         contains_forbidden_metadata_key?(value)
     end)
   end
@@ -77,4 +79,17 @@ defmodule Api.Workspaces.AuditEvent do
     do: Enum.any?(metadata, &contains_forbidden_metadata_key?/1)
 
   defp contains_forbidden_metadata_key?(_metadata), do: false
+
+  defp forbidden_metadata_key?(key) when is_binary(key), do: contains_forbidden_key_fragment?(key)
+
+  defp forbidden_metadata_key?(key) when is_atom(key),
+    do: key |> Atom.to_string() |> contains_forbidden_key_fragment?()
+
+  defp forbidden_metadata_key?(_key), do: false
+
+  defp contains_forbidden_key_fragment?(key) do
+    normalized_key = String.downcase(key)
+
+    Enum.any?(@forbidden_metadata_key_fragments, &String.contains?(normalized_key, &1))
+  end
 end
