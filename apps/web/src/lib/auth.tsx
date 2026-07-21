@@ -5,6 +5,7 @@ import {
   login as requestLogin,
   logout as requestLogout,
   refreshSession as requestRefreshSession,
+  switchWorkspace as requestSwitchWorkspace,
 } from "./api-client";
 
 type AuthStatus = "anonymous" | "authenticated" | "error" | "initializing" | "unsupported";
@@ -27,6 +28,7 @@ type AuthContextValue = AuthState & {
   retrySession: () => Promise<AuthState>;
   signIn: (request: ApiLoginRequest) => Promise<AuthState>;
   signOut: () => Promise<void>;
+  switchWorkspace: (workspaceSlug: string) => Promise<AuthState>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -47,6 +49,7 @@ class AuthClient {
   private channel: BroadcastChannel | null = null;
   private listeners = new Set<() => void>();
   private refreshPromise: Promise<ApiAuthResponse> | null = null;
+  private switchPromise: Promise<AuthState> | null = null;
   private refreshTimer: number | undefined;
   private started = false;
   private state: AuthState = { status: "initializing" };
@@ -81,6 +84,10 @@ class AuthClient {
       this.channel.onmessage = (event: MessageEvent<{ type?: string }>) => {
         if (event.data?.type === "logout") {
           this.clearSession();
+        }
+
+        if (event.data?.type === "workspace-switch") {
+          window.location.reload();
         }
       };
     }
@@ -152,6 +159,39 @@ class AuthClient {
     await requestLogout(this.state.accessToken);
     this.clearSession();
     this.channel?.postMessage({ type: "logout" });
+  };
+
+  switchWorkspace = async (workspaceSlug: string): Promise<AuthState> => {
+    if (typeof navigator === "undefined" || !navigator.locks) {
+      throw new UnsupportedBrowserError();
+    }
+
+    if (this.switchPromise) {
+      return this.switchPromise;
+    }
+
+    const promise = navigator.locks.request(refreshLockName, async () => {
+      const accessToken = this.state.accessToken;
+
+      if (!accessToken) {
+        throw new ApiRequestError(401, "invalid_session", "Authentication is required.");
+      }
+
+      const response = await requestSwitchWorkspace(accessToken, {
+        workspace_slug: workspaceSlug,
+      });
+      this.applyAuthResponse(response);
+      this.channel?.postMessage({ type: "workspace-switch" });
+      return this.state;
+    });
+
+    this.switchPromise = promise;
+
+    try {
+      return await promise;
+    } finally {
+      this.switchPromise = null;
+    }
   };
 
   authenticatedRequest = async <Result,>(
@@ -296,6 +336,7 @@ function AuthProvider({ children, client }: Readonly<{ children: ReactNode; clie
     retrySession: client.retrySession,
     signIn: client.signIn,
     signOut: client.signOut,
+    switchWorkspace: client.switchWorkspace,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

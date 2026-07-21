@@ -37,7 +37,7 @@ describe("authentication session", () => {
     );
 
     await waitForText(container, "authenticated:Acme Cloud");
-    click(container.querySelector("button") as HTMLButtonElement);
+    click(container.querySelector("button[value='logout']") as HTMLButtonElement);
     await waitForText(container, "anonymous");
 
     expect(logoutCredentials).toBe("include");
@@ -84,6 +84,40 @@ describe("authentication session", () => {
     expect(coordination.request).toHaveBeenCalledTimes(2);
     expect(maximumActiveRequests).toBe(1);
   });
+
+  it("switches sessions after a refresh and replaces the authenticated principal", async () => {
+    expect.hasAssertions();
+    installBrowserCoordination();
+    let switchAuthorization: string | null = null;
+
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/refresh`, () =>
+        HttpResponse.json(authResponse({ accessToken: "refreshed-access-token" })),
+      ),
+      http.post(`${apiBaseUrl}/api/auth/workspace/switch`, async ({ request }) => {
+        switchAuthorization = request.headers.get("authorization");
+        return HttpResponse.json(
+          authResponse({
+            accessToken: "notify-labs-access-token",
+            workspace: { name: "Notify Labs", slug: "notify-labs" },
+          }),
+        );
+      }),
+    );
+
+    const container = render(
+      <AuthProvider client={createAuthClient()}>
+        <AuthHarness />
+      </AuthProvider>,
+    );
+
+    await waitForText(container, "authenticated:Acme Cloud");
+    click(container.querySelector("button[value='refresh']") as HTMLButtonElement);
+    click(container.querySelector("button[value='switch']") as HTMLButtonElement);
+    await waitForText(container, "authenticated:Notify Labs");
+
+    expect(switchAuthorization).toBe("Bearer refreshed-access-token");
+  });
 });
 
 function AuthHarness() {
@@ -94,7 +128,13 @@ function AuthHarness() {
       <span>
         {auth.status}:{auth.principal?.workspace.name}
       </span>
-      <button onClick={() => void auth.signOut()} type="button">
+      <button onClick={() => void auth.retrySession()} type="button" value="refresh">
+        Refresh
+      </button>
+      <button onClick={() => void auth.switchWorkspace("notify-labs")} type="button" value="switch">
+        Switch workspace
+      </button>
+      <button onClick={() => void auth.signOut()} type="button" value="logout">
         Sign out
       </button>
     </div>
@@ -129,13 +169,19 @@ function installBrowserCoordination() {
   return { request };
 }
 
-function authResponse() {
+function authResponse({
+  accessToken = "access-token",
+  workspace = { name: "Acme Cloud", slug: "acme-cloud" },
+}: {
+  accessToken?: string;
+  workspace?: { name: string; slug: string };
+} = {}) {
   return {
-    access_token: "access-token",
+    access_token: accessToken,
     expires_in: 900,
     role: "owner",
     token_type: "Bearer",
     user: { email: "owner@example.com", id: "3dc20706-9944-4743-8121-c0429c622c0b" },
-    workspace: { id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4", name: "Acme Cloud" },
+    workspace: { id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4", ...workspace },
   };
 }
