@@ -16,7 +16,11 @@ const loginSearchSchema = z.object({
     .union([z.boolean(), z.literal("true")])
     .optional()
     .catch(undefined),
-  redirect: z.string().optional().transform(productRedirectPath).catch(undefined),
+  redirect: z
+    .string()
+    .optional()
+    .transform((redirect) => (redirect ? productRedirectPath(redirect) : undefined))
+    .catch(undefined),
 });
 
 export const Route = createFileRoute("/auth/login")({

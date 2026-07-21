@@ -5,21 +5,7 @@ type ProductRedirect =
   | { kind: "section"; section: WorkspaceSectionId; workspaceSlug?: string };
 
 function productRedirectPath(pathname: string) {
-  if (pathname === "/" || pathname === "/dashboard") {
-    return pathname;
-  }
-
-  const legacySection = pathname.slice(1);
-
-  if (isWorkspaceSection(legacySection)) {
-    return pathname;
-  }
-
-  const match = pathname.match(
-    /^\/w\/([^/]+)\/(dashboard|apps|ingress|analytics|subscription|security|settings)$/,
-  );
-
-  return match ? pathname : undefined;
+  return parseProductRedirect(pathname) ? pathname : undefined;
 }
 
 function parseProductRedirect(pathname: string | undefined): ProductRedirect | undefined {
@@ -33,9 +19,7 @@ function parseProductRedirect(pathname: string | undefined): ProductRedirect | u
     return { kind: "section", section: legacySection };
   }
 
-  const match = pathname.match(
-    /^\/w\/([^/]+)\/(dashboard|apps|ingress|analytics|subscription|security|settings)$/,
-  );
+  const match = pathname.match(/^\/w\/([^/]+)\/([^/]+)$/);
 
   if (!match) {
     return undefined;

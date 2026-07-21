@@ -66,11 +66,14 @@ function LoginForm({
     mutationFn: auth.signIn,
     onSuccess: async (state) => {
       const workspaceSlug = state.principal?.workspace.slug;
-      const redirect = resolveProductRedirect(redirectTo, workspaceSlug ?? "");
 
       if (!workspaceSlug) {
-        return;
+        throw new Error(
+          "Your account does not have an active workspace. Contact support to continue.",
+        );
       }
+
+      const redirect = resolveProductRedirect(redirectTo, workspaceSlug);
 
       if (redirect.kind === "section") {
         await navigate({

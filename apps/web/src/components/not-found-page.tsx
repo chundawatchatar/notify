@@ -48,7 +48,7 @@ function NotFoundPage() {
                 ) : (
                   <Link to="/auth/login">
                     <Home />
-                    Go to dashboard
+                    Sign in to continue
                   </Link>
                 )}
               </Button>
