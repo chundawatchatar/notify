@@ -81,7 +81,10 @@ When authorized:
 3. Push the ticket branch and open a pull request targeting `develop`.
 4. Use a clear pull request title and description that link the Linear issue,
    summarize the change, and list verification performed or skipped.
-5. Add the pull request URL to Linear and move the issue to the appropriate
+5. Write multiline pull request descriptions through a body file or standard
+   input with real line breaks. Read the saved body back after every create or
+   edit and reject literal `\n` sequences or truncated content.
+6. Add the pull request URL to Linear and move the issue to the appropriate
    review state when authorized.
 
 ## 7. Review, Merge, And Cleanup
