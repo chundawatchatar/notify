@@ -42,6 +42,8 @@ defmodule ApiWeb.Router do
     get "/apps", NotificationAppController, :index
     post "/apps", NotificationAppController, :create
     get "/apps/:appSlug", NotificationAppController, :show
+    patch "/apps/:appSlug", NotificationAppController, :update
+    delete "/apps/:appSlug", NotificationAppController, :delete
 
     get "/workspaces/:workspaceSlug/members", WorkspaceMemberController, :index
     patch "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :update

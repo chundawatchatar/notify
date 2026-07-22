@@ -177,6 +177,11 @@ app-specific grants.
 Notification app and environment persistence is owned by this API application.
 HTTP contracts for managing those records are introduced separately.
 
+Notification apps are soft-archived by setting `archived_at`. Active list and
+detail queries exclude archived apps, while the archived row and its stable slug
+remain retained for auditability and to prevent URL reuse. Archiving is scoped
+to the authenticated workspace and is irreversible in the current product flow.
+
 ## Ecto Guidance
 
 - Prefer Ecto migration DSL for normal table and index changes.

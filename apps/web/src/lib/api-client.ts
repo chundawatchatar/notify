@@ -26,6 +26,7 @@ import type {
   ApiSignupResponse,
   ApiSignupTokenResponse,
   ApiSwitchWorkspaceRequest,
+  ApiUpdateNotificationAppRequest,
   ApiUpdateWorkspaceMemberRoleRequest,
   ApiVersionResponse,
   ApiWorkspaceInvitation,
@@ -138,6 +139,20 @@ function getNotificationApp(accessToken: string, appSlug: string) {
   return get<ApiNotificationApp>(`/api/apps/${appSlug}`, { accessToken });
 }
 
+function updateNotificationApp(
+  accessToken: string,
+  appSlug: string,
+  body: ApiUpdateNotificationAppRequest,
+) {
+  return patch<ApiNotificationApp, ApiUpdateNotificationAppRequest>(`/api/apps/${appSlug}`, body, {
+    accessToken,
+  });
+}
+
+function archiveNotificationApp(accessToken: string, appSlug: string) {
+  return deleteRequest<void>(`/api/apps/${appSlug}`, undefined, { accessToken });
+}
+
 function switchWorkspace(accessToken: string, body: ApiSwitchWorkspaceRequest) {
   return post<ApiAuthResponse, ApiSwitchWorkspaceRequest>("/api/auth/workspace/switch", body, {
     accessToken,
@@ -224,6 +239,7 @@ function getApiVersion() {
 export {
   ApiRequestError,
   acceptInvitation,
+  archiveNotificationApp,
   completeInvitationSignup,
   completePasswordReset,
   completeSignup,
@@ -249,5 +265,6 @@ export {
   revokeWorkspaceInvitation,
   startSignup,
   switchWorkspace,
+  updateNotificationApp,
   updateWorkspaceMemberRole,
 };

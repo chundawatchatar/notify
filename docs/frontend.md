@@ -75,11 +75,10 @@ backend, rather than as follow-up browser requests.
 When app detail routes are implemented, their canonical shape is
 `/w/:workspaceSlug/apps/:appSlug/:environmentSlug`. App and environment UUIDs
 stay out of URLs. App slugs are unique within the workspace and environment
-slugs are unique within the app. After a rename, the client replaces its route
-with the current canonical URL returned by the API; former-slug URLs are not
-redirected and render not found. Credentials, trusted origins, events, and
-delivery data will be environment-scoped in their own later flows; this initial
-flow does not add their UI, analytics, billing, or collaboration controls.
+slugs are unique within the app. Renaming changes only an app's display name,
+so its URL remains stable. Credentials, trusted origins, events, and delivery
+data will be environment-scoped in their own later flows; this initial flow does
+not add their UI, analytics, billing, or collaboration controls.
 
 The workspace switcher lists every active membership, including both the owned
 and invited workspaces created during invitation signup. After an explicit

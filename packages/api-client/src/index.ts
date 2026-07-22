@@ -58,6 +58,7 @@ type ApiNotificationAppsResponse = JsonResponse<"listNotificationApps", 200>;
 type ApiCreateNotificationAppRequest = JsonRequestBody<"createNotificationApp">;
 type ApiNotificationApp = JsonResponse<"createNotificationApp", 201>;
 type ApiNotificationAppEnvironment = ApiNotificationApp["environments"][number];
+type ApiUpdateNotificationAppRequest = JsonRequestBody<"updateNotificationApp">;
 type ApiErrorResponse = JsonResponse<"login", 401>;
 type ApiValidationErrorResponse = JsonResponse<"login", 422>;
 
@@ -97,6 +98,7 @@ export type {
   ApiSignupResponse,
   ApiSignupTokenResponse,
   ApiSwitchWorkspaceRequest,
+  ApiUpdateNotificationAppRequest,
   ApiUpdateWorkspaceMemberRoleRequest,
   ApiValidationErrorResponse,
   ApiVersionResponse,

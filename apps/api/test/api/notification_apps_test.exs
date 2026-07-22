@@ -104,6 +104,35 @@ defmodule Api.NotificationAppsTest do
              nil
   end
 
+  test "renames an app without changing its slug and excludes archived apps" do
+    workspace = insert(:workspace)
+
+    assert {:ok, notification_app} =
+             NotificationApps.create_notification_app(workspace, %{name: "Payments Service"})
+
+    assert {:ok, renamed_notification_app} =
+             NotificationApps.update_notification_app(workspace, "payments-service", %{
+               name: "Payments Platform"
+             })
+
+    assert renamed_notification_app.name == "Payments Platform"
+    assert renamed_notification_app.app_slug == "payments-service"
+
+    assert {:error, :not_found} =
+             NotificationApps.update_notification_app(workspace, "missing-app", %{name: "Missing"})
+
+    assert {:error, :not_found} =
+             NotificationApps.archive_notification_app(workspace, "missing-app")
+
+    assert :ok = NotificationApps.archive_notification_app(workspace, "payments-service")
+    assert NotificationApps.list_notification_apps(workspace) == []
+    assert NotificationApps.get_notification_app(workspace, notification_app.id) == nil
+    assert NotificationApps.get_notification_app_by_slug(workspace, "payments-service") == nil
+
+    assert {:error, :archived} =
+             NotificationApps.archive_notification_app(workspace, "payments-service")
+  end
+
   defp allocate_slug(workspace, name) do
     parent = self()
 

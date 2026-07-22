@@ -108,9 +108,8 @@ extend the workspace route with the app and environment slugs:
 - `/w/:workspaceSlug/apps/:appSlug/:environmentSlug`
 
 App slugs are normalized and unique within their workspace; environment slugs
-are normalized and unique within their app. A rename replaces the current slug
-rather than creating a redirect alias, so clients must use the canonical URL
-returned after a rename.
+are normalized and unique within their app. Renaming changes only an app's
+display name, so its client URL remains stable.
 
 The initial authenticated app API uses the workspace selected by the current
 membership-scoped session:
@@ -120,6 +119,11 @@ membership-scoped session:
 - `POST /api/apps` accepts an app name only and returns the created app with
   HTTP 201. The request never accepts a workspace identifier or slug.
 - `GET /api/apps/:appSlug` resolves the app only inside the active workspace.
+- `PATCH /api/apps/:appSlug` accepts a new display name and returns the updated
+  app. It preserves the stable app slug.
+- `DELETE /api/apps/:appSlug` soft-archives the app with HTTP 204. Archived
+  apps are excluded from normal list and detail responses and cannot be
+  restored in the current flow.
 
 App slugs are generated from names. A same-workspace name collision receives the
 first available numeric suffix, beginning with `-2`; a database uniqueness
