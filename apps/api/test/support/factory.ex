@@ -4,6 +4,7 @@ defmodule Api.Factory do
   use ExMachina.Ecto, repo: Api.Repo
 
   alias Api.Accounts.{AuthChallenge, AuthSession, User}
+  alias Api.NotificationApps.{Environment, NotificationApp}
   alias Api.Workspaces.{AuditEvent, Invitation, Membership, Workspace}
 
   def user_factory do
@@ -19,6 +20,23 @@ defmodule Api.Factory do
   def workspace_factory do
     slug = sequence(:workspace_slug, &"workspace-#{&1}")
     %Workspace{name: Faker.Company.name(), slug: slug}
+  end
+
+  def notification_app_factory do
+    %NotificationApp{
+      workspace: build(:workspace),
+      name: Faker.Company.name(),
+      app_slug: sequence(:notification_app_slug, &"notification-app-#{&1}")
+    }
+  end
+
+  def environment_factory do
+    %Environment{
+      notification_app: build(:notification_app),
+      name: "Development",
+      environment_slug: sequence(:environment_slug, &"environment-#{&1}"),
+      production: false
+    }
   end
 
   def membership_factory do
