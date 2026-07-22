@@ -57,6 +57,8 @@ The following actions require explicit requester authorization:
 Milestone requests carry the following scoped authorization:
 
 - asking to start or resume a named ticket authorizes moving it to In Progress;
+- asking to commit and push authorizes running the smallest test suites that
+  cover the affected code before pushing;
 - asking to open or publish its pull request authorizes linking the pull request
   in Linear and moving the ticket to In Review;
 - authorizing a merge also authorizes the required post-merge Linear Done

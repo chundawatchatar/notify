@@ -8,7 +8,9 @@ architecture, product modules, migrations, or frontend conventions change.
 
 - Do not use em dashes in prose. Use a hyphen instead.
 - Always use a single-line commit message.
-- Do not run tests unless the user explicitly asks.
+- Do not run tests during implementation unless the user explicitly asks. A
+  request to commit and push authorizes running the smallest test suites that
+  cover the affected code before pushing.
 - Do not start or run an application unless the user explicitly asks.
 - Do not inspect or test a live application in a browser unless the user explicitly asks.
 - Do not commit changes unless the user explicitly asks.
