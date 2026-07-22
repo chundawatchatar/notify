@@ -14,9 +14,15 @@ import { server } from "@/test/server";
 import { NotificationAppsPage } from "./notification-apps-page";
 
 const apiBaseUrl = "http://localhost:4100";
+const originalLocksDescriptor = Object.getOwnPropertyDescriptor(navigator, "locks");
 
 afterEach(() => {
   cleanup();
+  if (originalLocksDescriptor) {
+    Object.defineProperty(navigator, "locks", originalLocksDescriptor);
+  } else {
+    Reflect.deleteProperty(navigator, "locks");
+  }
   vi.unstubAllGlobals();
 });
 
