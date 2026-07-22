@@ -16,7 +16,8 @@ Routes:
 Responsibilities:
 
 - email ownership verification before collecting the password
-- verified signup atomically creates the account, workspace, and owner membership
+- verified signup atomically creates the account, named workspace, and owner
+  membership
 - sign in with a short-lived access JWT and rotating refresh session
 - current-account lookup and logout
 - protected dashboard session restoration and logout
@@ -52,6 +53,11 @@ email tokens. Security-sensitive collaboration mutations write append-only,
 workspace-scoped audit events, but an audit-log UI is deferred. Departments or
 teams, custom roles, and app-specific grants are deferred. The authoritative
 model is in `docs/architecture.md`.
+
+Invitation signup creates a named owner workspace and the invited membership
+together, then stays in the invited workspace; the switcher exposes both
+memberships. Login prefers the earliest active owner membership as its
+server-side fallback when the browser has no restorable active workspace.
 
 ## Dashboard
 

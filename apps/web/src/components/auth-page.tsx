@@ -1020,6 +1020,7 @@ function formSubmitHandler(handleSubmit: () => Promise<void>) {
 
 export {
   AuthShell,
+  apiFieldError,
   CompleteSignupForm,
   FieldError,
   ForgotPasswordForm,

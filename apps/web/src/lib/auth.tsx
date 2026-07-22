@@ -6,6 +6,7 @@ import type {
 import { createContext, type ReactNode, useContext, useSyncExternalStore } from "react";
 import {
   ApiRequestError,
+  listWorkspaces,
   acceptInvitation as requestAcceptInvitation,
   completeInvitationSignup as requestCompleteInvitationSignup,
   login as requestLogin,
@@ -43,6 +44,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const refreshLockName = "notify-auth-refresh";
 const authChannelName = "notify-auth-events";
 const refreshEarlyMilliseconds = 60_000;
+const activeWorkspaceStorageKeyPrefix = "notify-active-workspace";
 
 class UnsupportedBrowserError extends Error {
   constructor() {
@@ -161,6 +163,7 @@ class AuthClient {
 
     const response = await requestLogin(request);
     this.applyAuthResponse(response);
+    await this.restoreActiveWorkspace(response);
     return this.state;
   };
 
@@ -169,12 +172,14 @@ class AuthClient {
       requestAcceptInvitation(accessToken, { token }),
     );
     this.applyAuthResponse(response);
+    this.rememberActiveWorkspace(response);
     return this.state;
   };
 
   completeInvitationSignup = async (request: ApiCompleteInvitationSignupRequest) => {
     const response = await requestCompleteInvitationSignup(request);
     this.applyAuthResponse(response);
+    this.rememberActiveWorkspace(response);
     return this.state;
   };
 
@@ -294,9 +299,65 @@ class AuthClient {
         workspace_slug: workspaceSlug,
       });
       this.applyAuthResponse(response);
+      this.rememberActiveWorkspace(response);
       this.channel?.postMessage({ type: "workspace-switch" });
       return this.state;
     });
+  }
+
+  private async restoreActiveWorkspace(response: ApiAuthResponse) {
+    const workspaceId = this.readActiveWorkspace(response.user.id);
+
+    if (!workspaceId || workspaceId === response.workspace.id) {
+      return;
+    }
+
+    try {
+      const { workspaces } = await this.authenticatedRequest(listWorkspaces);
+      const workspace = workspaces.find((candidate) => candidate.id === workspaceId);
+
+      if (!workspace) {
+        this.clearActiveWorkspace(response.user.id);
+        return;
+      }
+
+      await this.switchWorkspace(workspace.slug);
+    } catch (error) {
+      if (error instanceof ApiRequestError && (error.status === 403 || error.status === 404)) {
+        this.clearActiveWorkspace(response.user.id);
+      }
+    }
+  }
+
+  private rememberActiveWorkspace(response: ApiAuthResponse) {
+    try {
+      window.localStorage.setItem(
+        this.activeWorkspaceStorageKey(response.user.id),
+        response.workspace.id,
+      );
+    } catch {
+      // Workspace restoration is optional when browser storage is unavailable.
+    }
+  }
+
+  private readActiveWorkspace(userId: string) {
+    try {
+      return window.localStorage.getItem(this.activeWorkspaceStorageKey(userId));
+    } catch {
+      return null;
+    }
+  }
+
+  private clearActiveWorkspace(userId: string) {
+    try {
+      window.localStorage.removeItem(this.activeWorkspaceStorageKey(userId));
+    } catch {
+      // Workspace restoration is optional when browser storage is unavailable.
+    }
+  }
+
+  private activeWorkspaceStorageKey(userId: string) {
+    return `${activeWorkspaceStorageKeyPrefix}:${userId}`;
   }
 
   private async refreshCredential() {

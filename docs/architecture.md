@@ -91,9 +91,11 @@ browser-access, and session-revocation flow.
 Email/password signup verifies ownership before creating an account. The API
 stores a hashed, expiring signup challenge and exchanges the email link for a
 15-minute, one-time signup-completion credential. Completing signup atomically
-creates the confirmed user, one workspace, and its owner membership. This keeps
-an unverified request from reserving another person's email. No session is
-created until the user signs in.
+creates the confirmed user, its named workspace, and its owner membership.
+Invitation signup also collects a name for the user's owned workspace, but
+starts the session in the workspace that invited the user. This keeps an
+unverified request from reserving another person's email. Normal signup creates
+no session until the user signs in.
 
 Password recovery stores hashed, expiring, one-time credentials and returns the
 same request response whether or not an account exists. Completing a reset
@@ -104,10 +106,12 @@ Google OAuth and authentication rate limiting remain deferred.
 ## Workspace Collaboration And Access
 
 The tenant hierarchy is `user -> membership -> workspace -> notification app`.
-A user is an account identity that may have multiple workspace memberships. A
-workspace is the tenant, billing, collaboration, and audit boundary; notification
-apps always belong to a workspace. A membership joins a user to one workspace,
-stores the user's role, and is the security boundary for a session.
+A user is an account identity that may have multiple workspace memberships and
+may own multiple workspaces. A workspace is the tenant, billing, collaboration,
+and audit boundary; notification apps always belong to a workspace. A
+membership joins a user to one workspace, stores the user's role, and is the
+security boundary for a session. The active workspace is the one selected by a
+membership-scoped session.
 
 Initial workspace roles are `owner`, `admin`, `developer`, and `viewer`.
 Authorization loads the current membership from the database. A JWT identifies

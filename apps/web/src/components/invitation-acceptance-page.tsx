@@ -1,10 +1,16 @@
-import { Alert, AlertTitle, Button, Checkbox, Label, PasswordInput } from "@notify/ui";
+import { Alert, AlertTitle, Button, Checkbox, Input, Label, PasswordInput } from "@notify/ui";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { AuthShell, FieldError, firstFieldError, MutationMessage } from "@/components/auth-page";
+import {
+  AuthShell,
+  apiFieldError,
+  FieldError,
+  firstFieldError,
+  MutationMessage,
+} from "@/components/auth-page";
 import { useAuth } from "@/lib/auth";
 import type { InvitationAcceptanceState } from "@/lib/invitation-acceptance";
 
@@ -12,6 +18,10 @@ const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters.")
   .max(72, "Password must be at most 72 characters.");
+const workspaceNameSchema = z
+  .string()
+  .min(2, "Workspace name must be at least 2 characters.")
+  .max(100, "Workspace name must be at most 100 characters.");
 
 function InvitationAcceptancePage({
   onComplete,
@@ -103,7 +113,12 @@ function InvitationForm({
     onComplete();
   };
   const form = useForm({
-    defaultValues: { acceptTerms: false, confirmPassword: "", password: "" },
+    defaultValues: {
+      acceptTerms: false,
+      confirmPassword: "",
+      password: "",
+      workspaceName: "",
+    },
     onSubmit: async ({ value }) => {
       setCompletionError(undefined);
 
@@ -113,6 +128,7 @@ function InvitationForm({
           password: value.password,
           password_confirmation: value.confirmPassword,
           token: state.token,
+          workspace_name: value.workspaceName,
         });
         await finish(session.principal?.workspace.slug);
       } catch (error) {
@@ -186,6 +202,45 @@ function InvitationForm({
               }}
             >
               <p className="font-medium text-sm">New to Notify? Create your account</p>
+              <form.Field
+                name="workspaceName"
+                validators={{
+                  onChange: ({ value }) => {
+                    const result = workspaceNameSchema.safeParse(value);
+                    return result.success ? undefined : result.error.issues[0]?.message;
+                  },
+                  onSubmit: ({ value }) => {
+                    const result = workspaceNameSchema.safeParse(value);
+                    return result.success ? undefined : result.error.issues[0]?.message;
+                  },
+                }}
+              >
+                {(field) => (
+                  <div className="grid gap-2">
+                    <Label htmlFor={field.name}>Your workspace name</Label>
+                    <Input
+                      aria-describedby={`${field.name}-error`}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                      autoComplete="organization"
+                      id={field.name}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => {
+                        signupMutation.reset();
+                        field.handleChange(event.target.value);
+                      }}
+                      placeholder="Acme Cloud"
+                      value={field.state.value}
+                    />
+                    <FieldError
+                      id={`${field.name}-error`}
+                      message={
+                        apiFieldError(signupMutation.error, "workspace_name") ??
+                        firstFieldError(field.state.meta.errors)
+                      }
+                    />
+                  </div>
+                )}
+              </form.Field>
               <form.Field
                 name="password"
                 validators={{
