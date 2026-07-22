@@ -83,20 +83,51 @@ Canonical route:
 
 Legacy alias: `/apps`
 
+Notification app hierarchy:
+
+```text
+workspace
+└── notification app
+    └── environment
+```
+
+A notification app belongs to exactly one workspace, and an environment belongs
+to exactly one notification app. Workspace membership remains the access
+boundary for both resources. Creating an app uses the active workspace from the
+authenticated membership; clients never provide a `workspace_id`.
+
+App creation atomically creates exactly two initial environments: Development
+and Production. The initial dashboard flow is sign in, show the no-apps empty
+state, create an app, list the new app, then open it and select an environment.
+Credentials, origins, notification events, and delivery data will be scoped to
+the selected environment when those capabilities are introduced.
+
+App and environment UUIDs remain database identities. Future client URLs will
+extend the workspace route with the app and environment slugs:
+
+- `/w/:workspaceSlug/apps/:appSlug/:environmentSlug`
+
+The workspace routing foundation owns workspace slug and membership behavior;
+app work depends on that foundation and does not redefine collaboration,
+permissions, or workspace sessions.
+
 Responsibilities:
 
 - create notification apps
-- list app environments and trusted origins
-- expose client keys
-- show setup readiness
-- track app-level event volume
+- list notification apps and their environments
+- select an environment
+
+Deferred from this module's initial app flow:
+
+- client keys and credentials
+- trusted origins
+- ingress and event delivery data
+- analytics, billing, and collaboration behavior
 
 Expected future backend ownership:
 
-- app records
-- client keys
-- environment labels
-- trusted origins per app
+- notification app records and default-environment creation
+- environment records
 
 ## Ingress Endpoint
 
