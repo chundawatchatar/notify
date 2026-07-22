@@ -679,6 +679,21 @@ export interface components {
       /** @example invitation-token */
       token: string;
     };
+    /** NotificationAppsResponse */
+    NotificationAppsResponse: {
+      apps: components["schemas"]["NotificationApp"][];
+    };
+    /** NotificationAppEnvironment */
+    NotificationAppEnvironment: {
+      /** Format: uuid */
+      id: string;
+      /** @example Development */
+      name: string;
+      /** @example false */
+      production: boolean;
+      /** @example development */
+      slug: string;
+    };
     /** SignupRequest */
     SignupRequest: {
       /**
@@ -767,6 +782,16 @@ export interface components {
       /** Format: uuid */
       id: string;
     };
+    /** NotificationApp */
+    NotificationApp: {
+      environments: components["schemas"]["NotificationAppEnvironment"][];
+      /** Format: uuid */
+      id: string;
+      /** @example Payments Service */
+      name: string;
+      /** @example payments-service */
+      slug: string;
+    };
     /** ResendVerificationRequest */
     ResendVerificationRequest: {
       /**
@@ -806,6 +831,11 @@ export interface components {
        */
       email: string;
       role: components["schemas"]["AuthWorkspaceRole"];
+    };
+    /** CreateNotificationAppRequest */
+    CreateNotificationAppRequest: {
+      /** @example Payments Service */
+      name: string;
     };
     /**
      * ReadinessResponse
@@ -864,7 +894,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["NotificationAppsResponse"];
+        };
       };
       /** @description Access token invalid */
       401: {
@@ -893,14 +925,21 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    /** @description Notification app details */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateNotificationAppRequest"];
+      };
+    };
     responses: {
       /** @description Created notification app */
       201: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["NotificationApp"];
+        };
       };
       /** @description Access token invalid */
       401: {
@@ -957,7 +996,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["NotificationApp"];
+        };
       };
       /** @description Access token invalid */
       401: {

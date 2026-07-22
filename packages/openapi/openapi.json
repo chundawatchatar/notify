@@ -652,6 +652,56 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.AcceptInvitationRequest",
         "x-validate": null
       },
+      "NotificationAppsResponse": {
+        "properties": {
+          "apps": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationApp"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["apps"],
+        "title": "NotificationAppsResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.NotificationAppsResponse",
+        "x-validate": null
+      },
+      "NotificationAppEnvironment": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "Development",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "production": {
+            "example": false,
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "slug": {
+            "example": "development",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "name", "slug", "production"],
+        "title": "NotificationAppEnvironment",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.Environment",
+        "x-validate": null
+      },
       "SignupRequest": {
         "additionalProperties": false,
         "properties": {
@@ -844,6 +894,41 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.UserSummary",
         "x-validate": null
       },
+      "NotificationApp": {
+        "properties": {
+          "environments": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationAppEnvironment"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "Payments Service",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "slug": {
+            "example": "payments-service",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "name", "slug", "environments"],
+        "title": "NotificationApp",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.NotificationApp",
+        "x-validate": null
+      },
       "ResendVerificationRequest": {
         "additionalProperties": false,
         "properties": {
@@ -944,6 +1029,24 @@
         "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.CreateInvitationRequest",
         "x-validate": null
       },
+      "CreateNotificationAppRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "example": "Payments Service",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["name"],
+        "title": "CreateNotificationAppRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.CreateNotificationAppRequest",
+        "x-validate": null
+      },
       "ReadinessResponse": {
         "description": "API dependency readiness response.",
         "example": {
@@ -1021,6 +1124,13 @@
         "parameters": [],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationAppsResponse"
+                }
+              }
+            },
             "description": "Notification apps"
           },
           "401": {
@@ -1056,8 +1166,26 @@
         "callbacks": {},
         "operationId": "createNotificationApp",
         "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationAppRequest"
+              }
+            }
+          },
+          "description": "Notification app details",
+          "required": true
+        },
         "responses": {
           "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationApp"
+                }
+              }
+            },
             "description": "Created notification app"
           },
           "401": {
@@ -1129,6 +1257,13 @@
         ],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationApp"
+                }
+              }
+            },
             "description": "Notification app"
           },
           "401": {

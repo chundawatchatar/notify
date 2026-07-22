@@ -9,6 +9,12 @@ defmodule ApiWeb.NotificationAppController do
   alias ApiWeb.Plugs.RequirePermission
   alias NotifyOpenApi.AuthSchemas.{ErrorResponse, ValidationErrorResponse}
 
+  alias NotifyOpenApi.NotificationAppSchemas.{
+    CreateNotificationAppRequest,
+    NotificationApp,
+    NotificationAppsResponse
+  }
+
   plug RequirePermission, :view_apps when action in [:index, :show]
   plug RequirePermission, :create_apps when action == :create
 
@@ -19,7 +25,7 @@ defmodule ApiWeb.NotificationAppController do
     operation_id: "listNotificationApps",
     security: [%{"bearerAuth" => []}],
     responses: [
-      ok: "Notification apps",
+      ok: {"Notification apps", "application/json", NotificationAppsResponse},
       unauthorized: {"Access token invalid", "application/json", ErrorResponse},
       forbidden: {"Permission denied", "application/json", ErrorResponse}
     ]
@@ -37,8 +43,11 @@ defmodule ApiWeb.NotificationAppController do
     summary: "Create a notification app in the active workspace",
     operation_id: "createNotificationApp",
     security: [%{"bearerAuth" => []}],
+    request_body:
+      {"Notification app details", "application/json", CreateNotificationAppRequest,
+       required: true},
     responses: [
-      created: "Created notification app",
+      created: {"Created notification app", "application/json", NotificationApp},
       conflict: {"App slug unavailable", "application/json", ErrorResponse},
       unauthorized: {"Access token invalid", "application/json", ErrorResponse},
       forbidden: {"Permission denied", "application/json", ErrorResponse},
@@ -78,7 +87,7 @@ defmodule ApiWeb.NotificationAppController do
     security: [%{"bearerAuth" => []}],
     parameters: [appSlug: [in: :path, description: "Notification app slug", type: :string]],
     responses: [
-      ok: "Notification app",
+      ok: {"Notification app", "application/json", NotificationApp},
       not_found: {"App unavailable", "application/json", ErrorResponse},
       unauthorized: {"Access token invalid", "application/json", ErrorResponse},
       forbidden: {"Permission denied", "application/json", ErrorResponse}

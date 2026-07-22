@@ -71,6 +71,18 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert response["paths"]["/api/apps/{appSlug}"]["get"]["operationId"] ==
              "getNotificationApp"
 
+    assert response["paths"]["/api/apps"]["get"]["responses"]["200"]["content"][
+             "application/json"
+           ]["schema"]["$ref"] == "#/components/schemas/NotificationAppsResponse"
+
+    assert response["paths"]["/api/apps"]["post"]["responses"]["201"]["content"][
+             "application/json"
+           ]["schema"]["$ref"] == "#/components/schemas/NotificationApp"
+
+    assert response["paths"]["/api/apps/{appSlug}"]["get"]["responses"]["200"]["content"][
+             "application/json"
+           ]["schema"]["$ref"] == "#/components/schemas/NotificationApp"
+
     assert response["components"]["schemas"]["AuthWorkspaceRole"]["enum"] == [
              "owner",
              "admin",

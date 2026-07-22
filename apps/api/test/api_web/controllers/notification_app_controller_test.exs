@@ -21,6 +21,10 @@ defmodule ApiWeb.NotificationAppControllerTest do
     assert created["slug"] == "payments-service"
     refute Map.has_key?(created, "workspace_id")
 
+    assert [notification_app] = Api.NotificationApps.list_notification_apps(membership.workspace)
+    assert notification_app.id == created["id"]
+    assert Api.NotificationApps.list_notification_apps(other_workspace) == []
+
     assert created["environments"]
            |> Enum.map(&{&1["name"], &1["slug"], &1["production"]}) ==
              [
