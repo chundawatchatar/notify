@@ -1,3 +1,4 @@
+import type { ApiNotificationApp } from "@notify/api-client";
 import { HttpResponse, http } from "msw";
 import { describe, expect, it } from "vitest";
 import { server } from "@/test/server";
@@ -81,19 +82,25 @@ describe("auth API client", () => {
 
   it("uses the generated app contracts for list, create, and detail requests", async () => {
     expect.hasAssertions();
+    let listAuthorization: string | null = null;
     let createAuthorization: string | null = null;
     let createBody: unknown;
+    let detailAuthorization: string | null = null;
 
     server.use(
-      http.get(`${apiBaseUrl}/api/apps`, () => HttpResponse.json({ apps: [notificationApp()] })),
+      http.get(`${apiBaseUrl}/api/apps`, ({ request }) => {
+        listAuthorization = request.headers.get("authorization");
+        return HttpResponse.json({ apps: [notificationApp()] });
+      }),
       http.post(`${apiBaseUrl}/api/apps`, async ({ request }) => {
         createAuthorization = request.headers.get("authorization");
         createBody = await request.json();
         return HttpResponse.json(notificationApp(), { status: 201 });
       }),
-      http.get(`${apiBaseUrl}/api/apps/payments-service`, () =>
-        HttpResponse.json(notificationApp()),
-      ),
+      http.get(`${apiBaseUrl}/api/apps/payments-service`, ({ request }) => {
+        detailAuthorization = request.headers.get("authorization");
+        return HttpResponse.json(notificationApp());
+      }),
     );
 
     await expect(listNotificationApps("access-token")).resolves.toEqual({
@@ -106,12 +113,14 @@ describe("auth API client", () => {
       notificationApp(),
     );
 
+    expect(listAuthorization).toBe("Bearer access-token");
     expect(createAuthorization).toBe("Bearer access-token");
     expect(createBody).toEqual({ name: "Payments Service" });
+    expect(detailAuthorization).toBe("Bearer access-token");
   });
 });
 
-function notificationApp() {
+function notificationApp(): ApiNotificationApp {
   return {
     id: "3dc20706-9944-4743-8121-c0429c622c0b",
     name: "Payments Service",

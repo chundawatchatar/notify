@@ -237,6 +237,12 @@ Do not edit generated schema files by hand. Update Phoenix OpenAPI schemas and
 operations first, regenerate the spec, then regenerate the TypeScript types.
 `pnpm api-client:check` verifies that both generated contract files are current.
 
+The package also exports named aliases for commonly consumed contracts. The
+notification app flow uses `ApiCreateNotificationAppRequest`,
+`ApiNotificationApp`, `ApiNotificationAppEnvironment`, and
+`ApiNotificationAppsResponse` from `@notify/api-client` rather than defining
+duplicate browser-side interfaces.
+
 Browser transport is centralized in:
 
 ```text
