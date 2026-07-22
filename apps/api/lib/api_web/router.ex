@@ -45,6 +45,30 @@ defmodule ApiWeb.Router do
     patch "/apps/:appSlug", NotificationAppController, :update
     delete "/apps/:appSlug", NotificationAppController, :delete
 
+    get "/apps/:appSlug/environments/:environmentSlug/client-keys",
+        EnvironmentConfigurationController,
+        :list_client_keys
+
+    post "/apps/:appSlug/environments/:environmentSlug/client-keys",
+         EnvironmentConfigurationController,
+         :create_client_key
+
+    delete "/apps/:appSlug/environments/:environmentSlug/client-keys/:clientKeyId",
+           EnvironmentConfigurationController,
+           :revoke_client_key
+
+    get "/apps/:appSlug/environments/:environmentSlug/trusted-origins",
+        EnvironmentConfigurationController,
+        :list_trusted_origins
+
+    post "/apps/:appSlug/environments/:environmentSlug/trusted-origins",
+         EnvironmentConfigurationController,
+         :create_trusted_origin
+
+    delete "/apps/:appSlug/environments/:environmentSlug/trusted-origins/:trustedOriginId",
+           EnvironmentConfigurationController,
+           :remove_trusted_origin
+
     get "/workspaces/:workspaceSlug/members", WorkspaceMemberController, :index
     patch "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :update
     delete "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :delete

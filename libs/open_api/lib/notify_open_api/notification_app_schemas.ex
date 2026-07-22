@@ -77,4 +77,71 @@ defmodule NotifyOpenApi.NotificationAppSchemas do
       required: [:apps]
     })
   end
+
+  defmodule ClientKey do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "EnvironmentClientKey",
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, format: :uuid},
+        key: %Schema{type: :string, example: "nfy_pk_7K9fjNdZOzLkQenP2tHaBi8vWcXRm1sA"},
+        created_at: %Schema{type: :string, format: "date-time"},
+        revoked_at: %Schema{type: :string, format: "date-time", nullable: true}
+      },
+      required: [:id, :key, :created_at, :revoked_at]
+    })
+  end
+
+  defmodule ClientKeysResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "EnvironmentClientKeysResponse",
+      type: :object,
+      properties: %{client_keys: %Schema{type: :array, items: ClientKey}},
+      required: [:client_keys]
+    })
+  end
+
+  defmodule TrustedOrigin do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "EnvironmentTrustedOrigin",
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, format: :uuid},
+        origin: %Schema{type: :string, example: "https://console.example.com"},
+        created_at: %Schema{type: :string, format: "date-time"}
+      },
+      required: [:id, :origin, :created_at]
+    })
+  end
+
+  defmodule TrustedOriginsResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "EnvironmentTrustedOriginsResponse",
+      type: :object,
+      properties: %{trusted_origins: %Schema{type: :array, items: TrustedOrigin}},
+      required: [:trusted_origins]
+    })
+  end
+
+  defmodule CreateTrustedOriginRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "CreateEnvironmentTrustedOriginRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        origin: %Schema{type: :string, example: "https://console.example.com"}
+      },
+      required: [:origin]
+    })
+  end
 end

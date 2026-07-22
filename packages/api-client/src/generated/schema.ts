@@ -41,6 +41,76 @@ export interface paths {
     patch: operations["updateNotificationApp"];
     trace?: never;
   };
+  "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List client keys for an environment */
+    get: operations["listEnvironmentClientKeys"];
+    put?: never;
+    /** Create a client key for an environment */
+    post: operations["createEnvironmentClientKey"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys/{clientKeyId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revoke an environment client key */
+    delete: operations["revokeEnvironmentClientKey"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/apps/{appSlug}/environments/{environmentSlug}/trusted-origins": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List trusted origins for an environment */
+    get: operations["listEnvironmentTrustedOrigins"];
+    put?: never;
+    /** Add a trusted origin to an environment */
+    post: operations["createEnvironmentTrustedOrigin"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/apps/{appSlug}/environments/{environmentSlug}/trusted-origins/{trustedOriginId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Remove a trusted origin from an environment */
+    delete: operations["removeEnvironmentTrustedOrigin"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/auth/email-verification/confirm": {
     parameters: {
       query?: never;
@@ -503,6 +573,15 @@ export interface components {
       /** @example verification-token */
       token: string;
     };
+    /** EnvironmentTrustedOrigin */
+    EnvironmentTrustedOrigin: {
+      /** Format: date-time */
+      created_at: string;
+      /** Format: uuid */
+      id: string;
+      /** @example https://console.example.com */
+      origin: string;
+    };
     /** ValidationErrorResponse */
     ValidationErrorResponse: {
       errors: components["schemas"]["ValidationErrorDetails"];
@@ -543,6 +622,11 @@ export interface components {
        * @enum {string}
        */
       status: "password_reset_requested";
+    };
+    /** CreateEnvironmentTrustedOriginRequest */
+    CreateEnvironmentTrustedOriginRequest: {
+      /** @example https://console.example.com */
+      origin: string;
     };
     /** SignupCompletionResponse */
     SignupCompletionResponse: {
@@ -779,6 +863,10 @@ export interface components {
       /** @example Email or password is invalid. */
       detail: string;
     };
+    /** EnvironmentTrustedOriginsResponse */
+    EnvironmentTrustedOriginsResponse: {
+      trusted_origins: components["schemas"]["EnvironmentTrustedOrigin"][];
+    };
     /** AuthUser */
     AuthUser: {
       /**
@@ -798,6 +886,17 @@ export interface components {
       name: string;
       /** @example payments-service */
       slug: string;
+    };
+    /** EnvironmentClientKey */
+    EnvironmentClientKey: {
+      /** Format: date-time */
+      created_at: string;
+      /** Format: uuid */
+      id: string;
+      /** @example nfy_pk_7K9fjNdZOzLkQenP2tHaBi8vWcXRm1sA */
+      key: string;
+      /** Format: date-time */
+      revoked_at: string | null;
     };
     /** ResendVerificationRequest */
     ResendVerificationRequest: {
@@ -877,6 +976,10 @@ export interface components {
        * @example owner@example.com
        */
       email: string;
+    };
+    /** EnvironmentClientKeysResponse */
+    EnvironmentClientKeysResponse: {
+      client_keys: components["schemas"]["EnvironmentClientKey"][];
     };
   };
   responses: never;
@@ -1153,6 +1256,341 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  listEnvironmentClientKeys: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+        /** @description Environment slug */
+        environmentSlug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Environment client keys */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EnvironmentClientKeysResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Environment unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  createEnvironmentClientKey: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+        /** @description Environment slug */
+        environmentSlug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Created environment client key */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EnvironmentClientKey"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Environment unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  revokeEnvironmentClientKey: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+        /** @description Environment slug */
+        environmentSlug: string;
+        /** @description Client key ID */
+        clientKeyId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Client key revoked */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Environment or client key unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  listEnvironmentTrustedOrigins: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+        /** @description Environment slug */
+        environmentSlug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Environment trusted origins */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EnvironmentTrustedOriginsResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Environment unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  createEnvironmentTrustedOrigin: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+        /** @description Environment slug */
+        environmentSlug: string;
+      };
+      cookie?: never;
+    };
+    /** @description Trusted origin */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateEnvironmentTrustedOriginRequest"];
+      };
+    };
+    responses: {
+      /** @description Created trusted origin */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EnvironmentTrustedOrigin"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Environment unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Trusted origin already exists */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  removeEnvironmentTrustedOrigin: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+        /** @description Environment slug */
+        environmentSlug: string;
+        /** @description Trusted origin ID */
+        trustedOriginId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Trusted origin removed */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Environment or trusted origin unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
         };
       };
     };

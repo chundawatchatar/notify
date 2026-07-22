@@ -6,9 +6,14 @@ import type {
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
   ApiConfirmPasswordResetRequest,
+  ApiCreateEnvironmentTrustedOriginRequest,
   ApiCreateNotificationAppRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
+  ApiEnvironmentClientKey,
+  ApiEnvironmentClientKeysResponse,
+  ApiEnvironmentTrustedOrigin,
+  ApiEnvironmentTrustedOriginsResponse,
   ApiInvitationPreviewResponse,
   ApiInvitationSignupResponse,
   ApiLoginRequest,
@@ -153,6 +158,79 @@ function archiveNotificationApp(accessToken: string, appSlug: string) {
   return deleteRequest<void>(`/api/apps/${appSlug}`, undefined, { accessToken });
 }
 
+function listEnvironmentClientKeys(accessToken: string, appSlug: string, environmentSlug: string) {
+  return get<ApiEnvironmentClientKeysResponse>(
+    `${environmentPath(appSlug, environmentSlug)}/client-keys`,
+    {
+      accessToken,
+    },
+  );
+}
+
+function createEnvironmentClientKey(accessToken: string, appSlug: string, environmentSlug: string) {
+  return post<ApiEnvironmentClientKey>(
+    `${environmentPath(appSlug, environmentSlug)}/client-keys`,
+    undefined,
+    {
+      accessToken,
+    },
+  );
+}
+
+function revokeEnvironmentClientKey(
+  accessToken: string,
+  appSlug: string,
+  environmentSlug: string,
+  clientKeyId: string,
+) {
+  return deleteRequest<void>(
+    `${environmentPath(appSlug, environmentSlug)}/client-keys/${clientKeyId}`,
+    undefined,
+    { accessToken },
+  );
+}
+
+function listEnvironmentTrustedOrigins(
+  accessToken: string,
+  appSlug: string,
+  environmentSlug: string,
+) {
+  return get<ApiEnvironmentTrustedOriginsResponse>(
+    `${environmentPath(appSlug, environmentSlug)}/trusted-origins`,
+    { accessToken },
+  );
+}
+
+function createEnvironmentTrustedOrigin(
+  accessToken: string,
+  appSlug: string,
+  environmentSlug: string,
+  body: ApiCreateEnvironmentTrustedOriginRequest,
+) {
+  return post<ApiEnvironmentTrustedOrigin, ApiCreateEnvironmentTrustedOriginRequest>(
+    `${environmentPath(appSlug, environmentSlug)}/trusted-origins`,
+    body,
+    { accessToken },
+  );
+}
+
+function removeEnvironmentTrustedOrigin(
+  accessToken: string,
+  appSlug: string,
+  environmentSlug: string,
+  trustedOriginId: string,
+) {
+  return deleteRequest<void>(
+    `${environmentPath(appSlug, environmentSlug)}/trusted-origins/${trustedOriginId}`,
+    undefined,
+    { accessToken },
+  );
+}
+
+function environmentPath(appSlug: string, environmentSlug: string) {
+  return `/api/apps/${appSlug}/environments/${environmentSlug}`;
+}
+
 function switchWorkspace(accessToken: string, body: ApiSwitchWorkspaceRequest) {
   return post<ApiAuthResponse, ApiSwitchWorkspaceRequest>("/api/auth/workspace/switch", body, {
     accessToken,
@@ -245,12 +323,16 @@ export {
   completeSignup,
   confirmEmail,
   confirmPasswordReset,
+  createEnvironmentClientKey,
+  createEnvironmentTrustedOrigin,
   createNotificationApp,
   createWorkspaceInvitation,
   getApiReadiness,
   getApiVersion,
   getCurrentUser,
   getNotificationApp,
+  listEnvironmentClientKeys,
+  listEnvironmentTrustedOrigins,
   listNotificationApps,
   listWorkspaceInvitations,
   listWorkspaceMembers,
@@ -258,10 +340,12 @@ export {
   login,
   logout,
   refreshSession,
+  removeEnvironmentTrustedOrigin,
   removeWorkspaceMember,
   requestPasswordReset,
   resendVerification,
   resolveInvitation,
+  revokeEnvironmentClientKey,
   revokeWorkspaceInvitation,
   startSignup,
   switchWorkspace,

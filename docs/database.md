@@ -153,12 +153,17 @@ Implemented tables:
   production classification. Creating an app creates its Development and
   Production environments in the same transaction; an app can have only one
   production environment.
+- `environment_client_keys`: environment-scoped, server-generated browser
+  client identifiers with a recognizable `nfy_pk_` prefix and optional
+  revocation timestamp. They are not server ingestion secrets.
+- `environment_trusted_origins`: environment-scoped normalized exact HTTP(S)
+  origins. A unique `(app_environment_id, origin)` constraint prevents the
+  same normalized origin from being trusted twice in an environment.
 
 ## Future Product Tables
 
-- trusted_origins, api_keys, notification_events, and delivery_attempts:
-  future environment-scoped data, introduced only with their owning product
-  contracts
+- server API keys, notification_events, and delivery_attempts: future
+  environment-scoped data, introduced only with their owning product contracts
 - subscription_plans or workspace_subscriptions
 
 Notification app and environment UUIDs are database identities. Readable app
