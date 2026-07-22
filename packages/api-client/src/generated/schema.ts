@@ -33,10 +33,12 @@ export interface paths {
     get: operations["getNotificationApp"];
     put?: never;
     post?: never;
-    delete?: never;
+    /** Archive a notification app in the active workspace */
+    delete: operations["archiveNotificationApp"];
     options?: never;
     head?: never;
-    patch?: never;
+    /** Rename a notification app in the active workspace */
+    patch: operations["updateNotificationApp"];
     trace?: never;
   };
   "/api/auth/email-verification/confirm": {
@@ -694,6 +696,11 @@ export interface components {
       /** @example development */
       slug: string;
     };
+    /** UpdateNotificationAppRequest */
+    UpdateNotificationAppRequest: {
+      /** @example Payments Platform */
+      name: string;
+    };
     /** SignupRequest */
     SignupRequest: {
       /**
@@ -1025,6 +1032,127 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  archiveNotificationApp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Notification app archived */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description App unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description App is already archived */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  updateNotificationApp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+      };
+      cookie?: never;
+    };
+    /** @description Updated notification app details */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateNotificationAppRequest"];
+      };
+    };
+    responses: {
+      /** @description Updated notification app */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["NotificationApp"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description App unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
         };
       };
     };

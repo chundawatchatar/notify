@@ -26,7 +26,7 @@ defmodule Api.NotificationApps.NotificationApp do
   def changeset(notification_app, attrs) do
     notification_app
     |> cast(attrs, [:workspace_id, :name, :app_slug, :archived_at])
-    |> update_change(:name, &String.trim/1)
+    |> update_change(:name, &trim_name/1)
     |> validate_required([:workspace_id, :name, :app_slug])
     |> validate_length(:name, min: 1, max: 100)
     |> validate_change(:app_slug, fn :app_slug, app_slug ->
@@ -38,6 +38,18 @@ defmodule Api.NotificationApps.NotificationApp do
     |> unique_constraint(:app_slug, name: :notification_apps_workspace_id_app_slug_index)
     |> check_constraint(:name, name: :notification_apps_name_length)
     |> check_constraint(:app_slug, name: :notification_apps_app_slug_format)
+  end
+
+  @doc """
+  Validates a display-name update without changing the app's stable slug.
+  """
+  def update_changeset(notification_app, attrs) do
+    notification_app
+    |> cast(attrs, [:name])
+    |> update_change(:name, &trim_name/1)
+    |> validate_required([:name])
+    |> validate_length(:name, min: 1, max: 100)
+    |> check_constraint(:name, name: :notification_apps_name_length)
   end
 
   @doc """
@@ -73,4 +85,7 @@ defmodule Api.NotificationApps.NotificationApp do
             notification_app.app_slug == ^app_slug
     )
   end
+
+  defp trim_name(name) when is_binary(name), do: String.trim(name)
+  defp trim_name(name), do: name
 end

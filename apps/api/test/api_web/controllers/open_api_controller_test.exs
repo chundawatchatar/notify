@@ -71,6 +71,12 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert response["paths"]["/api/apps/{appSlug}"]["get"]["operationId"] ==
              "getNotificationApp"
 
+    assert response["paths"]["/api/apps/{appSlug}"]["patch"]["operationId"] ==
+             "updateNotificationApp"
+
+    assert response["paths"]["/api/apps/{appSlug}"]["delete"]["operationId"] ==
+             "archiveNotificationApp"
+
     assert response["paths"]["/api/apps"]["get"]["responses"]["200"]["content"][
              "application/json"
            ]["schema"]["$ref"] == "#/components/schemas/NotificationAppsResponse"
@@ -82,6 +88,10 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert response["paths"]["/api/apps/{appSlug}"]["get"]["responses"]["200"]["content"][
              "application/json"
            ]["schema"]["$ref"] == "#/components/schemas/NotificationApp"
+
+    assert response["paths"]["/api/apps/{appSlug}"]["patch"]["requestBody"]["content"][
+             "application/json"
+           ]["schema"]["$ref"] == "#/components/schemas/UpdateNotificationAppRequest"
 
     assert response["components"]["schemas"]["NotificationApp"]["properties"]["slug"] == %{
              "example" => "payments-service",

@@ -15,6 +15,20 @@ defmodule NotifyOpenApi.NotificationAppSchemas do
     })
   end
 
+  defmodule UpdateNotificationAppRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "UpdateNotificationAppRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        name: %Schema{type: :string, minLength: 1, maxLength: 100, example: "Payments Platform"}
+      },
+      required: [:name]
+    })
+  end
+
   defmodule Environment do
     require OpenApiSpex
 

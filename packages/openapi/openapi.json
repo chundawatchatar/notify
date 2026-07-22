@@ -702,6 +702,24 @@
         "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.Environment",
         "x-validate": null
       },
+      "UpdateNotificationAppRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "example": "Payments Platform",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["name"],
+        "title": "UpdateNotificationAppRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.UpdateNotificationAppRequest",
+        "x-validate": null
+      },
       "SignupRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1242,6 +1260,78 @@
       }
     },
     "/api/apps/{appSlug}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "archiveNotificationApp",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Notification app archived"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "App unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "App is already archived"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Archive a notification app in the active workspace",
+        "tags": ["notification apps"]
+      },
       "get": {
         "callbacks": {},
         "operationId": "getNotificationApp",
@@ -1309,6 +1399,96 @@
           }
         ],
         "summary": "Get a notification app in the active workspace",
+        "tags": ["notification apps"]
+      },
+      "patch": {
+        "callbacks": {},
+        "operationId": "updateNotificationApp",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationAppRequest"
+              }
+            }
+          },
+          "description": "Updated notification app details",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationApp"
+                }
+              }
+            },
+            "description": "Updated notification app"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "App unavailable"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rename a notification app in the active workspace",
         "tags": ["notification apps"]
       }
     },

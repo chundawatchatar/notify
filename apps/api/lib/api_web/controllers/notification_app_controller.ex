@@ -12,13 +12,28 @@ defmodule ApiWeb.NotificationAppController do
   alias NotifyOpenApi.NotificationAppSchemas.{
     CreateNotificationAppRequest,
     NotificationApp,
-    NotificationAppsResponse
+    NotificationAppsResponse,
+    UpdateNotificationAppRequest
   }
 
   plug RequirePermission, :view_apps when action in [:index, :show]
   plug RequirePermission, :create_apps when action == :create
+  plug RequirePermission, :manage_apps when action in [:update, :delete]
 
   tags ["notification apps"]
+
+  @app_slug_parameter [
+    appSlug: [
+      in: :path,
+      description: "Notification app slug",
+      schema: %OpenApiSpex.Schema{
+        type: :string,
+        minLength: 1,
+        maxLength: 50,
+        pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      }
+    ]
+  ]
 
   operation :index,
     summary: "List notification apps in the active workspace",
@@ -85,18 +100,7 @@ defmodule ApiWeb.NotificationAppController do
     summary: "Get a notification app in the active workspace",
     operation_id: "getNotificationApp",
     security: [%{"bearerAuth" => []}],
-    parameters: [
-      appSlug: [
-        in: :path,
-        description: "Notification app slug",
-        schema: %OpenApiSpex.Schema{
-          type: :string,
-          minLength: 1,
-          maxLength: 50,
-          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-        }
-      ]
-    ],
+    parameters: @app_slug_parameter,
     responses: [
       ok: {"Notification app", "application/json", NotificationApp},
       not_found: {"App unavailable", "application/json", ErrorResponse},
@@ -108,6 +112,65 @@ defmodule ApiWeb.NotificationAppController do
     case NotificationApps.get_notification_app_by_slug(conn.assigns.current_workspace, app_slug) do
       nil -> app_not_found(conn)
       notification_app -> json(conn, app_payload(notification_app))
+    end
+  end
+
+  operation :update,
+    summary: "Rename a notification app in the active workspace",
+    operation_id: "updateNotificationApp",
+    security: [%{"bearerAuth" => []}],
+    parameters: @app_slug_parameter,
+    request_body:
+      {"Updated notification app details", "application/json", UpdateNotificationAppRequest,
+       required: true},
+    responses: [
+      ok: {"Updated notification app", "application/json", NotificationApp},
+      not_found: {"App unavailable", "application/json", ErrorResponse},
+      unauthorized: {"Access token invalid", "application/json", ErrorResponse},
+      forbidden: {"Permission denied", "application/json", ErrorResponse},
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+    ]
+
+  def update(conn, %{"appSlug" => app_slug} = params) do
+    case NotificationApps.update_notification_app(
+           conn.assigns.current_workspace,
+           app_slug,
+           params
+         ) do
+      {:ok, notification_app} -> json(conn, app_payload(notification_app))
+      {:error, :not_found} -> app_not_found(conn)
+      {:error, %Ecto.Changeset{} = changeset} -> AuthError.validation(conn, changeset)
+    end
+  end
+
+  operation :delete,
+    summary: "Archive a notification app in the active workspace",
+    operation_id: "archiveNotificationApp",
+    security: [%{"bearerAuth" => []}],
+    parameters: @app_slug_parameter,
+    responses: [
+      no_content: "Notification app archived",
+      conflict: {"App is already archived", "application/json", ErrorResponse},
+      not_found: {"App unavailable", "application/json", ErrorResponse},
+      unauthorized: {"Access token invalid", "application/json", ErrorResponse},
+      forbidden: {"Permission denied", "application/json", ErrorResponse}
+    ]
+
+  def delete(conn, %{"appSlug" => app_slug}) do
+    case NotificationApps.archive_notification_app(conn.assigns.current_workspace, app_slug) do
+      :ok ->
+        send_resp(conn, :no_content, "")
+
+      {:error, :not_found} ->
+        app_not_found(conn)
+
+      {:error, :archived} ->
+        AuthError.render(
+          conn,
+          :conflict,
+          "app_archived",
+          "Notification app is already archived."
+        )
     end
   end
 

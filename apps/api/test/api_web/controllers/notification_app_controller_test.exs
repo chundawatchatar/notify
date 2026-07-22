@@ -4,9 +4,10 @@ defmodule ApiWeb.NotificationAppControllerTest do
   @origin "http://localhost:3100"
   @password "correct-password"
 
-  test "an authorized member can create, list, and get apps in the active workspace", %{
-    conn: conn
-  } do
+  test "an authorized member can create, list, rename, and archive apps in the active workspace",
+       %{
+         conn: conn
+       } do
     membership = insert(:membership, role: "developer")
     other_workspace = insert(:workspace)
     access_token = login(conn, membership.user.email)
@@ -47,6 +48,44 @@ defmodule ApiWeb.NotificationAppControllerTest do
       |> json_response(200)
 
     assert fetched == created
+
+    renamed =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> patch(~p"/api/apps/#{created["slug"]}", %{name: "Payments Platform"})
+      |> json_response(200)
+
+    assert renamed["name"] == "Payments Platform"
+    assert renamed["slug"] == created["slug"]
+
+    build_conn()
+    |> put_req_header("authorization", "Bearer #{access_token}")
+    |> delete(~p"/api/apps/#{created["slug"]}")
+    |> response(204)
+
+    listed =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> get(~p"/api/apps")
+      |> json_response(200)
+
+    assert listed == %{"apps" => []}
+
+    response =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> get(~p"/api/apps/#{created["slug"]}")
+      |> json_response(404)
+
+    assert response["errors"]["code"] == "app_not_found"
+
+    response =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> delete(~p"/api/apps/#{created["slug"]}")
+      |> json_response(409)
+
+    assert response["errors"]["code"] == "app_archived"
   end
 
   test "invalid app names return field validation errors", %{conn: conn} do
@@ -57,6 +96,18 @@ defmodule ApiWeb.NotificationAppControllerTest do
       build_conn()
       |> put_req_header("authorization", "Bearer #{access_token}")
       |> post(~p"/api/apps", %{name: ""})
+      |> json_response(422)
+
+    assert response["errors"]["code"] == "validation_failed"
+    assert response["errors"]["fields"]["name"]
+
+    {:ok, notification_app} =
+      Api.NotificationApps.create_notification_app(membership.workspace, %{name: "Payments"})
+
+    response =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> patch(~p"/api/apps/#{notification_app.app_slug}", %{name: ""})
       |> json_response(422)
 
     assert response["errors"]["code"] == "validation_failed"
@@ -79,6 +130,14 @@ defmodule ApiWeb.NotificationAppControllerTest do
       |> json_response(404)
 
     assert response["errors"]["code"] == "app_not_found"
+
+    response =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> patch(~p"/api/apps/payments", %{name: "Renamed"})
+      |> json_response(404)
+
+    assert response["errors"]["code"] == "app_not_found"
   end
 
   test "viewer memberships can list apps but cannot create them", %{conn: conn} do
@@ -94,6 +153,25 @@ defmodule ApiWeb.NotificationAppControllerTest do
       build_conn()
       |> put_req_header("authorization", "Bearer #{access_token}")
       |> post(~p"/api/apps", %{name: "Payments"})
+      |> json_response(403)
+
+    assert response["errors"]["code"] == "forbidden"
+
+    {:ok, notification_app} =
+      Api.NotificationApps.create_notification_app(membership.workspace, %{name: "Payments"})
+
+    response =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> patch(~p"/api/apps/#{notification_app.app_slug}", %{name: "Renamed"})
+      |> json_response(403)
+
+    assert response["errors"]["code"] == "forbidden"
+
+    response =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> delete(~p"/api/apps/#{notification_app.app_slug}")
       |> json_response(403)
 
     assert response["errors"]["code"] == "forbidden"

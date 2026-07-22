@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { server } from "@/test/server";
 import {
   ApiRequestError,
+  archiveNotificationApp,
   createNotificationApp,
   getNotificationApp,
   listNotificationApps,
@@ -11,6 +12,7 @@ import {
   login,
   startSignup,
   switchWorkspace,
+  updateNotificationApp,
 } from "./api-client";
 
 const apiBaseUrl = "http://localhost:4100";
@@ -80,12 +82,15 @@ describe("auth API client", () => {
     expect(switchBody).toEqual({ workspace_slug: "notify-labs" });
   });
 
-  it("uses the generated app contracts for list, create, and detail requests", async () => {
+  it("uses the generated app contracts for app lifecycle requests", async () => {
     expect.hasAssertions();
     let listAuthorization: string | null = null;
     let createAuthorization: string | null = null;
     let createBody: unknown;
     let detailAuthorization: string | null = null;
+    let updateAuthorization: string | null = null;
+    let updateBody: unknown;
+    let archiveAuthorization: string | null = null;
 
     server.use(
       http.get(`${apiBaseUrl}/api/apps`, ({ request }) => {
@@ -101,6 +106,15 @@ describe("auth API client", () => {
         detailAuthorization = request.headers.get("authorization");
         return HttpResponse.json(notificationApp());
       }),
+      http.patch(`${apiBaseUrl}/api/apps/payments-service`, async ({ request }) => {
+        updateAuthorization = request.headers.get("authorization");
+        updateBody = await request.json();
+        return HttpResponse.json({ ...notificationApp(), name: "Payments Platform" });
+      }),
+      http.delete(`${apiBaseUrl}/api/apps/payments-service`, ({ request }) => {
+        archiveAuthorization = request.headers.get("authorization");
+        return new HttpResponse(null, { status: 204 });
+      }),
     );
 
     await expect(listNotificationApps("access-token")).resolves.toEqual({
@@ -112,11 +126,20 @@ describe("auth API client", () => {
     await expect(getNotificationApp("access-token", "payments-service")).resolves.toEqual(
       notificationApp(),
     );
+    await expect(
+      updateNotificationApp("access-token", "payments-service", { name: "Payments Platform" }),
+    ).resolves.toEqual({ ...notificationApp(), name: "Payments Platform" });
+    await expect(
+      archiveNotificationApp("access-token", "payments-service"),
+    ).resolves.toBeUndefined();
 
     expect(listAuthorization).toBe("Bearer access-token");
     expect(createAuthorization).toBe("Bearer access-token");
     expect(createBody).toEqual({ name: "Payments Service" });
     expect(detailAuthorization).toBe("Bearer access-token");
+    expect(updateAuthorization).toBe("Bearer access-token");
+    expect(updateBody).toEqual({ name: "Payments Platform" });
+    expect(archiveAuthorization).toBe("Bearer access-token");
   });
 });
 
