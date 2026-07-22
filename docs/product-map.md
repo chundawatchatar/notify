@@ -108,9 +108,8 @@ extend the workspace route with the app and environment slugs:
 - `/w/:workspaceSlug/apps/:appSlug/:environmentSlug`
 
 App slugs are normalized and unique within their workspace; environment slugs
-are normalized and unique within their app. A rename replaces the current slug
-rather than creating a redirect alias, so clients must use the canonical URL
-returned after a rename.
+are normalized and unique within their app. Renaming changes only an app's
+display name, so its client URL remains stable.
 
 The initial authenticated app API uses the workspace selected by the current
 membership-scoped session:

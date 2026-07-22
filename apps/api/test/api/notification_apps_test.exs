@@ -118,6 +118,12 @@ defmodule Api.NotificationAppsTest do
     assert renamed_notification_app.name == "Payments Platform"
     assert renamed_notification_app.app_slug == "payments-service"
 
+    assert {:error, :not_found} =
+             NotificationApps.update_notification_app(workspace, "missing-app", %{name: "Missing"})
+
+    assert {:error, :not_found} =
+             NotificationApps.archive_notification_app(workspace, "missing-app")
+
     assert :ok = NotificationApps.archive_notification_app(workspace, "payments-service")
     assert NotificationApps.list_notification_apps(workspace) == []
     assert NotificationApps.get_notification_app(workspace, notification_app.id) == nil
