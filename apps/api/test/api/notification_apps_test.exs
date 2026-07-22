@@ -121,12 +121,11 @@ defmodule Api.NotificationAppsTest do
             :commit -> :ok
           end
 
-          NotificationApp.changeset(%NotificationApp{}, %{
-            workspace_id: workspace.id,
+          insert(:notification_app,
+            workspace: workspace,
             name: name,
             app_slug: app_slug
-          })
-          |> Repo.insert!()
+          )
 
           app_slug
         end)
