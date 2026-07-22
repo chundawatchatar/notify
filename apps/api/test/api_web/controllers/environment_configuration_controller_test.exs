@@ -68,6 +68,13 @@ defmodule ApiWeb.EnvironmentConfigurationControllerTest do
 
     assert created["origin"] == "https://console.example.com"
 
+    ipv6_origin =
+      authenticated_conn(access_token)
+      |> post(path, %{origin: "http://[::1]:3100"})
+      |> json_response(201)
+
+    assert ipv6_origin["origin"] == "http://[::1]:3100"
+
     duplicate =
       authenticated_conn(access_token)
       |> post(path, %{origin: "https://console.example.com"})
@@ -81,6 +88,17 @@ defmodule ApiWeb.EnvironmentConfigurationControllerTest do
       |> json_response(422)
 
     assert invalid["errors"]["fields"]["origin"]
+
+    authenticated_conn(access_token)
+    |> delete(trusted_origin_path(notification_app.app_slug, "development", created["id"]))
+    |> response(204)
+
+    assert %{"trusted_origins" => trusted_origins} =
+             authenticated_conn(access_token)
+             |> get(path)
+             |> json_response(200)
+
+    refute Enum.any?(trusted_origins, &(&1["id"] == created["id"]))
   end
 
   test "viewers can inspect configuration but cannot change it", %{conn: conn} do
@@ -135,6 +153,10 @@ defmodule ApiWeb.EnvironmentConfigurationControllerTest do
 
   defp trusted_origins_path(app_slug, environment_slug) do
     ~p"/api/apps/#{app_slug}/environments/#{environment_slug}/trusted-origins"
+  end
+
+  defp trusted_origin_path(app_slug, environment_slug, trusted_origin_id) do
+    ~p"/api/apps/#{app_slug}/environments/#{environment_slug}/trusted-origins/#{trusted_origin_id}"
   end
 
   defp login(conn, email) do

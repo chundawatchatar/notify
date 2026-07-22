@@ -8,6 +8,7 @@ defmodule Domain.TrustedOriginTest do
              TrustedOrigin.normalize("HTTPS://Console.Example.com:443")
 
     assert {:ok, "http://localhost:3100"} = TrustedOrigin.normalize("http://localhost:3100")
+    assert {:ok, "http://[::1]:3100"} = TrustedOrigin.normalize("http://[::1]:3100")
   end
 
   test "rejects paths, credentials, and wildcard origins" do

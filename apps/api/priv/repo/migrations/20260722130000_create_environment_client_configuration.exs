@@ -44,7 +44,7 @@ defmodule Api.Repo.Migrations.CreateEnvironmentClientConfiguration do
     create index(:environment_trusted_origins, [:app_environment_id])
 
     create constraint(:environment_trusted_origins, :environment_trusted_origins_origin_format,
-             check: "origin ~ '^https?://[^/?#@:*]+(:[0-9]+)?$'"
+             check: "origin ~ '^https?://(\\[[0-9A-Fa-f:.]+\\]|[^/?#@:*]+)(:[0-9]+)?$'"
            )
   end
 end

@@ -279,7 +279,7 @@ defmodule ApiWeb.EnvironmentConfigurationController do
   end
 
   defp configuration_failed(conn, operation, reason) do
-    Logger.error("#{operation} failed: #{inspect(reason)}")
+    Logger.error("#{operation} failed: #{inspect(sanitize_reason(reason))}")
 
     AuthError.render(
       conn,
@@ -288,4 +288,7 @@ defmodule ApiWeb.EnvironmentConfigurationController do
       "Environment configuration is temporarily unavailable."
     )
   end
+
+  defp sanitize_reason(%Ecto.Changeset{} = changeset), do: changeset.errors
+  defp sanitize_reason(reason), do: reason
 end
