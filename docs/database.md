@@ -156,10 +156,15 @@ Likely next tables:
 - subscription_plans or workspace_subscriptions
 
 Notification app and environment UUIDs are database identities. Readable app
-and environment slugs support future workspace-scoped client routes, but client
-input never selects a workspace ID for app creation. The collaboration model
-owns membership, role, and workspace authorization - app tables do not add
-app-specific grants.
+and environment slugs are normalized as lowercase kebab-case values and support
+future workspace-scoped client routes. A unique constraint on
+`(workspace_id, slug)` prevents duplicate app URLs within a workspace, and a
+unique constraint on `(notification_app_id, slug)` prevents duplicate
+environment URLs within an app. Renames must validate and persist the new
+normalized value in the same transaction; former slugs are not retained as
+redirect aliases. Client input never selects a workspace ID for app creation.
+The collaboration model owns membership, role, and workspace authorization -
+app tables do not add app-specific grants.
 
 Confirm product flow and API contracts before adding tables. This ticket does
 not add migrations or schemas.
