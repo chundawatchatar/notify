@@ -59,6 +59,28 @@ switch receives a new membership-scoped access token and refresh token before
 the route context changes. See `docs/architecture.md` for the collaboration
 model and `docs/authentication.md` for credential rotation.
 
+### Notification App Behavior
+
+A notification app belongs to the workspace selected by the authenticated
+membership, and each environment belongs to one notification app. The client
+must not send or derive a `workspace_id` when creating an app; the API applies
+the active membership's workspace scope. A workspace URL is navigation context,
+not authorization.
+
+The initial apps flow is: show an empty state when the active workspace has no
+apps, create an app, then show the newly created app with Development and
+Production environments. Default environments are created atomically by the
+backend, rather than as follow-up browser requests.
+
+When app detail routes are implemented, their canonical shape is
+`/w/:workspaceSlug/apps/:appSlug/:environmentSlug`. App and environment UUIDs
+stay out of URLs. App slugs are unique within the workspace and environment
+slugs are unique within the app. After a rename, the client replaces its route
+with the current canonical URL returned by the API; former-slug URLs are not
+redirected and render not found. Credentials, trusted origins, events, and
+delivery data will be environment-scoped in their own later flows; this initial
+flow does not add their UI, analytics, billing, or collaboration controls.
+
 The workspace switcher lists every active membership, including both the owned
 and invited workspaces created during invitation signup. After an explicit
 sign-in, the browser may restore its last active workspace from a per-account
