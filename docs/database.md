@@ -113,6 +113,12 @@ only membership that can authorize a request, own a session, or count as a
 workspace owner. Removal or deactivation revokes every session for that
 membership in the same transaction.
 
+Normal and invitation signup atomically create a named workspace with an active
+owner membership for the new user. Invitation signup also creates the invited
+membership and starts its session in that workspace. A later login uses the
+user's earliest active owner membership as its server-side fallback, or the
+earliest active membership when the user owns none.
+
 `workspace_invitations` stores the normalized invitee email, selected workspace
 role, inviter membership, SHA-256 digest of a single-use token, seven-day
 expiry, optional revocation time, and acceptance time. Raw invitation tokens

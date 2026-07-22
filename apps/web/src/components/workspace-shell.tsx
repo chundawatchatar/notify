@@ -435,6 +435,7 @@ function WorkspaceSidebarFooterControls({
     enabled: Boolean(accountId),
     queryFn: () => auth.authenticatedRequest(listWorkspaces),
     queryKey: workspaceListQueryKey ?? ["account", "anonymous", "workspaces"],
+    refetchOnMount: "always",
   });
   const logoutMutation = useMutation({
     mutationFn: auth.signOut,

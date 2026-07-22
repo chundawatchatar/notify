@@ -104,7 +104,7 @@ defmodule Api.AccountsTest do
     assert Repo.get!(Workspace, result.workspace.id).slug == truncated_slug <> "-3"
   end
 
-  test "invitation signup creates a confirmed user, target membership, and session without a workspace" do
+  test "invitation signup creates an owned workspace, target membership, and invited session" do
     inviter = insert(:membership)
 
     assert {:ok, %{invitation: invitation, token: token}} =
@@ -117,6 +117,7 @@ defmodule Api.AccountsTest do
              Accounts.complete_invitation_signup(token, %{
                password: @completion_attrs["password"],
                password_confirmation: @completion_attrs["password"],
+               workspace_name: "Invited user workspace",
                accept_terms: true
              })
 
@@ -128,7 +129,20 @@ defmodule Api.AccountsTest do
     assert result.session.workspace_membership_id == result.membership.id
     assert Repo.get!(Invitation, invitation.id).accepted_at
     assert Repo.get!(AuthSession, result.session.id).refresh_token_hash
-    assert Repo.aggregate(Workspace, :count) == 1
+
+    owned_membership =
+      Repo.get_by!(Membership,
+        user_id: result.user.id,
+        role: "owner",
+        status: "active"
+      )
+
+    owned_workspace = Repo.get!(Workspace, owned_membership.workspace_id)
+
+    assert owned_workspace.name == "Invited user workspace"
+    assert owned_workspace.id != inviter.workspace_id
+
+    assert Repo.aggregate(Workspace, :count) == 2
   end
 
   test "failed invitation signup leaves the invitation available" do
@@ -144,6 +158,7 @@ defmodule Api.AccountsTest do
              Accounts.complete_invitation_signup(token, %{
                password: @completion_attrs["password"],
                password_confirmation: "different-password",
+               workspace_name: "Invited user workspace",
                accept_terms: true
              })
 
@@ -166,6 +181,16 @@ defmodule Api.AccountsTest do
     assert result.membership.workspace_id == inviter.workspace_id
     assert result.membership.role == "viewer"
     assert result.session.workspace_membership_id == result.membership.id
+  end
+
+  test "login prefers an owned workspace as the server fallback" do
+    user = insert(:user)
+    invited_membership = insert(:membership, user: user, role: "developer")
+    owner_membership = insert(:membership, user: user, role: "owner")
+
+    assert {:ok, result} = Accounts.login(user.email, "correct-password", false)
+    assert result.workspace.id == owner_membership.workspace_id
+    refute result.workspace.id == invited_membership.workspace_id
   end
 
   test "a different confirmed user cannot accept an invitation" do

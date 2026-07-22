@@ -105,9 +105,15 @@ defmodule NotifyOpenApi.AuthSchemas do
           minLength: 8,
           maxLength: 72
         },
+        workspace_name: %Schema{
+          type: :string,
+          minLength: 2,
+          maxLength: 100,
+          example: "Acme Cloud"
+        },
         accept_terms: %Schema{type: :boolean, enum: [true], example: true}
       },
-      required: [:token, :password, :password_confirmation, :accept_terms]
+      required: [:token, :password, :password_confirmation, :workspace_name, :accept_terms]
     })
   end
 

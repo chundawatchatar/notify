@@ -46,7 +46,7 @@ defmodule ApiWeb.AuthControllerTest do
     assert Repo.get_by!(User, email: "owner@example.com").confirmed_at
   end
 
-  test "invitation signup issues a target-workspace session without creating an owner workspace",
+  test "invitation signup issues a target-workspace session and creates an owned workspace",
        %{
          conn: conn
        } do
@@ -65,6 +65,7 @@ defmodule ApiWeb.AuthControllerTest do
         token: token,
         password: @password,
         password_confirmation: @password,
+        workspace_name: "Invited user workspace",
         accept_terms: true
       })
 
@@ -77,11 +78,19 @@ defmodule ApiWeb.AuthControllerTest do
 
     invited_user = Repo.get_by!(User, email: "invited@example.com")
 
-    assert [%Membership{workspace_id: workspace_id, role: "developer", status: "active"}] =
+    assert [
+             %Membership{workspace_id: workspace_id, role: "developer", status: "active"},
+             %Membership{workspace_id: owned_workspace_id, role: "owner", status: "active"}
+           ] =
              Repo.all(Membership)
              |> Enum.filter(&(&1.user_id == invited_user.id))
+             |> Enum.sort_by(& &1.role)
 
     assert workspace_id == inviter.workspace_id
+    refute owned_workspace_id == inviter.workspace_id
+
+    assert Repo.get!(Api.Workspaces.Workspace, owned_workspace_id).name ==
+             "Invited user workspace"
   end
 
   test "resolves an active invitation without consuming it", %{conn: conn} do

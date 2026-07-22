@@ -225,6 +225,9 @@ defmodule ApiWeb.AuthController do
           AuthError.validation(conn, changeset)
         end
 
+      {:error, :owned_workspace, changeset} ->
+        AuthError.validation(conn, changeset, %{name: :workspace_name})
+
       {:error, _operation, %Ecto.Changeset{} = changeset} ->
         AuthError.validation(conn, changeset)
 

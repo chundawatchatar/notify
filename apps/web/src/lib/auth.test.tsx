@@ -6,9 +6,15 @@ import { AuthProvider, createAuthClient, useAuth } from "./auth";
 
 const originalLocks = navigator.locks;
 const apiBaseUrl = "http://localhost:4100";
+const defaultWorkspace = {
+  id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4",
+  name: "Acme Cloud",
+  slug: "acme-cloud",
+};
 
 afterEach(() => {
   cleanup();
+  localStorage.clear();
   Object.defineProperty(navigator, "locks", {
     configurable: true,
     value: originalLocks,
@@ -154,6 +160,102 @@ describe("authentication session", () => {
 
     expect(requestedWorkspaces).toEqual(["notify-labs", "other-workspace"]);
   });
+
+  it("restores this browser's remembered workspace after sign-in", async () => {
+    expect.hasAssertions();
+    installBrowserCoordination();
+    localStorage.setItem(activeWorkspaceStorageKey(), "a7d7137b-d5a5-4411-9993-463c7f7e71f4");
+    let requestedWorkspace: string | undefined;
+
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/login`, () => HttpResponse.json(authResponse())),
+      http.get(`${apiBaseUrl}/api/workspaces`, () =>
+        HttpResponse.json({
+          workspaces: [
+            {
+              id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4",
+              name: "Acme Cloud",
+              role: "owner",
+              slug: "acme-cloud",
+            },
+            {
+              id: "a7d7137b-d5a5-4411-9993-463c7f7e71f4",
+              name: "Notify Labs",
+              role: "owner",
+              slug: "notify-labs",
+            },
+          ],
+        }),
+      ),
+      http.post(`${apiBaseUrl}/api/auth/workspace/switch`, async ({ request }) => {
+        requestedWorkspace = ((await request.json()) as { workspace_slug: string }).workspace_slug;
+
+        return HttpResponse.json(
+          authResponse({
+            workspace: {
+              id: "a7d7137b-d5a5-4411-9993-463c7f7e71f4",
+              name: "Notify Labs",
+              slug: "notify-labs",
+            },
+          }),
+        );
+      }),
+    );
+
+    const client = createAuthClient();
+    await client.signIn({
+      email: "owner@example.com",
+      password: "correct-password",
+      remember: false,
+    });
+
+    expect(requestedWorkspace).toBe("notify-labs");
+    expect(client.getSnapshot().principal?.workspace.slug).toBe("notify-labs");
+  });
+
+  it("clears a revoked remembered workspace and keeps the API fallback workspace", async () => {
+    expect.hasAssertions();
+    installBrowserCoordination();
+    localStorage.setItem(activeWorkspaceStorageKey(), "a7d7137b-d5a5-4411-9993-463c7f7e71f4");
+
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/login`, () => HttpResponse.json(authResponse())),
+      http.get(`${apiBaseUrl}/api/workspaces`, () =>
+        HttpResponse.json({
+          workspaces: [
+            {
+              id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4",
+              name: "Acme Cloud",
+              role: "owner",
+              slug: "acme-cloud",
+            },
+            {
+              id: "a7d7137b-d5a5-4411-9993-463c7f7e71f4",
+              name: "Revoked workspace",
+              role: "developer",
+              slug: "revoked-workspace",
+            },
+          ],
+        }),
+      ),
+      http.post(`${apiBaseUrl}/api/auth/workspace/switch`, () =>
+        HttpResponse.json(
+          { errors: { code: "workspace_not_found", message: "Workspace unavailable." } },
+          { status: 404 },
+        ),
+      ),
+    );
+
+    const client = createAuthClient();
+    await client.signIn({
+      email: "owner@example.com",
+      password: "correct-password",
+      remember: false,
+    });
+
+    expect(client.getSnapshot().principal?.workspace.slug).toBe("acme-cloud");
+    expect(localStorage.getItem(activeWorkspaceStorageKey())).toBeNull();
+  });
 });
 
 function AuthHarness() {
@@ -214,10 +316,10 @@ function installBrowserCoordination() {
 
 function authResponse({
   accessToken = "access-token",
-  workspace = { name: "Acme Cloud", slug: "acme-cloud" },
+  workspace,
 }: {
   accessToken?: string;
-  workspace?: { name: string; slug: string };
+  workspace?: Partial<typeof defaultWorkspace>;
 } = {}) {
   return {
     access_token: accessToken,
@@ -225,6 +327,10 @@ function authResponse({
     role: "owner",
     token_type: "Bearer",
     user: { email: "owner@example.com", id: "3dc20706-9944-4743-8121-c0429c622c0b" },
-    workspace: { id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4", ...workspace },
+    workspace: { ...defaultWorkspace, ...workspace },
   };
+}
+
+function activeWorkspaceStorageKey() {
+  return "notify-active-workspace:3dc20706-9944-4743-8121-c0429c622c0b";
 }

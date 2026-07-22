@@ -412,8 +412,23 @@ defmodule Api.Workspaces do
       |> Multi.run(:invitation, fn repo, _changes ->
         lock_active_invitation(repo, invitation_id, secret, now)
       end)
+      |> Multi.run(:owned_workspace_slug, fn repo, _changes ->
+        Workspace.next_available_slug(repo, attrs["workspace_name"])
+      end)
+      |> Multi.insert(:owned_workspace, fn %{owned_workspace_slug: slug} ->
+        Workspace.changeset(%Workspace{}, %{name: attrs["workspace_name"], slug: slug})
+      end)
       |> Multi.insert(:user, fn %{invitation: invitation} ->
         User.invitation_signup_changeset(%User{}, attrs, invitation.email, now)
+      end)
+      |> Multi.insert(:owned_membership, fn %{user: user, owned_workspace: workspace} ->
+        Membership.changeset(%Membership{}, %{
+          user_id: user.id,
+          workspace_id: workspace.id,
+          role: "owner",
+          status: "active",
+          joined_at: now
+        })
       end)
       |> Multi.insert(:membership, fn %{invitation: invitation, user: user} ->
         Membership.changeset(%Membership{}, %{

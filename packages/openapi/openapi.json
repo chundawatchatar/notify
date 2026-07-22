@@ -514,9 +514,23 @@
             "type": "string",
             "x-struct": null,
             "x-validate": null
+          },
+          "workspace_name": {
+            "example": "Acme Cloud",
+            "maxLength": 100,
+            "minLength": 2,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
           }
         },
-        "required": ["token", "password", "password_confirmation", "accept_terms"],
+        "required": [
+          "token",
+          "password",
+          "password_confirmation",
+          "workspace_name",
+          "accept_terms"
+        ],
         "title": "CompleteInvitationSignupRequest",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.CompleteInvitationSignupRequest",

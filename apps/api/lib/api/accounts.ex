@@ -448,7 +448,11 @@ defmodule Api.Accounts do
       from membership in Membership,
         where: membership.user_id == ^user.id,
         where: membership.status == "active",
-        order_by: [asc: membership.inserted_at, asc: membership.id],
+        order_by: [
+          desc: fragment("? = 'owner'", membership.role),
+          asc: membership.inserted_at,
+          asc: membership.id
+        ],
         limit: 1,
         preload: [:user, :workspace]
     )

@@ -601,6 +601,8 @@ export interface components {
       password_confirmation: string;
       /** @example invitation-token */
       token: string;
+      /** @example Acme Cloud */
+      workspace_name: string;
     };
     /**
      * ServiceInfo

@@ -59,6 +59,13 @@ switch receives a new membership-scoped access token and refresh token before
 the route context changes. See `docs/architecture.md` for the collaboration
 model and `docs/authentication.md` for credential rotation.
 
+The workspace switcher lists every active membership, including both the owned
+and invited workspaces created during invitation signup. After an explicit
+sign-in, the browser may restore its last active workspace from a per-account
+local-storage ID, resolves it from the authenticated workspace list, then uses
+the normal switch API. If that membership was revoked, it clears the ID and
+keeps the API-selected fallback workspace.
+
 The security section may describe audit posture, but it does not query or
 display audit records in the current phase. Audit persistence is backend-owned
 and no audit credential or event metadata belongs in browser storage.
@@ -250,6 +257,9 @@ then collects and confirms the password, workspace name, and terms acceptance
 and calls the signup-completion endpoint. Password validation is shown on blur
 or submit so incomplete passwords are not flagged while the user is typing. The
 dashboard must not persist either verification credential in browser storage.
+New users completing an invitation also name the workspace they own while
+creating their password. Their first authenticated session still opens in the
+workspace that invited them.
 
 Password recovery starts with an enumeration-safe email request. The emailed
 one-hour token is exchanged after browser hydration for a 15-minute completion

@@ -83,6 +83,13 @@ previous workspace session is not reused as proof of access to the new one.
 The switch is recorded as a workspace-scoped audit event without recording the
 old or new credential material.
 
+Each browser stores its last active workspace ID in local storage, keyed by
+account; it never stores an access token, refresh token, or invitation
+credential there. After sign-in, the browser restores that workspace through
+the normal switch flow when the membership is still active. Otherwise it keeps
+the API-selected fallback, which prefers the user's earliest active owner
+membership and otherwise uses the earliest active membership.
+
 ## Invitation Acceptance
 
 An invitation link carries a single-use token in `/auth/invitations/accept`.
@@ -95,9 +102,11 @@ browser storage.
   consumes the invitation and creates or reactivates the membership atomically,
   then returns a membership-scoped session for the invited workspace.
 - A user without an account sends the token, password, password confirmation,
-  and accepted terms to `POST /api/auth/invitations/signup`. The API creates the
-  confirmed user, membership, session, and consumed invitation in one
-  transaction. This flow never creates a personal owner workspace.
+  workspace name, and accepted terms to `POST /api/auth/invitations/signup`.
+  The API creates the confirmed user, a named owner workspace, the invited
+  membership, session, and consumed invitation in one transaction. The session
+  remains scoped to the invited workspace so acceptance lands in the expected
+  context.
 
 Both endpoints set the normal HttpOnly refresh cookie and require an allowed
 dashboard origin. Invitation tokens are hashed at rest, expire, and remain
