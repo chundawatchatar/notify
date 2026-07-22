@@ -6,11 +6,14 @@ import type {
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
   ApiConfirmPasswordResetRequest,
+  ApiCreateNotificationAppRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
   ApiInvitationPreviewResponse,
   ApiInvitationSignupResponse,
   ApiLoginRequest,
+  ApiNotificationApp,
+  ApiNotificationAppsResponse,
   ApiPasswordResetCompletionResponse,
   ApiPasswordResetRequest,
   ApiPasswordResetRequestResponse,
@@ -121,6 +124,20 @@ function listWorkspaces(accessToken: string) {
   return get<ApiWorkspaceListResponse>("/api/workspaces", { accessToken });
 }
 
+function listNotificationApps(accessToken: string) {
+  return get<ApiNotificationAppsResponse>("/api/apps", { accessToken });
+}
+
+function createNotificationApp(accessToken: string, body: ApiCreateNotificationAppRequest) {
+  return post<ApiNotificationApp, ApiCreateNotificationAppRequest>("/api/apps", body, {
+    accessToken,
+  });
+}
+
+function getNotificationApp(accessToken: string, appSlug: string) {
+  return get<ApiNotificationApp>(`/api/apps/${appSlug}`, { accessToken });
+}
+
 function switchWorkspace(accessToken: string, body: ApiSwitchWorkspaceRequest) {
   return post<ApiAuthResponse, ApiSwitchWorkspaceRequest>("/api/auth/workspace/switch", body, {
     accessToken,
@@ -212,10 +229,13 @@ export {
   completeSignup,
   confirmEmail,
   confirmPasswordReset,
+  createNotificationApp,
   createWorkspaceInvitation,
   getApiReadiness,
   getApiVersion,
   getCurrentUser,
+  getNotificationApp,
+  listNotificationApps,
   listWorkspaceInvitations,
   listWorkspaceMembers,
   listWorkspaces,
