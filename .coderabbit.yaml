@@ -18,6 +18,6 @@ reviews:
     title:
       mode: error
       requirements: >-
-        Ticketed pull request titles must follow `[NFY-123] Concise title`.
+        Ticketed pull request titles must follow `[NFY-123] Exact Linear issue title`.
         Repository maintenance work without a Linear ticket may use
         `[Chore] Concise title`.

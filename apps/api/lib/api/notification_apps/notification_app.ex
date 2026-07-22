@@ -20,6 +20,9 @@ defmodule Api.NotificationApps.NotificationApp do
     timestamps(type: :utc_datetime)
   end
 
+  @doc """
+  Validates a notification app before it is persisted.
+  """
   def changeset(notification_app, attrs) do
     notification_app
     |> cast(attrs, [:workspace_id, :name, :app_slug, :archived_at])
@@ -42,7 +45,7 @@ defmodule Api.NotificationApps.NotificationApp do
   """
   def next_available_slug(repo, workspace_id, name) do
     base_slug = NotificationAppSlug.normalize(name)
-    lock_key = "#{workspace_id}:#{base_slug}"
+    lock_key = "notification-app:#{workspace_id}"
 
     Ecto.Adapters.SQL.query!(repo, "SELECT pg_advisory_xact_lock(hashtext($1))", [lock_key])
 

@@ -10,6 +10,9 @@ defmodule Api.NotificationApps do
   alias Api.Workspaces.Workspace
   alias Ecto.Multi
 
+  @doc """
+  Lists notification apps owned by the current workspace.
+  """
   def list_notification_apps(%Workspace{id: workspace_id}) do
     Repo.all(
       from notification_app in NotificationApp,
@@ -19,6 +22,9 @@ defmodule Api.NotificationApps do
     )
   end
 
+  @doc """
+  Gets a notification app by ID only when it belongs to the current workspace.
+  """
   def get_notification_app(%Workspace{id: workspace_id}, notification_app_id) do
     with {:ok, notification_app_id} <- Ecto.UUID.cast(notification_app_id) do
       Repo.one(
@@ -33,6 +39,9 @@ defmodule Api.NotificationApps do
     end
   end
 
+  @doc """
+  Gets a notification app by slug only when it belongs to the current workspace.
+  """
   def get_notification_app_by_slug(%Workspace{id: workspace_id}, app_slug)
       when is_binary(app_slug) do
     Repo.one(
@@ -46,6 +55,9 @@ defmodule Api.NotificationApps do
 
   def get_notification_app_by_slug(_, _), do: nil
 
+  @doc """
+  Creates a notification app and its Development and Production environments atomically.
+  """
   def create_notification_app(%Workspace{} = workspace, attrs) when is_map(attrs) do
     attrs = Map.new(attrs, fn {key, value} -> {to_string(key), value} end)
 

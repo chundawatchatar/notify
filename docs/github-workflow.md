@@ -71,8 +71,8 @@ Required PR rules:
   its comments are resolved and its pre-merge checks pass.
 - Solo-maintainer repositories may keep GitHub's required approval count at
   zero. CodeRabbit approval remains an automated quality signal.
-- Ticketed PR titles follow `[NFY-123] Concise title`. Repository maintenance
-  work without a Linear ticket may use `[Chore] Concise title`.
+- Ticketed PR titles follow `[NFY-123] Exact Linear issue title`. Repository
+  maintenance work without a Linear ticket may use `[Chore] Concise title`.
 - Code owner approval is required once `CODEOWNERS` exists.
 - All conversations must be resolved.
 - Draft PRs cannot merge.

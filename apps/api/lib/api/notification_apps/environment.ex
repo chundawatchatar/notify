@@ -18,6 +18,9 @@ defmodule Api.NotificationApps.Environment do
     timestamps(type: :utc_datetime)
   end
 
+  @doc """
+  Validates an app environment before it is persisted.
+  """
   def changeset(environment, attrs) do
     environment
     |> cast(attrs, [:notification_app_id, :name, :environment_slug, :production])
