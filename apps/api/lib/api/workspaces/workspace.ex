@@ -14,6 +14,7 @@ defmodule Api.Workspaces.Workspace do
     field :slug, :string
 
     has_many :memberships, Api.Workspaces.Membership
+    has_many :notification_apps, Api.NotificationApps.NotificationApp
 
     timestamps(type: :utc_datetime)
   end

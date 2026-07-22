@@ -20,15 +20,19 @@ release promotion are documented in `docs/github-workflow.md`.
 
 ## 2. Worktree And Branch
 
-1. Create one dedicated worktree per ticket below `../notify-worktrees`.
-2. Branch from the current local `develop` branch. Use a descriptive branch
-   name such as `nfy-123-short-description` without a username.
-3. Keep one ticket per branch, worktree, commit set, and pull request unless the
+1. Before creating a worktree, fast-forward the local `develop` branch from
+   `origin/develop`. If the requester or ticket explicitly specifies another
+   base, follow that instruction instead.
+2. Create one dedicated worktree per ticket below `../notify-worktrees`.
+3. Branch from the refreshed local `develop` branch unless an explicit base was
+   requested. Use a descriptive branch name such as
+   `nfy-123-short-description` without a username.
+4. Keep one ticket per branch, worktree, commit set, and pull request unless the
    requester explicitly groups tickets.
-4. Do not start containers from a worktree because they duplicate the shared
+5. Do not start containers from a worktree because they duplicate the shared
    local service containers. Install dependencies only when the worktree does
    not already have them.
-5. Preserve unrelated changes and never reuse or delete another ticket's
+6. Preserve unrelated changes and never reuse or delete another ticket's
    worktree.
 
 ## 3. Implementation
