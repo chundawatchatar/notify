@@ -92,8 +92,9 @@ When authorized:
 2. Create a single-line Angular Conventional Commit message without a trailing
    period.
 3. Push the ticket branch and open a pull request targeting `develop`.
-4. Use a clear pull request title and description that link the Linear issue,
-   summarize the change, and list verification performed or skipped.
+4. Title each pull request as `[NFY-123] Exact Linear issue title`. Do not use
+   a commit-style title. Its description must link the Linear issue, summarize
+   the change, and list verification performed or skipped.
 5. Write multiline pull request descriptions through a body file or standard
    input with real line breaks. Read the saved body back after every create or
    edit and reject literal `\n` sequences or truncated content.
