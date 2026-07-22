@@ -132,6 +132,33 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ConfirmEmailRequest",
         "x-validate": null
       },
+      "EnvironmentTrustedOrigin": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "origin": {
+            "example": "https://console.example.com",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "origin", "created_at"],
+        "title": "EnvironmentTrustedOrigin",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.TrustedOrigin",
+        "x-validate": null
+      },
       "ValidationErrorResponse": {
         "properties": {
           "errors": {
@@ -242,6 +269,22 @@
         "title": "PasswordResetRequestResponse",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetRequestResponse",
+        "x-validate": null
+      },
+      "CreateEnvironmentTrustedOriginRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "origin": {
+            "example": "https://console.example.com",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["origin"],
+        "title": "CreateEnvironmentTrustedOriginRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.CreateTrustedOriginRequest",
         "x-validate": null
       },
       "SignupCompletionResponse": {
@@ -890,6 +933,23 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ErrorDetails",
         "x-validate": null
       },
+      "EnvironmentTrustedOriginsResponse": {
+        "properties": {
+          "trusted_origins": {
+            "items": {
+              "$ref": "#/components/schemas/EnvironmentTrustedOrigin"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["trusted_origins"],
+        "title": "EnvironmentTrustedOriginsResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.TrustedOriginsResponse",
+        "x-validate": null
+      },
       "AuthUser": {
         "properties": {
           "email": {
@@ -948,6 +1008,40 @@
         "title": "NotificationApp",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.NotificationApp",
+        "x-validate": null
+      },
+      "EnvironmentClientKey": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "key": {
+            "example": "nfy_pk_7K9fjNdZOzLkQenP2tHaBi8vWcXRm1sA",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "revoked_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["id", "key", "created_at", "revoked_at"],
+        "title": "EnvironmentClientKey",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.ClientKey",
         "x-validate": null
       },
       "ResendVerificationRequest": {
@@ -1120,6 +1214,23 @@
         "title": "PasswordResetRequest",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetRequest",
+        "x-validate": null
+      },
+      "EnvironmentClientKeysResponse": {
+        "properties": {
+          "client_keys": {
+            "items": {
+              "$ref": "#/components/schemas/EnvironmentClientKey"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["client_keys"],
+        "title": "EnvironmentClientKeysResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.ClientKeysResponse",
         "x-validate": null
       }
     },
@@ -1490,6 +1601,541 @@
         ],
         "summary": "Rename a notification app in the active workspace",
         "tags": ["notification apps"]
+      }
+    },
+    "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listEnvironmentClientKeys",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment slug",
+            "in": "path",
+            "name": "environmentSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentClientKeysResponse"
+                }
+              }
+            },
+            "description": "Environment client keys"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List client keys for an environment",
+        "tags": ["environment configuration"]
+      },
+      "post": {
+        "callbacks": {},
+        "operationId": "createEnvironmentClientKey",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment slug",
+            "in": "path",
+            "name": "environmentSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentClientKey"
+                }
+              }
+            },
+            "description": "Created environment client key"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a client key for an environment",
+        "tags": ["environment configuration"]
+      }
+    },
+    "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys/{clientKeyId}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "revokeEnvironmentClientKey",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment slug",
+            "in": "path",
+            "name": "environmentSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Client key ID",
+            "in": "path",
+            "name": "clientKeyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Client key revoked"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment or client key unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revoke an environment client key",
+        "tags": ["environment configuration"]
+      }
+    },
+    "/api/apps/{appSlug}/environments/{environmentSlug}/trusted-origins": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listEnvironmentTrustedOrigins",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment slug",
+            "in": "path",
+            "name": "environmentSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentTrustedOriginsResponse"
+                }
+              }
+            },
+            "description": "Environment trusted origins"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List trusted origins for an environment",
+        "tags": ["environment configuration"]
+      },
+      "post": {
+        "callbacks": {},
+        "operationId": "createEnvironmentTrustedOrigin",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment slug",
+            "in": "path",
+            "name": "environmentSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEnvironmentTrustedOriginRequest"
+              }
+            }
+          },
+          "description": "Trusted origin",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentTrustedOrigin"
+                }
+              }
+            },
+            "description": "Created trusted origin"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Trusted origin already exists"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add a trusted origin to an environment",
+        "tags": ["environment configuration"]
+      }
+    },
+    "/api/apps/{appSlug}/environments/{environmentSlug}/trusted-origins/{trustedOriginId}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "removeEnvironmentTrustedOrigin",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment slug",
+            "in": "path",
+            "name": "environmentSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Trusted origin ID",
+            "in": "path",
+            "name": "trustedOriginId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Trusted origin removed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment or trusted origin unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove a trusted origin from an environment",
+        "tags": ["environment configuration"]
       }
     },
     "/api/auth/email-verification/confirm": {

@@ -5,11 +5,17 @@ import { server } from "@/test/server";
 import {
   ApiRequestError,
   archiveNotificationApp,
+  createEnvironmentClientKey,
+  createEnvironmentTrustedOrigin,
   createNotificationApp,
   getNotificationApp,
+  listEnvironmentClientKeys,
+  listEnvironmentTrustedOrigins,
   listNotificationApps,
   listWorkspaces,
   login,
+  removeEnvironmentTrustedOrigin,
+  revokeEnvironmentClientKey,
   startSignup,
   switchWorkspace,
   updateNotificationApp,
@@ -141,6 +147,68 @@ describe("auth API client", () => {
     expect(updateBody).toEqual({ name: "Payments Platform" });
     expect(archiveAuthorization).toBe("Bearer access-token");
   });
+
+  it("uses typed environment configuration endpoints", async () => {
+    expect.hasAssertions();
+    const appSlug = "payments-service";
+    const environmentSlug = "development";
+    const clientKeyId = "a6c977c6-8eb6-41ae-82dc-90f10ff134ce";
+    const trustedOriginId = "17bd25a8-3bfe-4cf4-ae94-1fd39518d568";
+    let originBody: unknown;
+
+    server.use(
+      http.get(
+        `${apiBaseUrl}/api/apps/${appSlug}/environments/${environmentSlug}/client-keys`,
+        () => HttpResponse.json({ client_keys: [clientKey()] }),
+      ),
+      http.post(
+        `${apiBaseUrl}/api/apps/${appSlug}/environments/${environmentSlug}/client-keys`,
+        () => HttpResponse.json(clientKey(), { status: 201 }),
+      ),
+      http.delete(
+        `${apiBaseUrl}/api/apps/${appSlug}/environments/${environmentSlug}/client-keys/${clientKeyId}`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+      http.get(
+        `${apiBaseUrl}/api/apps/${appSlug}/environments/${environmentSlug}/trusted-origins`,
+        () => HttpResponse.json({ trusted_origins: [trustedOrigin()] }),
+      ),
+      http.post(
+        `${apiBaseUrl}/api/apps/${appSlug}/environments/${environmentSlug}/trusted-origins`,
+        async ({ request }) => {
+          originBody = await request.json();
+          return HttpResponse.json(trustedOrigin(), { status: 201 });
+        },
+      ),
+      http.delete(
+        `${apiBaseUrl}/api/apps/${appSlug}/environments/${environmentSlug}/trusted-origins/${trustedOriginId}`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+    );
+
+    await expect(
+      listEnvironmentClientKeys("access-token", appSlug, environmentSlug),
+    ).resolves.toEqual({ client_keys: [clientKey()] });
+    await expect(
+      createEnvironmentClientKey("access-token", appSlug, environmentSlug),
+    ).resolves.toEqual(clientKey());
+    await expect(
+      revokeEnvironmentClientKey("access-token", appSlug, environmentSlug, clientKeyId),
+    ).resolves.toBeUndefined();
+    await expect(
+      listEnvironmentTrustedOrigins("access-token", appSlug, environmentSlug),
+    ).resolves.toEqual({ trusted_origins: [trustedOrigin()] });
+    await expect(
+      createEnvironmentTrustedOrigin("access-token", appSlug, environmentSlug, {
+        origin: "https://console.example.com",
+      }),
+    ).resolves.toEqual(trustedOrigin());
+    await expect(
+      removeEnvironmentTrustedOrigin("access-token", appSlug, environmentSlug, trustedOriginId),
+    ).resolves.toBeUndefined();
+
+    expect(originBody).toEqual({ origin: "https://console.example.com" });
+  });
 });
 
 function notificationApp(): ApiNotificationApp {
@@ -156,6 +224,23 @@ function notificationApp(): ApiNotificationApp {
         production: false,
       },
     ],
+  };
+}
+
+function clientKey() {
+  return {
+    id: "a6c977c6-8eb6-41ae-82dc-90f10ff134ce",
+    key: "nfy_pk_7K9fjNdZOzLkQenP2tHaBi8vWcXRm1sA",
+    created_at: "2026-07-22T12:00:00Z",
+    revoked_at: null,
+  };
+}
+
+function trustedOrigin() {
+  return {
+    id: "17bd25a8-3bfe-4cf4-ae94-1fd39518d568",
+    origin: "https://console.example.com",
+    created_at: "2026-07-22T12:00:00Z",
   };
 }
 

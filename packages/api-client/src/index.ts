@@ -59,6 +59,11 @@ type ApiCreateNotificationAppRequest = JsonRequestBody<"createNotificationApp">;
 type ApiNotificationApp = JsonResponse<"createNotificationApp", 201>;
 type ApiNotificationAppEnvironment = ApiNotificationApp["environments"][number];
 type ApiUpdateNotificationAppRequest = JsonRequestBody<"updateNotificationApp">;
+type ApiEnvironmentClientKeysResponse = JsonResponse<"listEnvironmentClientKeys", 200>;
+type ApiEnvironmentClientKey = JsonResponse<"createEnvironmentClientKey", 201>;
+type ApiEnvironmentTrustedOriginsResponse = JsonResponse<"listEnvironmentTrustedOrigins", 200>;
+type ApiEnvironmentTrustedOrigin = JsonResponse<"createEnvironmentTrustedOrigin", 201>;
+type ApiCreateEnvironmentTrustedOriginRequest = JsonRequestBody<"createEnvironmentTrustedOrigin">;
 type ApiErrorResponse = JsonResponse<"login", 401>;
 type ApiValidationErrorResponse = JsonResponse<"login", 422>;
 
@@ -70,9 +75,14 @@ export type {
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
   ApiConfirmPasswordResetRequest,
+  ApiCreateEnvironmentTrustedOriginRequest,
   ApiCreateNotificationAppRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
+  ApiEnvironmentClientKey,
+  ApiEnvironmentClientKeysResponse,
+  ApiEnvironmentTrustedOrigin,
+  ApiEnvironmentTrustedOriginsResponse,
   ApiErrorResponse,
   ApiInvitationPreviewResponse,
   ApiInvitationSignupResponse,

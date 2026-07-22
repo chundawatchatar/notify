@@ -5,7 +5,7 @@ defmodule Api.NotificationApps do
 
   import Ecto.Query
 
-  alias Api.NotificationApps.{Environment, NotificationApp}
+  alias Api.NotificationApps.{ClientKey, Environment, NotificationApp, TrustedOrigin}
   alias Api.Repo
   alias Api.Workspaces.Workspace
   alias Ecto.Multi
@@ -58,6 +58,108 @@ defmodule Api.NotificationApps do
   end
 
   def get_notification_app_by_slug(_, _), do: nil
+
+  @doc """
+  Gets an environment only when its app belongs to the current workspace.
+  """
+  def get_environment_by_slugs(%Workspace{id: workspace_id}, app_slug, environment_slug)
+      when is_binary(app_slug) and is_binary(environment_slug) do
+    Repo.one(
+      from environment in Environment,
+        join: notification_app in assoc(environment, :notification_app),
+        where:
+          notification_app.workspace_id == ^workspace_id and
+            notification_app.app_slug == ^app_slug and
+            environment.environment_slug == ^environment_slug
+    )
+  end
+
+  def get_environment_by_slugs(_, _, _), do: nil
+
+  @doc """
+  Lists all client keys for an environment, including revoked identifiers.
+  """
+  def list_client_keys(%Environment{id: environment_id}) do
+    Repo.all(
+      from client_key in ClientKey,
+        where: client_key.app_environment_id == ^environment_id,
+        order_by: [asc: client_key.inserted_at, asc: client_key.id]
+    )
+  end
+
+  @doc """
+  Creates a high-entropy client identifier for an environment.
+  """
+  def create_client_key(%Environment{id: environment_id}) do
+    %ClientKey{}
+    |> ClientKey.changeset(%{app_environment_id: environment_id, key: ClientKey.generate()})
+    |> Repo.insert()
+  end
+
+  @doc """
+  Revokes an active client key only when it belongs to the current environment.
+  """
+  def revoke_client_key(%Environment{id: environment_id}, client_key_id) do
+    with {:ok, client_key_id} <- Ecto.UUID.cast(client_key_id),
+         %ClientKey{} = client_key <-
+           Repo.one(
+             from client_key in ClientKey,
+               where:
+                 client_key.app_environment_id == ^environment_id and
+                   client_key.id == ^client_key_id and
+                   is_nil(client_key.revoked_at)
+           ) do
+      client_key
+      |> Ecto.Changeset.change(revoked_at: DateTime.utc_now(:second))
+      |> Repo.update()
+    else
+      :error -> :not_found
+      nil -> :not_found
+    end
+  end
+
+  @doc """
+  Lists trusted origins for an environment in a stable order.
+  """
+  def list_trusted_origins(%Environment{id: environment_id}) do
+    Repo.all(
+      from trusted_origin in TrustedOrigin,
+        where: trusted_origin.app_environment_id == ^environment_id,
+        order_by: [asc: trusted_origin.origin, asc: trusted_origin.id]
+    )
+  end
+
+  @doc """
+  Adds a normalized exact origin to an environment.
+  """
+  def create_trusted_origin(%Environment{id: environment_id}, attrs) when is_map(attrs) do
+    attrs = Map.new(attrs, fn {key, value} -> {to_string(key), value} end)
+
+    %TrustedOrigin{}
+    |> TrustedOrigin.changeset(Map.put(attrs, "app_environment_id", environment_id))
+    |> Repo.insert()
+  end
+
+  def create_trusted_origin(_, _), do: {:error, :invalid_environment}
+
+  @doc """
+  Removes a trusted origin only when it belongs to the current environment.
+  """
+  def remove_trusted_origin(%Environment{id: environment_id}, trusted_origin_id) do
+    with {:ok, trusted_origin_id} <- Ecto.UUID.cast(trusted_origin_id),
+         %TrustedOrigin{} = trusted_origin <-
+           Repo.one(
+             from trusted_origin in TrustedOrigin,
+               where:
+                 trusted_origin.app_environment_id == ^environment_id and
+                   trusted_origin.id == ^trusted_origin_id
+           ) do
+      Repo.delete(trusted_origin)
+    else
+      :error -> :not_found
+      nil -> :not_found
+    end
+  end
 
   @doc """
   Creates a notification app and its Development and Production environments atomically.
