@@ -54,6 +54,10 @@ type ApiUpdateWorkspaceMemberRoleRequest = JsonRequestBody<"updateWorkspaceMembe
 type ApiWorkspaceInvitationsResponse = JsonResponse<"listWorkspaceInvitations", 200>;
 type ApiWorkspaceInvitation = JsonResponse<"createWorkspaceInvitation", 201>;
 type ApiCreateWorkspaceInvitationRequest = JsonRequestBody<"createWorkspaceInvitation">;
+type ApiNotificationAppsResponse = JsonResponse<"listNotificationApps", 200>;
+type ApiCreateNotificationAppRequest = JsonRequestBody<"createNotificationApp">;
+type ApiNotificationApp = JsonResponse<"createNotificationApp", 201>;
+type ApiNotificationAppEnvironment = ApiNotificationApp["environments"][number];
 type ApiErrorResponse = JsonResponse<"login", 401>;
 type ApiValidationErrorResponse = JsonResponse<"login", 422>;
 
@@ -65,6 +69,7 @@ export type {
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
   ApiConfirmPasswordResetRequest,
+  ApiCreateNotificationAppRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
   ApiErrorResponse,
@@ -72,6 +77,9 @@ export type {
   ApiInvitationSignupResponse,
   ApiLivenessResponse,
   ApiLoginRequest,
+  ApiNotificationApp,
+  ApiNotificationAppEnvironment,
+  ApiNotificationAppsResponse,
   ApiOperation,
   ApiOperationId,
   ApiOperations,

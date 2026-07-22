@@ -1,7 +1,16 @@
 import { HttpResponse, http } from "msw";
 import { describe, expect, it } from "vitest";
 import { server } from "@/test/server";
-import { ApiRequestError, listWorkspaces, login, startSignup, switchWorkspace } from "./api-client";
+import {
+  ApiRequestError,
+  createNotificationApp,
+  getNotificationApp,
+  listNotificationApps,
+  listWorkspaces,
+  login,
+  startSignup,
+  switchWorkspace,
+} from "./api-client";
 
 const apiBaseUrl = "http://localhost:4100";
 
@@ -69,7 +78,54 @@ describe("auth API client", () => {
     expect(switchCredentials).toBe("include");
     expect(switchBody).toEqual({ workspace_slug: "notify-labs" });
   });
+
+  it("uses the generated app contracts for list, create, and detail requests", async () => {
+    expect.hasAssertions();
+    let createAuthorization: string | null = null;
+    let createBody: unknown;
+
+    server.use(
+      http.get(`${apiBaseUrl}/api/apps`, () => HttpResponse.json({ apps: [notificationApp()] })),
+      http.post(`${apiBaseUrl}/api/apps`, async ({ request }) => {
+        createAuthorization = request.headers.get("authorization");
+        createBody = await request.json();
+        return HttpResponse.json(notificationApp(), { status: 201 });
+      }),
+      http.get(`${apiBaseUrl}/api/apps/payments-service`, () =>
+        HttpResponse.json(notificationApp()),
+      ),
+    );
+
+    await expect(listNotificationApps("access-token")).resolves.toEqual({
+      apps: [notificationApp()],
+    });
+    await expect(
+      createNotificationApp("access-token", { name: "Payments Service" }),
+    ).resolves.toEqual(notificationApp());
+    await expect(getNotificationApp("access-token", "payments-service")).resolves.toEqual(
+      notificationApp(),
+    );
+
+    expect(createAuthorization).toBe("Bearer access-token");
+    expect(createBody).toEqual({ name: "Payments Service" });
+  });
 });
+
+function notificationApp() {
+  return {
+    id: "3dc20706-9944-4743-8121-c0429c622c0b",
+    name: "Payments Service",
+    slug: "payments-service",
+    environments: [
+      {
+        id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4",
+        name: "Development",
+        slug: "development",
+        production: false,
+      },
+    ],
+  };
+}
 
 function authResponse() {
   return {
