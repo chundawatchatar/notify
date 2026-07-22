@@ -78,6 +78,11 @@ function NotificationAppsPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
       }
     },
   });
+  const closeCreateDialog = () => {
+    setCreateDialogOpen(false);
+    createMutation.reset();
+    form.reset();
+  };
 
   return (
     <WorkspaceShell activeItem="apps">
@@ -110,8 +115,11 @@ function NotificationAppsPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
             return;
           }
 
-          setCreateDialogOpen(open);
-          if (!open) createMutation.reset();
+          if (open) {
+            setCreateDialogOpen(true);
+          } else {
+            closeCreateDialog();
+          }
         }}
         open={createDialogOpen}
       >
@@ -169,7 +177,7 @@ function NotificationAppsPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
                 <DialogFooter>
                   <Button
                     disabled={isCreating || isSubmitting || createMutation.isPending}
-                    onClick={() => setCreateDialogOpen(false)}
+                    onClick={closeCreateDialog}
                     type="button"
                     variant="outline"
                   >
