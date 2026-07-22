@@ -85,7 +85,18 @@ defmodule ApiWeb.NotificationAppController do
     summary: "Get a notification app in the active workspace",
     operation_id: "getNotificationApp",
     security: [%{"bearerAuth" => []}],
-    parameters: [appSlug: [in: :path, description: "Notification app slug", type: :string]],
+    parameters: [
+      appSlug: [
+        in: :path,
+        description: "Notification app slug",
+        schema: %OpenApiSpex.Schema{
+          type: :string,
+          minLength: 1,
+          maxLength: 50,
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        }
+      ]
+    ],
     responses: [
       ok: {"Notification app", "application/json", NotificationApp},
       not_found: {"App unavailable", "application/json", ErrorResponse},

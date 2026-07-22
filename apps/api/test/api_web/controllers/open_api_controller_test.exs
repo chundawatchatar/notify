@@ -83,6 +83,29 @@ defmodule ApiWeb.OpenApiControllerTest do
              "application/json"
            ]["schema"]["$ref"] == "#/components/schemas/NotificationApp"
 
+    assert response["components"]["schemas"]["NotificationApp"]["properties"]["slug"] == %{
+             "example" => "payments-service",
+             "maxLength" => 50,
+             "minLength" => 1,
+             "pattern" => "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+             "type" => "string"
+           }
+
+    assert response["paths"]["/api/apps/{appSlug}"]["get"]["parameters"] == [
+             %{
+               "description" => "Notification app slug",
+               "in" => "path",
+               "name" => "appSlug",
+               "required" => true,
+               "schema" => %{
+                 "maxLength" => 50,
+                 "minLength" => 1,
+                 "pattern" => "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                 "type" => "string"
+               }
+             }
+           ]
+
     assert response["components"]["schemas"]["AuthWorkspaceRole"]["enum"] == [
              "owner",
              "admin",

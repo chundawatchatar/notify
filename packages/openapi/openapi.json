@@ -918,6 +918,9 @@
           },
           "slug": {
             "example": "payments-service",
+            "maxLength": 50,
+            "minLength": 1,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
             "type": "string",
             "x-struct": null,
             "x-validate": null
@@ -1249,6 +1252,9 @@
             "name": "appSlug",
             "required": true,
             "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
               "type": "string",
               "x-struct": null,
               "x-validate": null

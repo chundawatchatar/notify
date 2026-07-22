@@ -40,7 +40,13 @@ defmodule NotifyOpenApi.NotificationAppSchemas do
       properties: %{
         id: %Schema{type: :string, format: :uuid},
         name: %Schema{type: :string, example: "Payments Service"},
-        slug: %Schema{type: :string, example: "payments-service"},
+        slug: %Schema{
+          type: :string,
+          minLength: 1,
+          maxLength: 50,
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          example: "payments-service"
+        },
         environments: %Schema{type: :array, items: Environment}
       },
       required: [:id, :name, :slug, :environments]
