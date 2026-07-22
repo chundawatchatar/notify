@@ -39,6 +39,10 @@ defmodule ApiWeb.Router do
     post "/auth/invitations/accept", AuthController, :accept_invitation
     post "/auth/workspace/switch", AuthController, :switch_workspace
 
+    get "/apps", NotificationAppController, :index
+    post "/apps", NotificationAppController, :create
+    get "/apps/:appSlug", NotificationAppController, :show
+
     get "/workspaces/:workspaceSlug/members", WorkspaceMemberController, :index
     patch "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :update
     delete "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :delete

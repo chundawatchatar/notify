@@ -112,6 +112,20 @@ are normalized and unique within their app. A rename replaces the current slug
 rather than creating a redirect alias, so clients must use the canonical URL
 returned after a rename.
 
+The initial authenticated app API uses the workspace selected by the current
+membership-scoped session:
+
+- `GET /api/apps` returns a stable `{apps: [...]}` list, including each app's
+  Development and Production environments.
+- `POST /api/apps` accepts an app name only and returns the created app with
+  HTTP 201. The request never accepts a workspace identifier or slug.
+- `GET /api/apps/:appSlug` resolves the app only inside the active workspace.
+
+App slugs are generated from names. A same-workspace name collision receives the
+first available numeric suffix, beginning with `-2`; a database uniqueness
+conflict returns the stable `app_slug_taken` error. Cross-workspace app lookups
+return `app_not_found` without revealing resource data.
+
 The workspace routing foundation owns workspace slug and membership behavior;
 app work depends on that foundation and does not redefine collaboration,
 permissions, or workspace sessions.
