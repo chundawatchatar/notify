@@ -102,8 +102,8 @@ state, create an app, list the new app, then open it and select an environment.
 Credentials, origins, notification events, and delivery data will be scoped to
 the selected environment when those capabilities are introduced.
 
-App and environment UUIDs remain database identities. Future client URLs will
-extend the workspace route with the app and environment slugs:
+App and environment UUIDs remain database identities. Client URLs extend the
+workspace route with the app and environment slugs:
 
 - `/w/:workspaceSlug/apps/:appSlug/environments/:environmentSlug`
 
