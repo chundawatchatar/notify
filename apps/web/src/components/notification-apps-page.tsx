@@ -26,6 +26,7 @@ import {
 } from "@notify/ui";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { BellRing, Plus, RefreshCw } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
 import { useState } from "react";
@@ -43,6 +44,7 @@ const appNameSchema = z
 
 function NotificationAppsPage({ workspaceSlug }: Readonly<{ workspaceSlug: string }>) {
   const auth = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -59,6 +61,10 @@ function NotificationAppsPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
         apps: [...(current?.apps ?? []), app],
       }));
       void queryClient.invalidateQueries({ exact: true, queryKey: appsQueryKey });
+      void navigate({
+        to: "/w/$workspaceSlug/apps/$appSlug",
+        params: { appSlug: app.slug, workspaceSlug },
+      });
     },
   });
   const form = useForm({
@@ -106,6 +112,7 @@ function NotificationAppsPage({ workspaceSlug }: Readonly<{ workspaceSlug: strin
           onCreate={() => setCreateDialogOpen(true)}
           onRetry={() => void appsQuery.refetch()}
           apps={appsQuery.data?.apps ?? []}
+          workspaceSlug={workspaceSlug}
         />
       </div>
 
@@ -207,6 +214,7 @@ function AppsContent({
   isLoading,
   onCreate,
   onRetry,
+  workspaceSlug,
 }: Readonly<{
   apps: ApiNotificationApp[];
   error: unknown;
@@ -214,6 +222,7 @@ function AppsContent({
   isLoading: boolean;
   onCreate: () => void;
   onRetry: () => void;
+  workspaceSlug: string;
 }>) {
   if (isLoading) {
     return <p className="text-muted-foreground text-sm">Loading notification apps...</p>;
@@ -278,7 +287,15 @@ function AppsContent({
             <TableBody>
               {apps.map((app) => (
                 <TableRow key={app.id}>
-                  <TableCell className="font-medium">{app.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link
+                      className="hover:underline"
+                      params={{ appSlug: app.slug, workspaceSlug }}
+                      to="/w/$workspaceSlug/apps/$appSlug"
+                    >
+                      {app.name}
+                    </Link>
+                  </TableCell>
                   <TableCell className="font-mono text-xs">{app.slug}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-2">
