@@ -33,6 +33,13 @@ defmodule ApiWeb.NotificationAppControllerTest do
                {"Production", "production", true}
              ]
 
+    assert Enum.all?(created["environments"], fn environment ->
+             environment["readiness"] == %{
+               "ready" => false,
+               "missing_requirements" => ["client_key", "trusted_origin"]
+             }
+           end)
+
     listed =
       build_conn()
       |> put_req_header("authorization", "Bearer #{access_token}")
@@ -140,6 +147,61 @@ defmodule ApiWeb.NotificationAppControllerTest do
     assert response["errors"]["code"] == "app_not_found"
   end
 
+  test "environment readiness follows active configuration independently", %{conn: conn} do
+    membership = insert(:membership)
+    access_token = login(conn, membership.user.email)
+
+    {:ok, notification_app} =
+      Api.NotificationApps.create_notification_app(membership.workspace, %{name: "Payments"})
+
+    development =
+      Enum.find(notification_app.environments, &(&1.environment_slug == "development"))
+
+    assert readiness(conn, access_token, notification_app.app_slug, "development") == %{
+             "ready" => false,
+             "missing_requirements" => ["client_key", "trusted_origin"]
+           }
+
+    {:ok, client_key} = Api.NotificationApps.create_client_key(development)
+
+    assert readiness(conn, access_token, notification_app.app_slug, "development") == %{
+             "ready" => false,
+             "missing_requirements" => ["trusted_origin"]
+           }
+
+    {:ok, trusted_origin} =
+      Api.NotificationApps.create_trusted_origin(development, %{
+        origin: "https://console.example.com"
+      })
+
+    assert readiness(conn, access_token, notification_app.app_slug, "development") == %{
+             "ready" => true,
+             "missing_requirements" => []
+           }
+
+    assert readiness(conn, access_token, notification_app.app_slug, "production") == %{
+             "ready" => false,
+             "missing_requirements" => ["client_key", "trusted_origin"]
+           }
+
+    assert {:ok, _revoked} = Api.NotificationApps.revoke_client_key(development, client_key.id)
+
+    assert readiness(conn, access_token, notification_app.app_slug, "development") == %{
+             "ready" => false,
+             "missing_requirements" => ["client_key"]
+           }
+
+    {:ok, _replacement_key} = Api.NotificationApps.create_client_key(development)
+
+    assert {:ok, _removed} =
+             Api.NotificationApps.remove_trusted_origin(development, trusted_origin.id)
+
+    assert readiness(conn, access_token, notification_app.app_slug, "development") == %{
+             "ready" => false,
+             "missing_requirements" => ["trusted_origin"]
+           }
+  end
+
   test "viewer memberships can list apps but cannot create them", %{conn: conn} do
     membership = insert(:membership, role: "viewer")
     access_token = login(conn, membership.user.email)
@@ -194,5 +256,17 @@ defmodule ApiWeb.NotificationAppControllerTest do
       |> json_response(200)
 
     response["access_token"]
+  end
+
+  defp readiness(conn, access_token, app_slug, environment_slug) do
+    response =
+      conn
+      |> put_req_header("authorization", "Bearer #{access_token}")
+      |> get(~p"/api/apps/#{app_slug}")
+      |> json_response(200)
+
+    response["environments"]
+    |> Enum.find(&(&1["slug"] == environment_slug))
+    |> Map.fetch!("readiness")
   end
 end

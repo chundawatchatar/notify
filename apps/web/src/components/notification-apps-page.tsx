@@ -302,9 +302,10 @@ function AppsContent({
                       {app.environments.map((environment) => (
                         <Badge
                           key={environment.id}
-                          variant={environment.production ? "success" : "secondary"}
+                          variant={environment.readiness.ready ? "success" : "outline"}
                         >
-                          {environment.name}
+                          {environment.name}:{" "}
+                          {environment.readiness.ready ? "Ready" : "Setup required"}
                         </Badge>
                       ))}
                     </div>

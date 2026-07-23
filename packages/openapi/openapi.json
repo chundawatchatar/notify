@@ -732,6 +732,9 @@
             "x-struct": null,
             "x-validate": null
           },
+          "readiness": {
+            "$ref": "#/components/schemas/EnvironmentSetupReadiness"
+          },
           "slug": {
             "example": "development",
             "type": "string",
@@ -739,7 +742,7 @@
             "x-validate": null
           }
         },
-        "required": ["id", "name", "slug", "production"],
+        "required": ["id", "name", "slug", "production", "readiness"],
         "title": "NotificationAppEnvironment",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.Environment",
@@ -910,6 +913,32 @@
         "title": "ReadinessChecks",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessChecks",
+        "x-validate": null
+      },
+      "EnvironmentSetupReadiness": {
+        "properties": {
+          "missing_requirements": {
+            "items": {
+              "enum": ["client_key", "trusted_origin"],
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "ready": {
+            "example": false,
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["ready", "missing_requirements"],
+        "title": "EnvironmentSetupReadiness",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.SetupReadiness",
         "x-validate": null
       },
       "ErrorDetails": {

@@ -222,6 +222,10 @@ function notificationApp(): ApiNotificationApp {
         name: "Development",
         slug: "development",
         production: false,
+        readiness: {
+          missing_requirements: ["client_key", "trusted_origin"],
+          ready: false,
+        },
       },
     ],
   };
