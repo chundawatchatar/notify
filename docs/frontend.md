@@ -76,13 +76,15 @@ App detail routes use
 `/w/:workspaceSlug/apps/:appSlug/environments/:environmentSlug`. App and
 environment UUIDs stay out of URLs. App slugs are unique within the workspace
 and environment slugs are unique within the app. Renaming changes only an app's
-display name, so its URL remains stable. Client keys and trusted origins are
-environment-scoped. Each app response derives setup readiness independently for
-Development and Production from the presence of an active client key and a
-trusted origin. The environment detail shows the readiness status, links missing
-checklist items to their controls, and refreshes readiness after configuration
-mutations. Events, delivery data, analytics, billing, and collaboration controls
-remain deferred.
+display name, so its URL remains stable. The app route without an environment
+redirects to Development; the selector navigates between Development and
+Production by changing the environment slug in the URL. Client keys and trusted
+origins are environment-scoped. Each app response derives setup readiness
+independently for Development and Production from the presence of an active
+client key and a trusted origin. The environment detail shows the readiness
+status, links missing checklist items to their controls, and refreshes readiness
+after configuration mutations. Events, delivery data, analytics, billing, and
+collaboration controls remain deferred.
 
 The workspace switcher lists every active membership, including both the owned
 and invited workspaces created during invitation signup. After an explicit

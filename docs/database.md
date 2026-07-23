@@ -151,7 +151,10 @@ Implemented tables:
 - `app_environments`: a UUID-identified environment owned by exactly one
   notification app, with a display name, app-local `environment_slug`, and
   production classification. Creating an app creates its Development and
-  Production environments in the same transaction; an app can have only one
+  Production environments in the same transaction. If any part of that flow
+  fails, the app and both environment rows are rolled back. An app can have
+  at most one production environment, and each environment slug is unique
+  within its app. A successfully created app therefore has exactly one
   production environment.
 - `environment_client_keys`: environment-scoped, server-generated browser
   client identifiers with a recognizable `nfy_pk_` prefix and optional
@@ -186,6 +189,12 @@ Notification apps are soft-archived by setting `archived_at`. Active list and
 detail queries exclude archived apps, while the archived row and its stable slug
 remain retained for auditability and to prevent URL reuse. Archiving is scoped
 to the authenticated workspace and is irreversible in the current product flow.
+
+The database enforces the same ownership boundaries used by application code:
+an app must reference an existing workspace, an environment must reference an
+existing app, app slugs are unique per workspace, and environment slugs are
+unique per app. Queries must still apply the authenticated workspace scope so a
+valid UUID or slug cannot expose another tenant's records.
 
 ## Ecto Guidance
 
