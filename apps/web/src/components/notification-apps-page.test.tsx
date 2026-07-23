@@ -5,6 +5,7 @@ import {
   createRoute,
   createRouter,
   RouterProvider,
+  redirect,
 } from "@tanstack/react-router";
 import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -86,8 +87,10 @@ describe("notification apps page", () => {
     click(createApp as HTMLButtonElement);
 
     await waitFor(
-      () => router.state.location.pathname === "/w/acme-cloud/apps/payments-service",
-      "created app route",
+      () =>
+        router.state.location.pathname ===
+        "/w/acme-cloud/apps/payments-service/environments/development",
+      "created app environment route",
     );
   });
 });
@@ -100,13 +103,23 @@ async function renderAppsPage() {
     path: "/w/$workspaceSlug/apps",
   });
   const appDetailRoute = createRoute({
-    component: () => <p>App detail</p>,
+    beforeLoad: ({ params }) => {
+      throw redirect({
+        params: { ...params, environmentSlug: "development" },
+        to: "/w/$workspaceSlug/apps/$appSlug/environments/$environmentSlug",
+      });
+    },
     getParentRoute: () => rootRoute,
     path: "/w/$workspaceSlug/apps/$appSlug",
   });
+  const appEnvironmentRoute = createRoute({
+    component: () => <p>Environment detail</p>,
+    getParentRoute: () => rootRoute,
+    path: "/w/$workspaceSlug/apps/$appSlug/environments/$environmentSlug",
+  });
   const router = createRouter({
     history: createMemoryHistory({ initialEntries: ["/w/acme-cloud/apps"] }),
-    routeTree: rootRoute.addChildren([appsRoute, appDetailRoute]),
+    routeTree: rootRoute.addChildren([appsRoute, appDetailRoute, appEnvironmentRoute]),
   });
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   const authClient = createAuthClient();
