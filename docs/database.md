@@ -153,8 +153,9 @@ Implemented tables:
   production classification. Creating an app creates its Development and
   Production environments in the same transaction. If any part of that flow
   fails, the app and both environment rows are rolled back. An app can have
-  only one production environment, and each environment slug is unique within
-  its app.
+  at most one production environment, and each environment slug is unique
+  within its app. A successfully created app therefore has exactly one
+  production environment.
 - `environment_client_keys`: environment-scoped, server-generated browser
   client identifiers with a recognizable `nfy_pk_` prefix and optional
   revocation timestamp. They are not server ingestion secrets.
