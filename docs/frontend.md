@@ -72,13 +72,13 @@ apps, create an app, then show the newly created app with Development and
 Production environments. Default environments are created atomically by the
 backend, rather than as follow-up browser requests.
 
-When app detail routes are implemented, their canonical shape is
-`/w/:workspaceSlug/apps/:appSlug/:environmentSlug`. App and environment UUIDs
-stay out of URLs. App slugs are unique within the workspace and environment
-slugs are unique within the app. Renaming changes only an app's display name,
-so its URL remains stable. Credentials, trusted origins, events, and delivery
-data will be environment-scoped in their own later flows; this initial flow does
-not add their UI, analytics, billing, or collaboration controls.
+App detail routes use
+`/w/:workspaceSlug/apps/:appSlug/environments/:environmentSlug`. App and
+environment UUIDs stay out of URLs. App slugs are unique within the workspace
+and environment slugs are unique within the app. Renaming changes only an app's
+display name, so its URL remains stable. Credentials, trusted origins, events,
+and delivery data will be environment-scoped in their own later flows; this
+initial flow does not add their UI, analytics, billing, or collaboration controls.
 
 The workspace switcher lists every active membership, including both the owned
 and invited workspaces created during invitation signup. After an explicit
