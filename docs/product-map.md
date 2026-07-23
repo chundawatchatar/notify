@@ -111,7 +111,10 @@ workspace route with the app and environment slugs:
 
 App slugs are normalized and unique within their workspace; environment slugs
 are normalized and unique within their app. Renaming changes only an app's
-display name, so its client URL remains stable.
+display name, so its client URL remains stable. Opening an app without an
+environment redirects to its Development environment. Selecting Development or
+Production changes the URL, so the active environment remains shareable and
+survives a refresh.
 
 The initial authenticated app API uses the workspace selected by the current
 membership-scoped session:

@@ -5,6 +5,7 @@ import {
   createRoute,
   createRouter,
   RouterProvider,
+  useParams,
 } from "@tanstack/react-router";
 import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -61,7 +62,7 @@ describe("notification app detail page", () => {
       ),
     );
 
-    const container = await renderDetailPage();
+    const { container } = await renderDetailPage();
     await waitForText(container, "Setup incomplete");
     expect(checklistItem(container, "Active client key").textContent).toContain("Missing");
     expect(checklistItem(container, "Trusted origin").textContent).toContain("Missing");
@@ -83,20 +84,50 @@ describe("notification app detail page", () => {
     await waitForText(container, "Ready");
     expect(checklistItem(container, "Trusted origin").textContent).toContain("Configured");
   });
+
+  it("changes the active environment through the shareable route", async () => {
+    installBrowserCoordination();
+    server.use(
+      http.post(`${apiBaseUrl}/api/auth/refresh`, () => HttpResponse.json(authResponse())),
+      http.get(`${apiBaseUrl}/api/workspaces`, () => HttpResponse.json({ workspaces: [] })),
+      http.get(`${apiBaseUrl}/api/apps/payments-service`, () =>
+        HttpResponse.json(notificationApp(false, false, true)),
+      ),
+      http.get(`${apiBaseUrl}/api/apps/payments-service/environments/development/client-keys`, () =>
+        HttpResponse.json({ client_keys: [] }),
+      ),
+      http.get(
+        `${apiBaseUrl}/api/apps/payments-service/environments/development/trusted-origins`,
+        () => HttpResponse.json({ trusted_origins: [] }),
+      ),
+      http.get(`${apiBaseUrl}/api/apps/payments-service/environments/production/client-keys`, () =>
+        HttpResponse.json({ client_keys: [] }),
+      ),
+      http.get(
+        `${apiBaseUrl}/api/apps/payments-service/environments/production/trusted-origins`,
+        () => HttpResponse.json({ trusted_origins: [] }),
+      ),
+    );
+
+    const { container, router } = await renderDetailPage();
+    await waitForText(container, "Production");
+    click(linkByText(container, "Production"));
+
+    await waitFor(
+      () =>
+        router.state.location.pathname ===
+        "/w/acme-cloud/apps/payments-service/environments/production",
+      "production environment route",
+    );
+  });
 });
 
 async function renderDetailPage() {
   const rootRoute = createRootRoute();
   const detailRoute = createRoute({
-    component: () => (
-      <NotificationAppDetailPage
-        appSlug="payments-service"
-        environmentSlug="development"
-        workspaceSlug="acme-cloud"
-      />
-    ),
+    component: DynamicNotificationAppDetailPage,
     getParentRoute: () => rootRoute,
-    path: "/w/acme-cloud/apps/payments-service/environments/development",
+    path: "/w/$workspaceSlug/apps/$appSlug/environments/$environmentSlug",
   });
   const router = createRouter({
     history: createMemoryHistory({
@@ -110,12 +141,31 @@ async function renderDetailPage() {
   const authClient = createAuthClient();
   await authClient.retrySession();
 
-  return render(
-    <AuthProvider client={authClient}>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </AuthProvider>,
+  return {
+    container: render(
+      <AuthProvider client={authClient}>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </AuthProvider>,
+    ),
+    router,
+  };
+}
+
+function DynamicNotificationAppDetailPage() {
+  const { appSlug, environmentSlug, workspaceSlug } = useParams({ strict: false });
+
+  if (!appSlug || !environmentSlug || !workspaceSlug) {
+    throw new Error("Expected app detail route parameters.");
+  }
+
+  return (
+    <NotificationAppDetailPage
+      appSlug={appSlug}
+      environmentSlug={environmentSlug}
+      workspaceSlug={workspaceSlug}
+    />
   );
 }
 
@@ -144,7 +194,23 @@ function buttonByText(container: HTMLElement, text: string) {
   return button;
 }
 
-function notificationApp(hasClientKey: boolean, hasTrustedOrigin: boolean) {
+function linkByText(container: HTMLElement, text: string) {
+  const link = [...container.querySelectorAll("a")].find(
+    (candidate) => candidate.textContent?.trim() === text,
+  );
+
+  if (!link) {
+    throw new Error(`Expected ${text} link.`);
+  }
+
+  return link;
+}
+
+function notificationApp(
+  hasClientKey: boolean,
+  hasTrustedOrigin: boolean,
+  includeProduction = false,
+) {
   const missingRequirements = [
     ...(hasClientKey ? [] : ["client_key"]),
     ...(hasTrustedOrigin ? [] : ["trusted_origin"]),
@@ -162,6 +228,20 @@ function notificationApp(hasClientKey: boolean, hasTrustedOrigin: boolean) {
         },
         slug: "development",
       },
+      ...(includeProduction
+        ? [
+            {
+              id: "e09a5bbe-2a92-47d2-ae75-8878d1b224d5",
+              name: "Production",
+              production: true,
+              readiness: {
+                missing_requirements: ["client_key", "trusted_origin"],
+                ready: false,
+              },
+              slug: "production",
+            },
+          ]
+        : []),
     ],
     id: "3dc20706-9944-4743-8121-c0429c622c0b",
     name: "Payments Service",
