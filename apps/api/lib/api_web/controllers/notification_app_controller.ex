@@ -7,6 +7,7 @@ defmodule ApiWeb.NotificationAppController do
   alias Api.NotificationApps
   alias ApiWeb.AuthError
   alias ApiWeb.Plugs.RequirePermission
+  alias Domain.EnvironmentSetupReadiness
   alias NotifyOpenApi.AuthSchemas.{ErrorResponse, ValidationErrorResponse}
 
   alias NotifyOpenApi.NotificationAppSchemas.{
@@ -187,12 +188,27 @@ defmodule ApiWeb.NotificationAppController do
   end
 
   defp environment_payload(environment) do
+    readiness = readiness(environment)
+
     %{
       id: environment.id,
       name: environment.name,
       slug: environment.environment_slug,
-      production: environment.production
+      production: environment.production,
+      readiness: %{
+        ready: readiness.ready,
+        missing_requirements: readiness.missing_requirements |> Enum.map(&Atom.to_string/1)
+      }
     }
+  end
+
+  defp readiness(environment) do
+    active_client_key_count = Enum.count(environment.client_keys, &is_nil(&1.revoked_at))
+
+    EnvironmentSetupReadiness.evaluate(
+      active_client_key_count,
+      length(environment.trusted_origins)
+    )
   end
 
   defp app_slug_conflict?(changeset) do

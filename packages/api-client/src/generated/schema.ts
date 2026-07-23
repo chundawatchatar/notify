@@ -777,6 +777,7 @@ export interface components {
       name: string;
       /** @example false */
       production: boolean;
+      readiness: components["schemas"]["EnvironmentSetupReadiness"];
       /** @example development */
       slug: string;
     };
@@ -855,6 +856,12 @@ export interface components {
      */
     ReadinessChecks: {
       database: components["schemas"]["DatabaseCheck"];
+    };
+    /** EnvironmentSetupReadiness */
+    EnvironmentSetupReadiness: {
+      missing_requirements: ("client_key" | "trusted_origin")[];
+      /** @example false */
+      ready: boolean;
     };
     /** ErrorDetails */
     ErrorDetails: {

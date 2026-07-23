@@ -99,8 +99,10 @@ authenticated membership; clients never provide a `workspace_id`.
 App creation atomically creates exactly two initial environments: Development
 and Production. The initial dashboard flow is sign in, show the no-apps empty
 state, create an app, list the new app, then open it and select an environment.
-Credentials, origins, notification events, and delivery data will be scoped to
-the selected environment when those capabilities are introduced.
+Client keys and trusted origins are scoped to the selected environment.
+Readiness is derived independently for Development and Production: an
+environment is ready when it has at least one active client key and one trusted
+origin. Notification events and delivery data remain deferred.
 
 App and environment UUIDs remain database identities. Client URLs extend the
 workspace route with the app and environment slugs:
@@ -139,11 +141,10 @@ Responsibilities:
 - create notification apps
 - list notification apps and their environments
 - select an environment
+- show derived setup readiness and link missing requirements to configuration
 
 Deferred from this module's initial app flow:
 
-- client keys and credentials
-- trusted origins
 - ingress and event delivery data
 - analytics, billing, and collaboration behavior
 

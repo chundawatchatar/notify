@@ -29,6 +29,23 @@ defmodule NotifyOpenApi.NotificationAppSchemas do
     })
   end
 
+  defmodule SetupReadiness do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "EnvironmentSetupReadiness",
+      type: :object,
+      properties: %{
+        ready: %Schema{type: :boolean, example: false},
+        missing_requirements: %Schema{
+          type: :array,
+          items: %Schema{type: :string, enum: ["client_key", "trusted_origin"]}
+        }
+      },
+      required: [:ready, :missing_requirements]
+    })
+  end
+
   defmodule Environment do
     require OpenApiSpex
 
@@ -39,9 +56,10 @@ defmodule NotifyOpenApi.NotificationAppSchemas do
         id: %Schema{type: :string, format: :uuid},
         name: %Schema{type: :string, example: "Development"},
         slug: %Schema{type: :string, example: "development"},
-        production: %Schema{type: :boolean, example: false}
+        production: %Schema{type: :boolean, example: false},
+        readiness: SetupReadiness
       },
-      required: [:id, :name, :slug, :production]
+      required: [:id, :name, :slug, :production, :readiness]
     })
   end
 

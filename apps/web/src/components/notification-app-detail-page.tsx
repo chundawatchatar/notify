@@ -11,10 +11,11 @@ import {
 } from "@notify/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { RefreshCw } from "lucide-react";
+import { CheckCircle2, Circle, RefreshCw } from "lucide-react";
 import { getNotificationApp } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
 import { workspaceQueryKey } from "@/lib/workspace-queries";
+import { EnvironmentConfigurationControls } from "./environment-configuration-controls";
 import { WorkspacePageHeader, WorkspaceShell } from "./workspace-shell";
 
 function NotificationAppDetailPage({
@@ -74,27 +75,74 @@ function AppEnvironmentDetail({
     <div className="grid gap-8">
       <WorkspacePageHeader
         badges={
-          <Badge variant={environment.production ? "success" : "secondary"}>
-            {environment.name}
-          </Badge>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant={environment.production ? "success" : "secondary"}>
+              {environment.name}
+            </Badge>
+            <Badge variant={environment.readiness.ready ? "success" : "outline"}>
+              {environment.readiness.ready ? "Ready" : "Setup incomplete"}
+            </Badge>
+          </div>
         }
         description="Select an environment to keep its configuration context explicit and shareable."
         title={app.name}
       />
       <EnvironmentSelector app={app} environment={environment} workspaceSlug={workspaceSlug} />
-      <Card>
-        <CardHeader>
-          <CardTitle>{environment.name} environment</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-2 text-muted-foreground text-sm">
-          <p>Environment setup controls will appear here as they become available.</p>
-          <p>
-            Current environment:{" "}
-            <span className="font-mono text-foreground">{environment.slug}</span>
-          </p>
-        </CardContent>
-      </Card>
+      <SetupChecklist environment={environment} />
+      <EnvironmentConfigurationControls
+        appSlug={app.slug}
+        environmentSlug={environment.slug}
+        workspaceSlug={workspaceSlug}
+      />
     </div>
+  );
+}
+
+function SetupChecklist({ environment }: Readonly<{ environment: ApiNotificationAppEnvironment }>) {
+  const requirements = [
+    {
+      href: "#client-keys",
+      label: "Active client key",
+      missing: environment.readiness.missing_requirements.includes("client_key"),
+    },
+    {
+      href: "#trusted-origins",
+      label: "Trusted origin",
+      missing: environment.readiness.missing_requirements.includes("trusted_origin"),
+    },
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Setup checklist</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        {requirements.map((requirement) => (
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 rounded-sm border p-3"
+            key={requirement.label}
+          >
+            <div className="flex items-center gap-2 text-sm">
+              {requirement.missing ? (
+                <Circle className="size-4 text-muted-foreground" />
+              ) : (
+                <CheckCircle2 className="size-4 text-foreground" />
+              )}
+              <span>{requirement.label}</span>
+              <Badge variant={requirement.missing ? "outline" : "success"}>
+                {requirement.missing ? "Missing" : "Configured"}
+              </Badge>
+            </div>
+            {requirement.missing ? (
+              <Button asChild size="sm" variant="outline">
+                <a href={requirement.href}>Configure</a>
+              </Button>
+            ) : null}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 

@@ -101,6 +101,15 @@ defmodule ApiWeb.OpenApiControllerTest do
              "type" => "string"
            }
 
+    assert response["components"]["schemas"]["NotificationAppEnvironment"]["properties"][
+             "readiness"
+           ]["$ref"] == "#/components/schemas/EnvironmentSetupReadiness"
+
+    assert response["components"]["schemas"]["EnvironmentSetupReadiness"]["required"] == [
+             "ready",
+             "missing_requirements"
+           ]
+
     assert response["paths"]["/api/apps/{appSlug}"]["get"]["parameters"] == [
              %{
                "description" => "Notification app slug",

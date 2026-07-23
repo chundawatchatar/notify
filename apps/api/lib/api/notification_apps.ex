@@ -20,7 +20,7 @@ defmodule Api.NotificationApps do
           notification_app.workspace_id == ^workspace_id and
             is_nil(notification_app.archived_at),
         order_by: [asc: notification_app.inserted_at, asc: notification_app.id],
-        preload: [:environments]
+        preload: [environments: [:client_keys, :trusted_origins]]
     )
   end
 
@@ -35,7 +35,7 @@ defmodule Api.NotificationApps do
             notification_app.id == ^notification_app_id and
               notification_app.workspace_id == ^workspace_id and
               is_nil(notification_app.archived_at),
-          preload: [:environments]
+          preload: [environments: [:client_keys, :trusted_origins]]
       )
     else
       :error -> nil
@@ -53,7 +53,7 @@ defmodule Api.NotificationApps do
           notification_app.workspace_id == ^workspace_id and
             notification_app.app_slug == ^app_slug and
             is_nil(notification_app.archived_at),
-        preload: [:environments]
+        preload: [environments: [:client_keys, :trusted_origins]]
     )
   end
 
@@ -243,7 +243,7 @@ defmodule Api.NotificationApps do
   def archive_notification_app(_, _), do: {:error, :not_found}
 
   defp normalize_creation_result({:ok, %{notification_app: notification_app}}),
-    do: {:ok, Repo.preload(notification_app, :environments)}
+    do: {:ok, Repo.preload(notification_app, environments: [:client_keys, :trusted_origins])}
 
   defp normalize_creation_result({:error, _operation, changeset, _changes})
        when is_struct(changeset, Ecto.Changeset),
@@ -280,7 +280,7 @@ defmodule Api.NotificationApps do
   end
 
   defp normalize_update_result({:ok, notification_app}),
-    do: {:ok, Repo.preload(notification_app, :environments)}
+    do: {:ok, Repo.preload(notification_app, environments: [:client_keys, :trusted_origins])}
 
   defp normalize_update_result({:error, {:invalid, changeset}}), do: {:error, changeset}
   defp normalize_update_result({:error, :not_found}), do: {:error, :not_found}

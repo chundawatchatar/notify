@@ -26,33 +26,40 @@ import {
   revokeEnvironmentClientKey,
 } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
+import { workspaceQueryKey } from "@/lib/workspace-queries";
 
 const originSchema = z.string().trim().min(1, "Enter an origin.");
 
 function EnvironmentConfigurationControls({
   appSlug,
   environmentSlug,
+  workspaceSlug,
 }: Readonly<{
   appSlug: string;
   environmentSlug: string;
+  workspaceSlug: string;
 }>) {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const canManageCredentials = roleCanManageCredentials(auth.principal?.role);
-  const clientKeysQueryKey = [
-    "app",
+  const appQueryKey = workspaceQueryKey(workspaceSlug, "apps", appSlug);
+  const appsQueryKey = workspaceQueryKey(workspaceSlug, "apps");
+  const clientKeysQueryKey = workspaceQueryKey(
+    workspaceSlug,
+    "apps",
     appSlug,
-    "environment",
+    "environments",
     environmentSlug,
     "client-keys",
-  ] as const;
-  const trustedOriginsQueryKey = [
-    "app",
+  );
+  const trustedOriginsQueryKey = workspaceQueryKey(
+    workspaceSlug,
+    "apps",
     appSlug,
-    "environment",
+    "environments",
     environmentSlug,
     "trusted-origins",
-  ] as const;
+  );
 
   const clientKeysQuery = useQuery({
     queryKey: clientKeysQueryKey,
@@ -68,10 +75,21 @@ function EnvironmentConfigurationControls({
         listEnvironmentTrustedOrigins(token, appSlug, environmentSlug),
       ),
   });
+  const invalidateReadiness = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ exact: true, queryKey: appQueryKey }),
+      queryClient.invalidateQueries({ exact: true, queryKey: appsQueryKey }),
+    ]);
   const invalidateClientKeys = () =>
-    queryClient.invalidateQueries({ queryKey: clientKeysQueryKey });
+    Promise.all([
+      queryClient.invalidateQueries({ exact: true, queryKey: clientKeysQueryKey }),
+      invalidateReadiness(),
+    ]);
   const invalidateTrustedOrigins = () =>
-    queryClient.invalidateQueries({ queryKey: trustedOriginsQueryKey });
+    Promise.all([
+      queryClient.invalidateQueries({ exact: true, queryKey: trustedOriginsQueryKey }),
+      invalidateReadiness(),
+    ]);
 
   const createClientKeyMutation = useMutation({
     mutationFn: () =>
@@ -124,7 +142,7 @@ function EnvironmentConfigurationControls({
         </Alert>
       ) : null}
 
-      <Card>
+      <Card id="client-keys">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <KeyRound className="size-5" />
@@ -163,7 +181,7 @@ function EnvironmentConfigurationControls({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="trusted-origins">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe2 className="size-5" />
