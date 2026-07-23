@@ -14,13 +14,15 @@ defmodule Api.NotificationApps do
   Lists active notification apps owned by the current workspace.
   """
   def list_notification_apps(%Workspace{id: workspace_id}) do
+    preloads = notification_app_readiness_preloads()
+
     Repo.all(
       from notification_app in NotificationApp,
         where:
           notification_app.workspace_id == ^workspace_id and
             is_nil(notification_app.archived_at),
         order_by: [asc: notification_app.inserted_at, asc: notification_app.id],
-        preload: [environments: [:client_keys, :trusted_origins]]
+        preload: ^preloads
     )
   end
 
@@ -29,13 +31,15 @@ defmodule Api.NotificationApps do
   """
   def get_notification_app(%Workspace{id: workspace_id}, notification_app_id) do
     with {:ok, notification_app_id} <- Ecto.UUID.cast(notification_app_id) do
+      preloads = notification_app_readiness_preloads()
+
       Repo.one(
         from notification_app in NotificationApp,
           where:
             notification_app.id == ^notification_app_id and
               notification_app.workspace_id == ^workspace_id and
               is_nil(notification_app.archived_at),
-          preload: [environments: [:client_keys, :trusted_origins]]
+          preload: ^preloads
       )
     else
       :error -> nil
@@ -47,13 +51,15 @@ defmodule Api.NotificationApps do
   """
   def get_notification_app_by_slug(%Workspace{id: workspace_id}, app_slug)
       when is_binary(app_slug) do
+    preloads = notification_app_readiness_preloads()
+
     Repo.one(
       from notification_app in NotificationApp,
         where:
           notification_app.workspace_id == ^workspace_id and
             notification_app.app_slug == ^app_slug and
             is_nil(notification_app.archived_at),
-        preload: [environments: [:client_keys, :trusted_origins]]
+        preload: ^preloads
     )
   end
 
@@ -243,7 +249,7 @@ defmodule Api.NotificationApps do
   def archive_notification_app(_, _), do: {:error, :not_found}
 
   defp normalize_creation_result({:ok, %{notification_app: notification_app}}),
-    do: {:ok, Repo.preload(notification_app, environments: [:client_keys, :trusted_origins])}
+    do: {:ok, Repo.preload(notification_app, notification_app_readiness_preloads())}
 
   defp normalize_creation_result({:error, _operation, changeset, _changes})
        when is_struct(changeset, Ecto.Changeset),
@@ -280,7 +286,7 @@ defmodule Api.NotificationApps do
   end
 
   defp normalize_update_result({:ok, notification_app}),
-    do: {:ok, Repo.preload(notification_app, environments: [:client_keys, :trusted_origins])}
+    do: {:ok, Repo.preload(notification_app, notification_app_readiness_preloads())}
 
   defp normalize_update_result({:error, {:invalid, changeset}}), do: {:error, changeset}
   defp normalize_update_result({:error, :not_found}), do: {:error, :not_found}
@@ -288,4 +294,12 @@ defmodule Api.NotificationApps do
   defp normalize_archive_result({:ok, _notification_app}), do: :ok
   defp normalize_archive_result({:error, :not_found}), do: {:error, :not_found}
   defp normalize_archive_result({:error, :archived}), do: {:error, :archived}
+
+  defp notification_app_readiness_preloads do
+    active_client_keys =
+      from client_key in ClientKey,
+        where: is_nil(client_key.revoked_at)
+
+    [environments: [{:client_keys, active_client_keys}, :trusted_origins]]
+  end
 end

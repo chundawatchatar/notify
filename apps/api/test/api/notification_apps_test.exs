@@ -104,6 +104,29 @@ defmodule Api.NotificationAppsTest do
              nil
   end
 
+  test "readiness preloads exclude revoked client keys" do
+    workspace = insert(:workspace)
+
+    assert {:ok, notification_app} =
+             NotificationApps.create_notification_app(workspace, %{name: "Payments Service"})
+
+    development =
+      Enum.find(notification_app.environments, &(&1.environment_slug == "development"))
+
+    assert {:ok, active_client_key} = NotificationApps.create_client_key(development)
+    assert {:ok, revoked_client_key} = NotificationApps.create_client_key(development)
+
+    assert {:ok, _revoked_client_key} =
+             NotificationApps.revoke_client_key(development, revoked_client_key.id)
+
+    reloaded_app = NotificationApps.get_notification_app_by_slug(workspace, "payments-service")
+
+    reloaded_development =
+      Enum.find(reloaded_app.environments, &(&1.environment_slug == "development"))
+
+    assert Enum.map(reloaded_development.client_keys, & &1.id) == [active_client_key.id]
+  end
+
   test "renames an app without changing its slug and excludes archived apps" do
     workspace = insert(:workspace)
 
