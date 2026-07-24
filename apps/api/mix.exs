@@ -55,6 +55,8 @@ defmodule Api.MixProject do
       {:plug, "~> 1.20.3"},
       {:argon2_elixir, "~> 4.1"},
       {:joken, "~> 2.6"},
+      {:swoosh, "~> 1.19"},
+      {:gen_smtp, "~> 1.3"},
       {:ex_machina, "~> 2.8.0", only: :test},
       {:faker, "~> 0.19.0", only: :test},
       {:domain, path: "../../libs/domain"},

@@ -16,46 +16,19 @@ end
 defmodule Api.Accounts.InvitationEmail.DevAdapter do
   @behaviour Api.Accounts.InvitationEmail
 
-  require Logger
-
   @impl true
   def deliver(email, url) do
-    directory = Application.fetch_env!(:api, :dev_email_outbox_dir)
-    path = Path.join(directory, filename(email))
+    Api.Accounts.DevelopmentEmail.deliver(
+      email,
+      "You've been invited to a Notify workspace",
+      """
+      Accept your invitation to join the Notify workspace:
 
-    with :ok <- File.mkdir_p(directory),
-         :ok <- File.chmod(directory, 0o700),
-         :ok <- File.write(path, email_body(email, url), [:exclusive]),
-         :ok <- File.chmod(path, 0o600) do
-      Logger.info("Development invitation email for #{email} written to #{path}")
-      :ok
-    else
-      {:error, reason} ->
-        File.rm(path)
-        Logger.error("Could not write development invitation email: #{inspect(reason)}")
-        {:error, :outbox_write_failed}
-    end
-  end
+      #{url}
 
-  defp filename(email) do
-    timestamp = Calendar.strftime(DateTime.utc_now(), "%Y%m%dT%H%M%SZ")
-    unique = System.unique_integer([:positive, :monotonic])
-    safe_email = String.replace(email, ~r/[^a-zA-Z0-9@._-]/u, "_")
-    "#{timestamp}-#{unique}-#{safe_email}.eml"
-  end
-
-  defp email_body(email, url) do
-    """
-    To: #{email}
-    Subject: You've been invited to a Notify workspace
-    Content-Type: text/plain; charset=UTF-8
-
-    Accept your invitation to join the Notify workspace:
-
-    #{url}
-
-    This link expires in 7 days and can be used once.
-    """
+      This link expires in 7 days and can be used once.
+      """
+    )
   end
 end
 

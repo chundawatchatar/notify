@@ -19,47 +19,20 @@ end
 defmodule Api.Accounts.PasswordResetEmail.DevAdapter do
   @behaviour Api.Accounts.PasswordResetEmail
 
-  require Logger
-
   @impl true
   def deliver(email, url) do
-    directory = Application.fetch_env!(:api, :dev_email_outbox_dir)
-    path = Path.join(directory, filename(email))
+    Api.Accounts.DevelopmentEmail.deliver(
+      email,
+      "Reset your Notify password",
+      """
+      Use this link to reset your Notify password:
 
-    with :ok <- File.mkdir_p(directory),
-         :ok <- File.chmod(directory, 0o700),
-         :ok <- File.write(path, email_body(email, url), [:exclusive]),
-         :ok <- File.chmod(path, 0o600) do
-      Logger.info("Development password reset email for #{email} written to #{path}")
-      :ok
-    else
-      {:error, reason} ->
-        File.rm(path)
-        Logger.error("Could not write development password reset email: #{inspect(reason)}")
-        {:error, :outbox_write_failed}
-    end
-  end
+      #{url}
 
-  defp filename(email) do
-    timestamp = Calendar.strftime(DateTime.utc_now(), "%Y%m%dT%H%M%SZ")
-    unique = System.unique_integer([:positive, :monotonic])
-    safe_email = String.replace(email, ~r/[^a-zA-Z0-9@._-]/u, "_")
-    "#{timestamp}-#{unique}-password-reset-#{safe_email}.eml"
-  end
-
-  defp email_body(email, url) do
-    """
-    To: #{email}
-    Subject: Reset your Notify password
-    Content-Type: text/plain; charset=UTF-8
-
-    Use this link to reset your Notify password:
-
-    #{url}
-
-    This link expires in one hour and can be used once.
-    If you did not request a password reset, you can ignore this email.
-    """
+      This link expires in one hour and can be used once.
+      If you did not request a password reset, you can ignore this email.
+      """
+    )
   end
 end
 

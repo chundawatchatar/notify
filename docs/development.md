@@ -1,7 +1,7 @@
 # Development
 
 This repository uses mise to pin local runtime versions and Docker Compose for
-local infrastructure services.
+local infrastructure services, including Mailpit for development email.
 
 ## First Setup
 
@@ -26,6 +26,8 @@ Default local ports are:
 - marketing: `3200`
 - PostgreSQL: `15432`
 - Redis: `16379`
+- Mailpit SMTP: `1025`
+- Mailpit inbox: `http://localhost:8025`
 
 ## Daily Commands
 
@@ -55,6 +57,12 @@ values in `.env`, then restart services with `pnpm docker:down` and
 - Changing `API_PORT` also requires updating `VITE_API_URL`.
 - Changing `WEB_PORT` also requires updating `PUBLIC_WEB_APP_URL` and
   `CORS_ORIGINS`.
+- Changing `MAILPIT_SMTP_PORT` or `MAILPIT_UI_PORT` changes the host ports for
+  Mailpit. If the SMTP port changes, also update `DEV_EMAIL_SMTP_PORT`.
+
+Verification, password-reset, and invitation messages are delivered to Mailpit
+in development. Open `http://localhost:8025` to inspect them. Mailpit captures
+messages locally and does not send them to real recipients.
 
 `DATABASE_URL` is used by production releases and container migration commands.
 Local development and API tests use the `POSTGRES_*` values. API tests load
