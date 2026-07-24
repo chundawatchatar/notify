@@ -47,12 +47,13 @@ if auth_jwt_secret = System.get_env("AUTH_JWT_SECRET") do
   config :api, auth_jwt_secret: auth_jwt_secret
 end
 
-if dev_email_smtp_host = System.get_env("DEV_EMAIL_SMTP_HOST") do
-  config :api, Api.Mailer, relay: dev_email_smtp_host
-end
+if config_env() == :dev do
+  if dev_email_smtp_host = System.get_env("DEV_EMAIL_SMTP_HOST") do
+    config :api, Api.Mailer, relay: dev_email_smtp_host
+  end
 
-if dev_email_smtp_port = System.get_env("DEV_EMAIL_SMTP_PORT") do
-  config :api, Api.Mailer, port: String.to_integer(dev_email_smtp_port)
+  mailpit_smtp_port = System.get_env("MAILPIT_SMTP_PORT", "1025")
+  config :api, Api.Mailer, port: String.to_integer(mailpit_smtp_port)
 end
 
 if config_env() == :prod do

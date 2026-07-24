@@ -167,8 +167,8 @@ refresh attempt. A successful reset does not automatically create a new session;
 the user signs in with the new password.
 
 Development reset emails are delivered to the local Mailpit inbox at
-`http://localhost:8025`. The production adapter remains disabled until a real
-email provider is configured.
+`http://localhost:8025` with the default `MAILPIT_UI_PORT`. The production
+adapter remains disabled until a real email provider is configured.
 
 ## Logout
 

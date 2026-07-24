@@ -16,7 +16,7 @@ The setup command:
 - installs pinned mise runtimes
 - creates `.env` from `.env.example` when `.env` does not already exist
 - installs pnpm workspace dependencies
-- starts PostgreSQL and Redis with Docker Compose
+- starts PostgreSQL, Redis, and Mailpit with Docker Compose
 - installs Phoenix API Mix dependencies and prepares the API database
 
 Default local ports are:
@@ -27,7 +27,7 @@ Default local ports are:
 - PostgreSQL: `15432`
 - Redis: `16379`
 - Mailpit SMTP: `1025`
-- Mailpit inbox: `http://localhost:8025`
+- Mailpit inbox: `http://localhost:8025` by default
 
 ## Daily Commands
 
@@ -58,11 +58,14 @@ values in `.env`, then restart services with `pnpm docker:down` and
 - Changing `WEB_PORT` also requires updating `PUBLIC_WEB_APP_URL` and
   `CORS_ORIGINS`.
 - Changing `MAILPIT_SMTP_PORT` or `MAILPIT_UI_PORT` changes the host ports for
-  Mailpit. If the SMTP port changes, also update `DEV_EMAIL_SMTP_PORT`.
+  Mailpit. The API uses `MAILPIT_SMTP_PORT` for SMTP, so no second port setting
+  is needed.
 
 Verification, password-reset, and invitation messages are delivered to Mailpit
-in development. Open `http://localhost:8025` to inspect them. Mailpit captures
-messages locally and does not send them to real recipients.
+in development. Open `http://localhost:8025` with the default
+`MAILPIT_UI_PORT`, or `http://localhost:<MAILPIT_UI_PORT>` after changing it,
+to inspect them. Mailpit captures messages locally and does not send them to
+real recipients.
 
 `DATABASE_URL` is used by production releases and container migration commands.
 Local development and API tests use the `POSTGRES_*` values. API tests load

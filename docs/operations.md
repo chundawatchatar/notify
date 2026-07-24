@@ -94,11 +94,12 @@ not be publicly exposed.
 
 In development, verification, password-reset, and invitation messages are
 delivered to the local Mailpit SMTP service and can be inspected at
-`http://localhost:8025`. Configure the API relay with `DEV_EMAIL_SMTP_HOST` and
-`DEV_EMAIL_SMTP_PORT`; configure the host-facing Mailpit ports with
-`MAILPIT_SMTP_PORT` and `MAILPIT_UI_PORT`. Do not enable these adapters in
-production. Development messages contain live one-time links; keep Mailpit
-local and do not expose its SMTP or inbox UI outside the development machine.
+`http://localhost:8025` with the default `MAILPIT_UI_PORT`. Configure the API
+relay host with `DEV_EMAIL_SMTP_HOST`; `MAILPIT_SMTP_PORT` configures both the
+host-facing Mailpit SMTP port and the API SMTP client port. `MAILPIT_UI_PORT`
+configures the inbox UI port. Do not enable these adapters in production.
+Development messages contain live one-time links; keep Mailpit local and do not
+expose its SMTP or inbox UI outside the development machine.
 
 ## CI Policy
 
