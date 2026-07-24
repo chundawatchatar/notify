@@ -7,10 +7,11 @@
 # General application configuration
 import Config
 
+config :swoosh, :api_client, false
+
 config :api,
   auth_jwt_secret: "notify-local-jwt-secret-change-before-production",
   cors_origins: ["http://localhost:3100"],
-  dev_email_outbox_dir: Path.expand("../../../.tmp/dev-emails", __DIR__),
   environment: config_env(),
   ecto_repos: [Api.Repo],
   generators: [timestamp_type: :utc_datetime],
@@ -20,6 +21,16 @@ config :api,
   password_reset_email_adapter: Api.Accounts.PasswordResetEmail.DevAdapter,
   verification_email_adapter: Api.Accounts.VerificationEmail.DevAdapter,
   web_app_url: "http://localhost:3100"
+
+config :api, Api.Mailer,
+  adapter: Swoosh.Adapters.SMTP,
+  auth: :never,
+  no_mx_lookups: true,
+  port: 1025,
+  relay: "localhost",
+  retries: 0,
+  ssl: false,
+  tls: :never
 
 # Configures the endpoint
 config :api, ApiWeb.Endpoint,

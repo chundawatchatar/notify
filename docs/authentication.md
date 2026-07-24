@@ -166,8 +166,9 @@ their database session. Other devices return to login on their next request or
 refresh attempt. A successful reset does not automatically create a new session;
 the user signs in with the new password.
 
-Development reset emails are written to the configured `.eml` outbox. The
-production adapter remains disabled until a real email provider is configured.
+Development reset emails are delivered to the local Mailpit inbox at
+`http://localhost:8025` with the default `MAILPIT_UI_PORT`. The production
+adapter remains disabled until a real email provider is configured.
 
 ## Logout
 
