@@ -24,14 +24,15 @@ subdomain layout.
 - Ecto schemas and database migrations.
 - Database seeds and release migration runner.
 - API authentication, ingress endpoints, and dashboard APIs.
-- Tenant-scoped credential persistence, one-time secret disclosure rules, and
-  append-only audit writes for future server API key management.
+- Tenant-scoped credential persistence, transaction handling, response-level
+  secret disclosure, and append-only audit writes for future server API key
+  management.
 
 `libs/domain` is for framework-free business logic that can be tested without
-Phoenix, Ecto, or a database connection. Pure server API key lifecycle policy,
-such as one-time disclosure, irreversible revocation, or rotation invariants,
-belongs there only if it can stay framework-free. Do not put Phoenix
-controllers, Repo calls, or migrations there.
+Phoenix, Ecto, or a database connection. Framework-free server API key
+lifecycle invariants, such as one-time disclosure, irreversible revocation, or
+rotation invariants, belong there when they can stay framework-free. Do not
+put Phoenix controllers, Repo calls, or migrations there.
 
 `libs/open_api` is for framework-free OpenAPI schema modules. The API app still
 owns routes, controllers, operation specs, and OpenAPI JSON generation.
@@ -62,8 +63,9 @@ from that OpenAPI package. Frontend API helpers should use `@notify/api-client`
 for request and response shapes.
 
 For future server API key management, the web app owns slug-based navigation,
-one-time secret reveal UX, and safe post-create metadata display. It does not
-own credential persistence, audit writing, or ingress authentication.
+one-time secret reveal UX, and safe post-create and post-rotate metadata
+display. It does not own credential persistence, audit writing, or ingress
+authentication.
 
 ## Data Flow
 

@@ -93,14 +93,16 @@ environment UUIDs as `:appId` and `:environmentId`. Server API keys are private
 backend secrets for future ingress authentication, distinct from public browser
 client keys with the `nfy_pk_` prefix. Reads use the existing `view_apps`
 permission. Create, rotate, and revoke use the existing `manage_credentials`
-permission.
+permission. Create and rotate requests must include an idempotency or request
+identifier so a retry after response loss reuses the original operation instead
+of creating or rotating an additional key.
 
 The raw server API key secret is disclosed exactly once after create or rotate.
 After that response, the UI may show only safe metadata such as label, created
 time, revoked state, and replacement history. The browser must never persist a
-server API key secret in local storage, session storage, URL state, or durable
-TanStack Query caches. Existing client-key, trusted-origin, and readiness
-behavior remains unchanged.
+server API key secret in local storage, session storage, URL state, or any
+TanStack Query cache, including in-memory and durable caches. Existing
+client-key, trusted-origin, and readiness behavior remains unchanged.
 
 The workspace switcher lists every active membership, including both the owned
 and invited workspaces created during invitation signup. After an explicit
