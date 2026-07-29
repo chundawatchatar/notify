@@ -6,7 +6,12 @@ architecture, product modules, migrations, or frontend conventions change.
 
 ## Global Working Rules
 
+- Keep answers short and direct. Use technical prose only.
+- Avoid fluff or cheerful filler text.
+- Answer the user's question before making edits or running implementation commands when they ask a question.
+- When responding to user feedback or an analysis, explicitly say whether you agree or disagree before describing changes.
 - Do not use em dashes in prose. Use a hyphen instead.
+- Do not use emojis in commits, issues, pull requests, comments, or code.
 - Always use a single-line commit message.
 - Do not run tests during implementation unless the user explicitly asks. A
   request to commit and push authorizes running the smallest test suites that
@@ -70,6 +75,8 @@ commands, generated files, or deployment policy changes.
 ## Core Rules
 
 - Prefer existing patterns before adding new abstractions.
+- Read files in full before broad changes, before editing files you have not
+  fully inspected, and when asked to investigate or audit.
 - Keep database access and Ecto schemas in `apps/api`.
 - Keep pure business rules in `libs/domain` when they do not require Phoenix or
   Ecto.
@@ -78,6 +85,17 @@ commands, generated files, or deployment policy changes.
   inside the owning app.
 - For forms in the web app, use TanStack Form and Zod.
 - For server state in the web app, use TanStack Query.
+- Avoid `any` unless it is clearly necessary.
+- Check dependency types and upstream APIs before guessing local type shapes.
+- Prefer top-level imports. Do not add inline `await import()` or dynamic type
+  imports unless the user asks for that pattern or the file already depends on it.
+- For TypeScript checked by the repo root config, use erasable syntax only. Do
+  not introduce constructs that require JavaScript emit transforms such as
+  parameter properties, `enum`, `namespace`, `module`, `import =`, or `export =`.
+- Inline single-use helpers when that keeps the code clearer than adding a named
+  abstraction.
+- Ask before removing functionality or code that appears intentional.
+- Do not preserve backward compatibility unless the user asks for it.
 - Use `notify-backend-test` and `notify-frontend-test` to keep test coverage
   risk-based. Do not mock internal application layers.
 - Create persisted backend test entities through shared factories. Use Faker in
@@ -91,6 +109,9 @@ commands, generated files, or deployment policy changes.
   changes across multiple backend applications.
 
 ## Commands
+
+When running project tasks, prefer `pnpm nx ...` where an Nx target exists.
+Use focused checks first and avoid broad commands unless the task justifies them.
 
 Use focused checks when possible:
 
@@ -145,6 +166,7 @@ For product features, prefer this order:
 ## Git And Generated Files
 
 - Never revert user changes unless explicitly asked.
+- Only stage and commit files changed in the current task. Stage explicit paths.
 - Check `git status --short` before staging or committing.
 - Use Angular Conventional Commit subjects: `<type>(<scope>): <imperative summary>`.
   Keep every commit message to one line, without a trailing period.
@@ -152,6 +174,30 @@ For product features, prefer this order:
   branch. Use `develop` unless the task specifies another target.
 - Commit generated route updates when route files change.
 - Keep unrelated changes out of commits.
+- Never use `git add -A`, `git add .`, `git stash`, `git clean -fd`,
+  `git reset --hard`, `git checkout .`, or `git commit --no-verify`.
+- If rebasing or resolving conflicts, only resolve conflicts in files changed in
+  the current task. If a conflict is in an unrelated file, stop and ask the user.
+
+## Dependencies And Generated Files
+
+- Treat dependency and lockfile changes as reviewed code.
+- Prefer install commands that skip lifecycle scripts unless the user explicitly
+  asks to run them.
+- Do not edit generated files directly when the source generator script or
+  contract definition is available. Update the source and regenerate instead.
+
+## Issues And Pull Requests
+
+- Do not switch branches or check out a pull request unless the user explicitly asks.
+- For pull request review, prefer read-only inspection with `gh pr view`,
+  `gh pr diff`, `gh api`, `git show`, and `git diff` against fetched refs.
+- Follow `docs/github-workflow.md` for merge, queue, hotfix, and release expectations.
+
+## User Override
+
+- If the user's instructions conflict with this document, ask for explicit
+  confirmation before overriding the rule.
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
