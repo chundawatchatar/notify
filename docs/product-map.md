@@ -247,10 +247,12 @@ key endpoints identify the owning app and environment by `:appId` and
 The v1 key lifecycle is list, create, rotate, and revoke. Reads require the
 existing `view_apps` permission. Create, rotate, and revoke require the
 existing `manage_credentials` permission. Creating or rotating a key reveals
-the raw secret exactly once in the response and UI. After that disclosure, the
-dashboard shows only safe metadata and lifecycle state. Revocation is
-irreversible and retained as lifecycle history. Rotation atomically creates a
-replacement key and revokes the previously active key in the same environment.
+the raw secret exactly once in the response and UI. Persistence stores only a
+one-way digest, and the raw secret must never be logged. After the one-time
+disclosure, subsequent API responses and the dashboard show only safe metadata
+and lifecycle state. Revocation is irreversible and retained as lifecycle
+history. Rotation atomically creates a replacement key and revokes the
+previously active key in the same environment.
 
 Server API keys exist for a future ingress authentication epic only. This
 contract does not add ingestion, request authentication middleware, event
