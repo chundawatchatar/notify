@@ -95,7 +95,10 @@ commands, generated files, or deployment policy changes.
 - Inline single-use helpers when that keeps the code clearer than adding a named
   abstraction.
 - Ask before removing functionality or code that appears intentional.
-- Do not preserve backward compatibility unless the user asks for it.
+- Preserve existing API, data, and user-facing behavior by default. Only make
+  breaking changes when the user explicitly requests them or approves them.
+- Do not add new compatibility shims unless they are necessary for an approved
+  compatibility requirement.
 - Use `notify-backend-test` and `notify-frontend-test` to keep test coverage
   risk-based. Do not mock internal application layers.
 - Create persisted backend test entities through shared factories. Use Faker in
