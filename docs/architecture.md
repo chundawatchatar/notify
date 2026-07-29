@@ -24,10 +24,15 @@ subdomain layout.
 - Ecto schemas and database migrations.
 - Database seeds and release migration runner.
 - API authentication, ingress endpoints, and dashboard APIs.
+- Tenant-scoped credential persistence, transaction handling, response-level
+  secret disclosure, and append-only audit writes for future server API key
+  management.
 
 `libs/domain` is for framework-free business logic that can be tested without
-Phoenix, Ecto, or a database connection. Do not put Phoenix controllers, Repo
-calls, or migrations there.
+Phoenix, Ecto, or a database connection. Framework-free server API key
+lifecycle invariants, such as one-time disclosure, irreversible revocation, or
+rotation invariants, belong there when they can stay framework-free. Do not
+put Phoenix controllers, Repo calls, or migrations there.
 
 `libs/open_api` is for framework-free OpenAPI schema modules. The API app still
 owns routes, controllers, operation specs, and OpenAPI JSON generation.
@@ -56,6 +61,11 @@ contain page-specific product behavior.
 backend. `packages/api-client` contains generated TypeScript API contract types
 from that OpenAPI package. Frontend API helpers should use `@notify/api-client`
 for request and response shapes.
+
+For future server API key management, the web app owns slug-based navigation,
+one-time secret reveal UX, and safe post-create and post-rotate metadata
+display. It does not own credential persistence, audit writing, or ingress
+authentication.
 
 ## Data Flow
 
@@ -163,6 +173,12 @@ When adding a feature, decide ownership first:
 - Pure business rule: `libs/domain`.
 - Reusable Elixir OpenAPI schema: `libs/open_api`.
 - Database shape: `apps/api/priv/repo/migrations`.
+
+Keep browser navigation identifiers and API resource identifiers distinct when a
+feature needs both. Dashboard routes continue to use readable slugs, while API
+contracts may use UUIDs for direct resource identification. Future server API
+key authentication for ingress belongs to a later feature and should not be
+implied by the key-management contract alone.
 
 ## Runtime Delivery
 
