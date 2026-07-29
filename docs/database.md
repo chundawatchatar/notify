@@ -165,8 +165,17 @@ Implemented tables:
 
 ## Future Product Tables
 
-- server API keys, notification_events, and delivery_attempts: future
-  environment-scoped data, introduced only with their owning product contracts
+- server API keys: future environment-scoped credentials for customer backend
+  authentication, introduced only with their owning product contract. Each key
+  belongs to exactly one app environment. Persistence stores only a digest and
+  safe metadata, never the raw secret. Safe metadata may include ownership,
+  display label, creation time, revocation time, replacement relationships, and
+  actor or audit references that do not expose credential material. Revocation
+  is irreversible, and revoked rows remain retained as lifecycle history.
+  Rotation must create the replacement key, revoke the previous key, and write
+  append-only audit records in the same transaction.
+- notification_events and delivery_attempts: future environment-scoped data,
+  introduced only with their owning product contracts
 - subscription_plans or workspace_subscriptions
 
 Notification app and environment UUIDs are database identities. Readable app
@@ -194,7 +203,10 @@ The database enforces the same ownership boundaries used by application code:
 an app must reference an existing workspace, an environment must reference an
 existing app, app slugs are unique per workspace, and environment slugs are
 unique per app. Queries must still apply the authenticated workspace scope so a
-valid UUID or slug cannot expose another tenant's records.
+valid UUID or slug cannot expose another tenant's records. Future server API
+key queries must follow the same tenant isolation path through workspace,
+notification app, and environment ownership, even when API endpoints identify
+the app and environment by UUID.
 
 ## Ecto Guidance
 

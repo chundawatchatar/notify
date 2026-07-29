@@ -86,6 +86,22 @@ status, links missing checklist items to their controls, and refreshes readiness
 after configuration mutations. Events, delivery data, analytics, billing, and
 collaboration controls remain deferred.
 
+Future server API key management follows the same route context but not the
+same resource identifiers. Browser navigation stays slug-based, while future
+HTTP endpoints for server API keys use the owning notification app and
+environment UUIDs as `:appId` and `:environmentId`. Server API keys are private
+backend secrets for future ingress authentication, distinct from public browser
+client keys with the `nfy_pk_` prefix. Reads use the existing `view_apps`
+permission. Create, rotate, and revoke use the existing `manage_credentials`
+permission.
+
+The raw server API key secret is disclosed exactly once after create or rotate.
+After that response, the UI may show only safe metadata such as label, created
+time, revoked state, and replacement history. The browser must never persist a
+server API key secret in local storage, session storage, URL state, or durable
+TanStack Query caches. Existing client-key, trusted-origin, and readiness
+behavior remains unchanged.
+
 The workspace switcher lists every active membership, including both the owned
 and invited workspaces created during invitation signup. After an explicit
 sign-in, the browser may restore its last active workspace from a per-account
@@ -95,7 +111,9 @@ keeps the API-selected fallback workspace.
 
 The security section may describe audit posture, but it does not query or
 display audit records in the current phase. Audit persistence is backend-owned
-and no audit credential or event metadata belongs in browser storage.
+and no audit credential or event metadata belongs in browser storage. The same
+rule applies to future server API key responses after the one-time disclosure
+window has passed.
 
 Shared dashboard layout lives in:
 

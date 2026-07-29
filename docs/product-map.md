@@ -237,6 +237,26 @@ Responsibilities:
 - socket token policy
 - future audit activity view
 
+Server API keys are future environment-scoped backend credentials for customer
+servers. They are distinct from environment client keys, which remain public
+browser identifiers with the `nfy_pk_` prefix. The dashboard keeps using
+workspace, app, and environment slugs for navigation, while future server API
+key endpoints identify the owning app and environment by `:appId` and
+`:environmentId` UUIDs.
+
+The v1 key lifecycle is list, create, rotate, and revoke. Reads require the
+existing `view_apps` permission. Create, rotate, and revoke require the
+existing `manage_credentials` permission. Creating or rotating a key reveals
+the raw secret exactly once in the response and UI. After that disclosure, the
+dashboard shows only safe metadata and lifecycle state. Revocation is
+irreversible and retained as lifecycle history. Rotation atomically creates a
+replacement key and revokes the previously active key in the same environment.
+
+Server API keys exist for a future ingress authentication epic only. This
+contract does not add ingestion, request authentication middleware, event
+storage, or delivery behavior. Existing environment client-key, trusted-origin,
+and readiness rules remain unchanged.
+
 Expected future backend ownership:
 
 - API key storage and hashing
