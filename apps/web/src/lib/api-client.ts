@@ -6,12 +6,15 @@ import type {
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
   ApiConfirmPasswordResetRequest,
+  ApiCreateEnvironmentServerApiKeyRequest,
   ApiCreateEnvironmentTrustedOriginRequest,
   ApiCreateNotificationAppRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
   ApiEnvironmentClientKey,
   ApiEnvironmentClientKeysResponse,
+  ApiEnvironmentServerApiKeySecret,
+  ApiEnvironmentServerApiKeysResponse,
   ApiEnvironmentTrustedOrigin,
   ApiEnvironmentTrustedOriginsResponse,
   ApiInvitationPreviewResponse,
@@ -190,6 +193,58 @@ function revokeEnvironmentClientKey(
   );
 }
 
+function listEnvironmentServerApiKeys(accessToken: string, appId: string, environmentId: string) {
+  return get<ApiEnvironmentServerApiKeysResponse>(
+    serverApiKeyEnvironmentPath(appId, environmentId),
+    {
+      accessToken,
+    },
+  );
+}
+
+function createEnvironmentServerApiKey(
+  accessToken: string,
+  appId: string,
+  environmentId: string,
+  body: ApiCreateEnvironmentServerApiKeyRequest,
+) {
+  return post<ApiEnvironmentServerApiKeySecret, ApiCreateEnvironmentServerApiKeyRequest>(
+    serverApiKeyEnvironmentPath(appId, environmentId),
+    body,
+    {
+      accessToken,
+    },
+  );
+}
+
+function rotateEnvironmentServerApiKey(
+  accessToken: string,
+  appId: string,
+  environmentId: string,
+  serverApiKeyId: string,
+) {
+  return post<ApiEnvironmentServerApiKeySecret>(
+    `${serverApiKeyEnvironmentPath(appId, environmentId)}/${serverApiKeyId}/rotate`,
+    undefined,
+    {
+      accessToken,
+    },
+  );
+}
+
+function revokeEnvironmentServerApiKey(
+  accessToken: string,
+  appId: string,
+  environmentId: string,
+  serverApiKeyId: string,
+) {
+  return deleteRequest<void>(
+    `${serverApiKeyEnvironmentPath(appId, environmentId)}/${serverApiKeyId}`,
+    undefined,
+    { accessToken },
+  );
+}
+
 function listEnvironmentTrustedOrigins(
   accessToken: string,
   appSlug: string,
@@ -229,6 +284,10 @@ function removeEnvironmentTrustedOrigin(
 
 function environmentPath(appSlug: string, environmentSlug: string) {
   return `/api/apps/${appSlug}/environments/${environmentSlug}`;
+}
+
+function serverApiKeyEnvironmentPath(appId: string, environmentId: string) {
+  return `/api/apps/${appId}/environments/${environmentId}/server-api-keys`;
 }
 
 function switchWorkspace(accessToken: string, body: ApiSwitchWorkspaceRequest) {
@@ -324,6 +383,7 @@ export {
   confirmEmail,
   confirmPasswordReset,
   createEnvironmentClientKey,
+  createEnvironmentServerApiKey,
   createEnvironmentTrustedOrigin,
   createNotificationApp,
   createWorkspaceInvitation,
@@ -332,6 +392,7 @@ export {
   getCurrentUser,
   getNotificationApp,
   listEnvironmentClientKeys,
+  listEnvironmentServerApiKeys,
   listEnvironmentTrustedOrigins,
   listNotificationApps,
   listWorkspaceInvitations,
@@ -346,7 +407,9 @@ export {
   resendVerification,
   resolveInvitation,
   revokeEnvironmentClientKey,
+  revokeEnvironmentServerApiKey,
   revokeWorkspaceInvitation,
+  rotateEnvironmentServerApiKey,
   startSignup,
   switchWorkspace,
   updateNotificationApp,

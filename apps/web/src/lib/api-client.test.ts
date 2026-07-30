@@ -1,4 +1,8 @@
-import type { ApiNotificationApp } from "@notify/api-client";
+import type {
+  ApiEnvironmentServerApiKey,
+  ApiEnvironmentServerApiKeySecret,
+  ApiNotificationApp,
+} from "@notify/api-client";
 import { HttpResponse, http } from "msw";
 import { describe, expect, it } from "vitest";
 import { server } from "@/test/server";
@@ -6,16 +10,20 @@ import {
   ApiRequestError,
   archiveNotificationApp,
   createEnvironmentClientKey,
+  createEnvironmentServerApiKey,
   createEnvironmentTrustedOrigin,
   createNotificationApp,
   getNotificationApp,
   listEnvironmentClientKeys,
+  listEnvironmentServerApiKeys,
   listEnvironmentTrustedOrigins,
   listNotificationApps,
   listWorkspaces,
   login,
   removeEnvironmentTrustedOrigin,
   revokeEnvironmentClientKey,
+  revokeEnvironmentServerApiKey,
+  rotateEnvironmentServerApiKey,
   startSignup,
   switchWorkspace,
   updateNotificationApp,
@@ -209,6 +217,53 @@ describe("auth API client", () => {
 
     expect(originBody).toEqual({ origin: "https://console.example.com" });
   });
+
+  it("uses typed server API key endpoints", async () => {
+    expect.hasAssertions();
+    const appId = "3dc20706-9944-4743-8121-c0429c622c0b";
+    const environmentId = "7ad7137b-d5a5-4411-9993-463c7f7e71f4";
+    const serverApiKeyId = "a6c977c6-8eb6-41ae-82dc-90f10ff134ce";
+    let createBody: unknown;
+
+    server.use(
+      http.get(
+        `${apiBaseUrl}/api/apps/${appId}/environments/${environmentId}/server-api-keys`,
+        () => HttpResponse.json({ api_keys: [serverApiKey()] }),
+      ),
+      http.post(
+        `${apiBaseUrl}/api/apps/${appId}/environments/${environmentId}/server-api-keys`,
+        async ({ request }) => {
+          createBody = await request.json();
+          return HttpResponse.json(serverApiKeySecret(), { status: 201 });
+        },
+      ),
+      http.post(
+        `${apiBaseUrl}/api/apps/${appId}/environments/${environmentId}/server-api-keys/${serverApiKeyId}/rotate`,
+        () => HttpResponse.json(serverApiKeySecret(), { status: 201 }),
+      ),
+      http.delete(
+        `${apiBaseUrl}/api/apps/${appId}/environments/${environmentId}/server-api-keys/${serverApiKeyId}`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+    );
+
+    await expect(
+      listEnvironmentServerApiKeys("access-token", appId, environmentId),
+    ).resolves.toEqual({ api_keys: [serverApiKey()] });
+    await expect(
+      createEnvironmentServerApiKey("access-token", appId, environmentId, {
+        name: "Ingest Worker",
+      }),
+    ).resolves.toEqual(serverApiKeySecret());
+    await expect(
+      rotateEnvironmentServerApiKey("access-token", appId, environmentId, serverApiKeyId),
+    ).resolves.toEqual(serverApiKeySecret());
+    await expect(
+      revokeEnvironmentServerApiKey("access-token", appId, environmentId, serverApiKeyId),
+    ).resolves.toBeUndefined();
+
+    expect(createBody).toEqual({ name: "Ingest Worker" });
+  });
 });
 
 function notificationApp(): ApiNotificationApp {
@@ -246,6 +301,24 @@ function trustedOrigin() {
     origin: "https://console.example.com",
     created_at: "2026-07-22T12:00:00Z",
   };
+}
+
+function serverApiKey() {
+  return {
+    created_at: "2026-07-22T12:00:00Z",
+    id: "a6c977c6-8eb6-41ae-82dc-90f10ff134ce",
+    masked_hint: "...8KQ",
+    name: "Ingest Worker",
+    revoked_at: null,
+    status: "active",
+  } as const satisfies ApiEnvironmentServerApiKey;
+}
+
+function serverApiKeySecret() {
+  return {
+    ...serverApiKey(),
+    secret: "nfy_sk_BaW4lCGg6lgBZW02rPpxT-m9q8qv8SxrwP7pvA8h8KQ",
+  } as const satisfies ApiEnvironmentServerApiKeySecret;
 }
 
 function authResponse() {
