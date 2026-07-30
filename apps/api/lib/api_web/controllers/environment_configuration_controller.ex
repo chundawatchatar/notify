@@ -73,7 +73,8 @@ defmodule ApiWeb.EnvironmentConfigurationController do
                                  ]
                                ]
 
-  plug RequirePermission, :view_apps
+  plug RequirePermission,
+       :view_apps
        when action in [:list_client_keys, :list_trusted_origins, :list_server_api_keys]
 
   plug RequirePermission,
@@ -173,7 +174,11 @@ defmodule ApiWeb.EnvironmentConfigurationController do
     ]
 
   def list_server_api_keys(conn, %{"appId" => app_id, "environmentId" => environment_id}) do
-    case NotificationApps.list_server_api_keys(conn.assigns.current_workspace, app_id, environment_id) do
+    case NotificationApps.list_server_api_keys(
+           conn.assigns.current_workspace,
+           app_id,
+           environment_id
+         ) do
       {:ok, server_api_keys} ->
         json(conn, %{api_keys: Enum.map(server_api_keys, &server_api_key_payload/1)})
 
@@ -197,7 +202,10 @@ defmodule ApiWeb.EnvironmentConfigurationController do
       unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
     ]
 
-  def create_server_api_key(conn, %{"appId" => app_id, "environmentId" => environment_id} = params) do
+  def create_server_api_key(
+        conn,
+        %{"appId" => app_id, "environmentId" => environment_id} = params
+      ) do
     case NotificationApps.create_server_api_key(
            conn.assigns.current_membership,
            app_id,

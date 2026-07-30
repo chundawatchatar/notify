@@ -28,7 +28,12 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert Map.has_key?(response["paths"], "/api/auth/workspace/switch")
     assert Map.has_key?(response["paths"], "/api/apps")
     assert Map.has_key?(response["paths"], "/api/apps/{appSlug}")
-    assert Map.has_key?(response["paths"], "/api/apps/{appId}/environments/{environmentId}/server-api-keys")
+
+    assert Map.has_key?(
+             response["paths"],
+             "/api/apps/{appId}/environments/{environmentId}/server-api-keys"
+           )
+
     assert Map.has_key?(
              response["paths"],
              "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}/rotate"

@@ -13,7 +13,6 @@ import type {
   ApiCurrentUserResponse,
   ApiEnvironmentClientKey,
   ApiEnvironmentClientKeysResponse,
-  ApiEnvironmentServerApiKey,
   ApiEnvironmentServerApiKeySecret,
   ApiEnvironmentServerApiKeysResponse,
   ApiEnvironmentTrustedOrigin,
