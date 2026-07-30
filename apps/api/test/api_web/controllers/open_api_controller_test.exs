@@ -28,6 +28,11 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert Map.has_key?(response["paths"], "/api/auth/workspace/switch")
     assert Map.has_key?(response["paths"], "/api/apps")
     assert Map.has_key?(response["paths"], "/api/apps/{appSlug}")
+    assert Map.has_key?(response["paths"], "/api/apps/{appId}/environments/{environmentId}/server-api-keys")
+    assert Map.has_key?(
+             response["paths"],
+             "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}/rotate"
+           )
 
     assert response["components"]["securitySchemes"]["bearerAuth"] == %{
              "bearerFormat" => "JWT",
@@ -77,6 +82,22 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert response["paths"]["/api/apps/{appSlug}"]["delete"]["operationId"] ==
              "archiveNotificationApp"
 
+    assert response["paths"]["/api/apps/{appId}/environments/{environmentId}/server-api-keys"][
+             "get"
+           ]["operationId"] == "listEnvironmentServerApiKeys"
+
+    assert response["paths"]["/api/apps/{appId}/environments/{environmentId}/server-api-keys"][
+             "post"
+           ]["operationId"] == "createEnvironmentServerApiKey"
+
+    assert response["paths"][
+             "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}/rotate"
+           ]["post"]["operationId"] == "rotateEnvironmentServerApiKey"
+
+    assert response["paths"][
+             "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}"
+           ]["delete"]["operationId"] == "revokeEnvironmentServerApiKey"
+
     assert response["paths"]["/api/apps"]["get"]["responses"]["200"]["content"][
              "application/json"
            ]["schema"]["$ref"] == "#/components/schemas/NotificationAppsResponse"
@@ -93,6 +114,21 @@ defmodule ApiWeb.OpenApiControllerTest do
              "application/json"
            ]["schema"]["$ref"] == "#/components/schemas/UpdateNotificationAppRequest"
 
+    assert response["paths"]["/api/apps/{appId}/environments/{environmentId}/server-api-keys"][
+             "get"
+           ]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"] ==
+             "#/components/schemas/EnvironmentServerApiKeysResponse"
+
+    assert response["paths"]["/api/apps/{appId}/environments/{environmentId}/server-api-keys"][
+             "post"
+           ]["requestBody"]["content"]["application/json"]["schema"]["$ref"] ==
+             "#/components/schemas/CreateEnvironmentServerApiKeyRequest"
+
+    assert response["paths"]["/api/apps/{appId}/environments/{environmentId}/server-api-keys"][
+             "post"
+           ]["responses"]["201"]["content"]["application/json"]["schema"]["$ref"] ==
+             "#/components/schemas/EnvironmentServerApiKeySecret"
+
     assert response["components"]["schemas"]["NotificationApp"]["properties"]["slug"] == %{
              "example" => "payments-service",
              "maxLength" => 50,
@@ -108,6 +144,15 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert response["components"]["schemas"]["EnvironmentSetupReadiness"]["required"] == [
              "ready",
              "missing_requirements"
+           ]
+
+    assert response["components"]["schemas"]["EnvironmentServerApiKey"]["properties"]["status"][
+             "$ref"
+           ] == "#/components/schemas/EnvironmentServerApiKeyStatus"
+
+    assert response["components"]["schemas"]["EnvironmentServerApiKeyStatus"]["enum"] == [
+             "active",
+             "revoked"
            ]
 
     assert response["paths"]["/api/apps/{appSlug}"]["get"]["parameters"] == [

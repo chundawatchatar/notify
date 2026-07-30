@@ -22,6 +22,58 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/apps/{appId}/environments/{environmentId}/server-api-keys": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List server API keys for an environment */
+    get: operations["listEnvironmentServerApiKeys"];
+    put?: never;
+    /** Create a server API key for an environment */
+    post: operations["createEnvironmentServerApiKey"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revoke a server API key for an environment */
+    delete: operations["revokeEnvironmentServerApiKey"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}/rotate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Rotate a server API key for an environment */
+    post: operations["rotateEnvironmentServerApiKey"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/apps/{appSlug}": {
     parameters: {
       query?: never;
@@ -517,10 +569,40 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /** EnvironmentServerApiKeySecret */
+    EnvironmentServerApiKeySecret: {
+      /** Format: date-time */
+      created_at: string;
+      /** Format: uuid */
+      id: string;
+      /** @example ...AbCd */
+      masked_hint: string;
+      /** @example Ingest Worker */
+      name: string;
+      /** Format: date-time */
+      revoked_at: string | null;
+      /** @example nfy_sk_BaW4lCGg6lgBZW02rPpxT-m9q8qv8SxrwP7pvA8h8KQ */
+      secret: string;
+      status: components["schemas"]["EnvironmentServerApiKeyStatus"];
+    };
     /** ConfirmPasswordResetRequest */
     ConfirmPasswordResetRequest: {
       /** @example password-reset-token */
       token: string;
+    };
+    /** EnvironmentServerApiKey */
+    EnvironmentServerApiKey: {
+      /** Format: date-time */
+      created_at: string;
+      /** Format: uuid */
+      id: string;
+      /** @example ...AbCd */
+      masked_hint: string;
+      /** @example Ingest Worker */
+      name: string;
+      /** Format: date-time */
+      revoked_at: string | null;
+      status: components["schemas"]["EnvironmentServerApiKeyStatus"];
     };
     /**
      * LivenessResponse
@@ -700,6 +782,12 @@ export interface components {
       /** @description One-time credential for completing the verified signup. */
       signup_token: string;
     };
+    /**
+     * EnvironmentServerApiKeyStatus
+     * @example active
+     * @enum {string}
+     */
+    EnvironmentServerApiKeyStatus: "active" | "revoked";
     /** CompletePasswordResetRequest */
     CompletePasswordResetRequest: {
       /** Format: password */
@@ -800,6 +888,11 @@ export interface components {
      * @enum {string}
      */
     AuthWorkspaceRole: "owner" | "admin" | "developer" | "viewer";
+    /** CreateEnvironmentServerApiKeyRequest */
+    CreateEnvironmentServerApiKeyRequest: {
+      /** @example Ingest Worker */
+      name: string;
+    };
     /** CurrentUserResponse */
     CurrentUserResponse: {
       role: components["schemas"]["AuthWorkspaceRole"];
@@ -976,6 +1069,10 @@ export interface components {
        */
       status: "ok" | "degraded";
     };
+    /** EnvironmentServerApiKeysResponse */
+    EnvironmentServerApiKeysResponse: {
+      api_keys: components["schemas"]["EnvironmentServerApiKey"][];
+    };
     /** PasswordResetRequest */
     PasswordResetRequest: {
       /**
@@ -1092,6 +1189,230 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  listEnvironmentServerApiKeys: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app ID */
+        appId: string;
+        /** @description Environment ID */
+        environmentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Environment server API keys */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EnvironmentServerApiKeysResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Server API key resource unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  createEnvironmentServerApiKey: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app ID */
+        appId: string;
+        /** @description Environment ID */
+        environmentId: string;
+      };
+      cookie?: never;
+    };
+    /** @description Server API key details */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateEnvironmentServerApiKeyRequest"];
+      };
+    };
+    responses: {
+      /** @description Created environment server API key */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EnvironmentServerApiKeySecret"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Server API key resource unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  revokeEnvironmentServerApiKey: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app ID */
+        appId: string;
+        /** @description Environment ID */
+        environmentId: string;
+        /** @description Server API key ID */
+        keyId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Server API key revoked */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Server API key resource unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  rotateEnvironmentServerApiKey: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app ID */
+        appId: string;
+        /** @description Environment ID */
+        environmentId: string;
+        /** @description Server API key ID */
+        keyId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Rotated environment server API key */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EnvironmentServerApiKeySecret"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Server API key resource unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
         };
       };
     };

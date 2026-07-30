@@ -57,6 +57,22 @@ defmodule ApiWeb.Router do
            EnvironmentConfigurationController,
            :revoke_client_key
 
+    get "/apps/:appId/environments/:environmentId/server-api-keys",
+        EnvironmentConfigurationController,
+        :list_server_api_keys
+
+    post "/apps/:appId/environments/:environmentId/server-api-keys",
+         EnvironmentConfigurationController,
+         :create_server_api_key
+
+    post "/apps/:appId/environments/:environmentId/server-api-keys/:keyId/rotate",
+         EnvironmentConfigurationController,
+         :rotate_server_api_key
+
+    delete "/apps/:appId/environments/:environmentId/server-api-keys/:keyId",
+           EnvironmentConfigurationController,
+           :revoke_server_api_key
+
     get "/apps/:appSlug/environments/:environmentSlug/trusted-origins",
         EnvironmentConfigurationController,
         :list_trusted_origins

@@ -12,7 +12,10 @@ defmodule ApiWeb.EnvironmentConfigurationController do
   alias NotifyOpenApi.NotificationAppSchemas.{
     ClientKey,
     ClientKeysResponse,
+    CreateServerApiKeyRequest,
     CreateTrustedOriginRequest,
+    ServerApiKeySecret,
+    ServerApiKeysResponse,
     TrustedOrigin,
     TrustedOriginsResponse
   }
@@ -48,13 +51,39 @@ defmodule ApiWeb.EnvironmentConfigurationController do
                                  ]
                                ]
 
-  plug RequirePermission, :view_apps when action in [:list_client_keys, :list_trusted_origins]
+  @server_api_key_environment_parameters [
+    appId: [
+      in: :path,
+      description: "Notification app ID",
+      schema: %OpenApiSpex.Schema{type: :string, format: :uuid}
+    ],
+    environmentId: [
+      in: :path,
+      description: "Environment ID",
+      schema: %OpenApiSpex.Schema{type: :string, format: :uuid}
+    ]
+  ]
+
+  @server_api_key_parameters @server_api_key_environment_parameters ++
+                               [
+                                 keyId: [
+                                   in: :path,
+                                   description: "Server API key ID",
+                                   schema: %OpenApiSpex.Schema{type: :string, format: :uuid}
+                                 ]
+                               ]
+
+  plug RequirePermission, :view_apps
+       when action in [:list_client_keys, :list_trusted_origins, :list_server_api_keys]
 
   plug RequirePermission,
        :manage_credentials
        when action in [
               :create_client_key,
+              :create_server_api_key,
               :revoke_client_key,
+              :revoke_server_api_key,
+              :rotate_server_api_key,
               :create_trusted_origin,
               :remove_trusted_origin
             ]
@@ -128,6 +157,143 @@ defmodule ApiWeb.EnvironmentConfigurationController do
       :error -> environment_not_found(conn)
       :not_found -> client_key_not_found(conn)
       {:error, reason} -> configuration_failed(conn, "Client key revocation", reason)
+    end
+  end
+
+  operation :list_server_api_keys,
+    summary: "List server API keys for an environment",
+    operation_id: "listEnvironmentServerApiKeys",
+    security: [%{"bearerAuth" => []}],
+    parameters: @server_api_key_environment_parameters,
+    responses: [
+      ok: {"Environment server API keys", "application/json", ServerApiKeysResponse},
+      not_found: {"Server API key resource unavailable", "application/json", ErrorResponse},
+      unauthorized: {"Access token invalid", "application/json", ErrorResponse},
+      forbidden: {"Permission denied", "application/json", ErrorResponse}
+    ]
+
+  def list_server_api_keys(conn, %{"appId" => app_id, "environmentId" => environment_id}) do
+    case NotificationApps.list_server_api_keys(conn.assigns.current_workspace, app_id, environment_id) do
+      {:ok, server_api_keys} ->
+        json(conn, %{api_keys: Enum.map(server_api_keys, &server_api_key_payload/1)})
+
+      {:error, :not_found} ->
+        server_api_key_not_found(conn)
+    end
+  end
+
+  operation :create_server_api_key,
+    summary: "Create a server API key for an environment",
+    operation_id: "createEnvironmentServerApiKey",
+    security: [%{"bearerAuth" => []}],
+    parameters: @server_api_key_environment_parameters,
+    request_body:
+      {"Server API key details", "application/json", CreateServerApiKeyRequest, required: true},
+    responses: [
+      created: {"Created environment server API key", "application/json", ServerApiKeySecret},
+      not_found: {"Server API key resource unavailable", "application/json", ErrorResponse},
+      unauthorized: {"Access token invalid", "application/json", ErrorResponse},
+      forbidden: {"Permission denied", "application/json", ErrorResponse},
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+    ]
+
+  def create_server_api_key(conn, %{"appId" => app_id, "environmentId" => environment_id} = params) do
+    case NotificationApps.create_server_api_key(
+           conn.assigns.current_membership,
+           app_id,
+           environment_id,
+           params
+         ) do
+      {:ok, payload} ->
+        conn
+        |> put_status(:created)
+        |> json(server_api_key_secret_payload(payload))
+
+      {:error, :not_found} ->
+        server_api_key_not_found(conn)
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        AuthError.validation(conn, changeset)
+
+      {:error, :forbidden} ->
+        server_api_key_not_found(conn)
+
+      {:error, reason} ->
+        configuration_failed(conn, "Server API key creation", reason)
+    end
+  end
+
+  operation :rotate_server_api_key,
+    summary: "Rotate a server API key for an environment",
+    operation_id: "rotateEnvironmentServerApiKey",
+    security: [%{"bearerAuth" => []}],
+    parameters: @server_api_key_parameters,
+    responses: [
+      created: {"Rotated environment server API key", "application/json", ServerApiKeySecret},
+      not_found: {"Server API key resource unavailable", "application/json", ErrorResponse},
+      unauthorized: {"Access token invalid", "application/json", ErrorResponse},
+      forbidden: {"Permission denied", "application/json", ErrorResponse}
+    ]
+
+  def rotate_server_api_key(
+        conn,
+        %{"appId" => app_id, "environmentId" => environment_id, "keyId" => key_id}
+      ) do
+    case NotificationApps.rotate_server_api_key(
+           conn.assigns.current_membership,
+           app_id,
+           environment_id,
+           key_id
+         ) do
+      {:ok, payload} ->
+        conn
+        |> put_status(:created)
+        |> json(server_api_key_secret_payload(payload))
+
+      {:error, :not_found} ->
+        server_api_key_not_found(conn)
+
+      {:error, :forbidden} ->
+        server_api_key_not_found(conn)
+
+      {:error, reason} ->
+        configuration_failed(conn, "Server API key rotation", reason)
+    end
+  end
+
+  operation :revoke_server_api_key,
+    summary: "Revoke a server API key for an environment",
+    operation_id: "revokeEnvironmentServerApiKey",
+    security: [%{"bearerAuth" => []}],
+    parameters: @server_api_key_parameters,
+    responses: [
+      no_content: "Server API key revoked",
+      not_found: {"Server API key resource unavailable", "application/json", ErrorResponse},
+      unauthorized: {"Access token invalid", "application/json", ErrorResponse},
+      forbidden: {"Permission denied", "application/json", ErrorResponse}
+    ]
+
+  def revoke_server_api_key(
+        conn,
+        %{"appId" => app_id, "environmentId" => environment_id, "keyId" => key_id}
+      ) do
+    case NotificationApps.revoke_server_api_key(
+           conn.assigns.current_membership,
+           app_id,
+           environment_id,
+           key_id
+         ) do
+      {:ok, _server_api_key} ->
+        send_resp(conn, :no_content, "")
+
+      {:error, :not_found} ->
+        server_api_key_not_found(conn)
+
+      {:error, :forbidden} ->
+        server_api_key_not_found(conn)
+
+      {:error, reason} ->
+        configuration_failed(conn, "Server API key revocation", reason)
     end
   end
 
@@ -246,6 +412,26 @@ defmodule ApiWeb.EnvironmentConfigurationController do
     }
   end
 
+  defp server_api_key_payload(server_api_key) do
+    %{
+      id: server_api_key.id,
+      name: server_api_key.name,
+      masked_hint: server_api_key.masked_hint,
+      status: server_api_key_status(server_api_key),
+      created_at: server_api_key.inserted_at,
+      revoked_at: server_api_key.revoked_at
+    }
+  end
+
+  defp server_api_key_secret_payload(%{server_api_key: server_api_key, secret: secret}) do
+    server_api_key
+    |> server_api_key_payload()
+    |> Map.put(:secret, secret)
+  end
+
+  defp server_api_key_status(%{revoked_at: nil}), do: "active"
+  defp server_api_key_status(_server_api_key), do: "revoked"
+
   defp trusted_origin_payload(trusted_origin) do
     %{
       id: trusted_origin.id,
@@ -275,6 +461,15 @@ defmodule ApiWeb.EnvironmentConfigurationController do
       :not_found,
       "trusted_origin_not_found",
       "Trusted origin is unavailable."
+    )
+  end
+
+  defp server_api_key_not_found(conn) do
+    AuthError.render(
+      conn,
+      :not_found,
+      "server_api_key_not_found",
+      "Server API key is unavailable."
     )
   end
 

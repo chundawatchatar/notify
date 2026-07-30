@@ -2,6 +2,58 @@
   "components": {
     "responses": {},
     "schemas": {
+      "EnvironmentServerApiKeySecret": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "masked_hint": {
+            "example": "...AbCd",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "Ingest Worker",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "revoked_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "secret": {
+            "example": "nfy_sk_BaW4lCGg6lgBZW02rPpxT-m9q8qv8SxrwP7pvA8h8KQ",
+            "pattern": "^nfy_sk_[A-Za-z0-9_-]{43}$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "status": {
+            "$ref": "#/components/schemas/EnvironmentServerApiKeyStatus"
+          }
+        },
+        "required": ["id", "name", "masked_hint", "status", "secret", "created_at", "revoked_at"],
+        "title": "EnvironmentServerApiKeySecret",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.ServerApiKeySecret",
+        "x-validate": null
+      },
       "ConfirmPasswordResetRequest": {
         "additionalProperties": false,
         "properties": {
@@ -17,6 +69,51 @@
         "title": "ConfirmPasswordResetRequest",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ConfirmPasswordResetRequest",
+        "x-validate": null
+      },
+      "EnvironmentServerApiKey": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "masked_hint": {
+            "example": "...AbCd",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "Ingest Worker",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "revoked_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "status": {
+            "$ref": "#/components/schemas/EnvironmentServerApiKeyStatus"
+          }
+        },
+        "required": ["id", "name", "masked_hint", "status", "created_at", "revoked_at"],
+        "title": "EnvironmentServerApiKey",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.ServerApiKey",
         "x-validate": null
       },
       "LivenessResponse": {
@@ -492,6 +589,14 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupTokenResponse",
         "x-validate": null
       },
+      "EnvironmentServerApiKeyStatus": {
+        "enum": ["active", "revoked"],
+        "example": "active",
+        "title": "EnvironmentServerApiKeyStatus",
+        "type": "string",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.ServerApiKeyStatus",
+        "x-validate": null
+      },
       "CompletePasswordResetRequest": {
         "additionalProperties": false,
         "properties": {
@@ -790,6 +895,24 @@
         "title": "AuthWorkspaceRole",
         "type": "string",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.WorkspaceRole",
+        "x-validate": null
+      },
+      "CreateEnvironmentServerApiKeyRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "example": "Ingest Worker",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["name"],
+        "title": "CreateEnvironmentServerApiKeyRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.CreateServerApiKeyRequest",
         "x-validate": null
       },
       "CurrentUserResponse": {
@@ -1227,6 +1350,23 @@
         "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessResponse",
         "x-validate": null
       },
+      "EnvironmentServerApiKeysResponse": {
+        "properties": {
+          "api_keys": {
+            "items": {
+              "$ref": "#/components/schemas/EnvironmentServerApiKey"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["api_keys"],
+        "title": "EnvironmentServerApiKeysResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.ServerApiKeysResponse",
+        "x-validate": null
+      },
       "PasswordResetRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1397,6 +1537,366 @@
         ],
         "summary": "Create a notification app in the active workspace",
         "tags": ["notification apps"]
+      }
+    },
+    "/api/apps/{appId}/environments/{environmentId}/server-api-keys": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listEnvironmentServerApiKeys",
+        "parameters": [
+          {
+            "description": "Notification app ID",
+            "in": "path",
+            "name": "appId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment ID",
+            "in": "path",
+            "name": "environmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentServerApiKeysResponse"
+                }
+              }
+            },
+            "description": "Environment server API keys"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Server API key resource unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List server API keys for an environment",
+        "tags": ["environment configuration"]
+      },
+      "post": {
+        "callbacks": {},
+        "operationId": "createEnvironmentServerApiKey",
+        "parameters": [
+          {
+            "description": "Notification app ID",
+            "in": "path",
+            "name": "appId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment ID",
+            "in": "path",
+            "name": "environmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEnvironmentServerApiKeyRequest"
+              }
+            }
+          },
+          "description": "Server API key details",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentServerApiKeySecret"
+                }
+              }
+            },
+            "description": "Created environment server API key"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Server API key resource unavailable"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a server API key for an environment",
+        "tags": ["environment configuration"]
+      }
+    },
+    "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "revokeEnvironmentServerApiKey",
+        "parameters": [
+          {
+            "description": "Notification app ID",
+            "in": "path",
+            "name": "appId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment ID",
+            "in": "path",
+            "name": "environmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Server API key ID",
+            "in": "path",
+            "name": "keyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Server API key revoked"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Server API key resource unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revoke a server API key for an environment",
+        "tags": ["environment configuration"]
+      }
+    },
+    "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}/rotate": {
+      "post": {
+        "callbacks": {},
+        "operationId": "rotateEnvironmentServerApiKey",
+        "parameters": [
+          {
+            "description": "Notification app ID",
+            "in": "path",
+            "name": "appId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment ID",
+            "in": "path",
+            "name": "environmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Server API key ID",
+            "in": "path",
+            "name": "keyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentServerApiKeySecret"
+                }
+              }
+            },
+            "description": "Rotated environment server API key"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Server API key resource unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rotate a server API key for an environment",
+        "tags": ["environment configuration"]
       }
     },
     "/api/apps/{appSlug}": {

@@ -61,6 +61,10 @@ type ApiNotificationAppEnvironment = ApiNotificationApp["environments"][number];
 type ApiUpdateNotificationAppRequest = JsonRequestBody<"updateNotificationApp">;
 type ApiEnvironmentClientKeysResponse = JsonResponse<"listEnvironmentClientKeys", 200>;
 type ApiEnvironmentClientKey = JsonResponse<"createEnvironmentClientKey", 201>;
+type ApiEnvironmentServerApiKeysResponse = JsonResponse<"listEnvironmentServerApiKeys", 200>;
+type ApiEnvironmentServerApiKey = ApiEnvironmentServerApiKeysResponse["api_keys"][number];
+type ApiCreateEnvironmentServerApiKeyRequest = JsonRequestBody<"createEnvironmentServerApiKey">;
+type ApiEnvironmentServerApiKeySecret = JsonResponse<"createEnvironmentServerApiKey", 201>;
 type ApiEnvironmentTrustedOriginsResponse = JsonResponse<"listEnvironmentTrustedOrigins", 200>;
 type ApiEnvironmentTrustedOrigin = JsonResponse<"createEnvironmentTrustedOrigin", 201>;
 type ApiCreateEnvironmentTrustedOriginRequest = JsonRequestBody<"createEnvironmentTrustedOrigin">;
@@ -75,12 +79,16 @@ export type {
   ApiCompleteSignupRequest,
   ApiConfirmEmailRequest,
   ApiConfirmPasswordResetRequest,
+  ApiCreateEnvironmentServerApiKeyRequest,
   ApiCreateEnvironmentTrustedOriginRequest,
   ApiCreateNotificationAppRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
   ApiEnvironmentClientKey,
   ApiEnvironmentClientKeysResponse,
+  ApiEnvironmentServerApiKey,
+  ApiEnvironmentServerApiKeySecret,
+  ApiEnvironmentServerApiKeysResponse,
   ApiEnvironmentTrustedOrigin,
   ApiEnvironmentTrustedOriginsResponse,
   ApiErrorResponse,
