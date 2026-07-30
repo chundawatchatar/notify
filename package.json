@@ -28,6 +28,7 @@
     "db:reset": "nx run @notify/api:db-reset",
     "api": "nx run @notify/api:serve",
     "api:deps": "nx run @notify/api:deps",
+    "api:migration": "cd apps/api && mix ecto.gen.migration",
     "api:setup": "nx run @notify/api:setup",
     "api:compile": "nx run @notify/api:build",
     "api:release": "nx run @notify/api:release",

@@ -4,7 +4,7 @@ defmodule Api.Factory do
   use ExMachina.Ecto, repo: Api.Repo
 
   alias Api.Accounts.{AuthChallenge, AuthSession, User}
-  alias Api.NotificationApps.{Environment, NotificationApp}
+  alias Api.NotificationApps.{Environment, NotificationApp, ServerApiKey}
   alias Api.Workspaces.{AuditEvent, Invitation, Membership, Workspace}
 
   def user_factory do
@@ -36,6 +36,17 @@ defmodule Api.Factory do
       name: "Development",
       environment_slug: sequence(:environment_slug, &"environment-#{&1}"),
       production: false
+    }
+  end
+
+  def server_api_key_factory do
+    secret = ServerApiKey.generate()
+
+    %ServerApiKey{
+      environment: build(:environment),
+      name: sequence(:server_api_key_name, &"Server Key #{&1}"),
+      secret_digest: ServerApiKey.digest_secret(secret),
+      masked_hint: ServerApiKey.masked_hint(secret)
     }
   end
 

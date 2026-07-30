@@ -15,6 +15,7 @@ defmodule Api.NotificationApps.Environment do
 
     belongs_to :notification_app, Api.NotificationApps.NotificationApp
     has_many :client_keys, Api.NotificationApps.ClientKey, foreign_key: :app_environment_id
+    has_many :server_api_keys, Api.NotificationApps.ServerApiKey, foreign_key: :app_environment_id
 
     has_many :trusted_origins, Api.NotificationApps.TrustedOrigin,
       foreign_key: :app_environment_id

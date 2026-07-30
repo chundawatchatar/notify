@@ -2,7 +2,8 @@ defmodule Api.NotificationAppsTest do
   use Api.DataCase, async: false
 
   alias Api.NotificationApps
-  alias Api.NotificationApps.NotificationApp
+  alias Api.NotificationApps.{NotificationApp, ServerApiKey}
+  alias Api.Workspaces.AuditEvent
   alias Ecto.Adapters.SQL.Sandbox
 
   test "creates an app with its default environments atomically" do
@@ -154,6 +155,303 @@ defmodule Api.NotificationAppsTest do
 
     assert {:error, :archived} =
              NotificationApps.archive_notification_app(workspace, "payments-service")
+  end
+
+  test "creates a server api key with one-time secret disclosure and safe persistence" do
+    membership = insert(:membership)
+
+    assert {:ok, notification_app} =
+             NotificationApps.create_notification_app(membership.workspace, %{
+               name: "Payments Service"
+             })
+
+    development =
+      Enum.find(notification_app.environments, &(&1.environment_slug == "development"))
+
+    assert {:ok, %{server_api_key: server_api_key, secret: secret}} =
+             NotificationApps.create_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               %{
+                 name: "Ingest Worker"
+               }
+             )
+
+    assert String.starts_with?(secret, "nfy_sk_")
+    assert server_api_key.name == "Ingest Worker"
+    refute Map.has_key?(server_api_key, :secret_digest)
+
+    persisted_server_api_key = Repo.get!(ServerApiKey, server_api_key.id)
+
+    assert byte_size(persisted_server_api_key.secret_digest) == 32
+    refute persisted_server_api_key.secret_digest == secret
+    assert persisted_server_api_key.masked_hint == "..." <> String.slice(secret, -4, 4)
+
+    assert %AuditEvent{action: "server_api_key_created", target_id: target_id, metadata: metadata} =
+             Repo.get_by(AuditEvent, action: "server_api_key_created")
+
+    assert target_id == persisted_server_api_key.id
+
+    assert metadata == %{
+             "app_environment_id" => development.id,
+             "environment_id" => development.id,
+             "name" => "Ingest Worker"
+           }
+  end
+
+  test "lists server api keys in stable order and scopes them by environment and workspace" do
+    membership = insert(:membership)
+    other_membership = insert(:membership)
+
+    assert {:ok, notification_app} =
+             NotificationApps.create_notification_app(membership.workspace, %{
+               name: "Payments Service"
+             })
+
+    assert {:ok, other_notification_app} =
+             NotificationApps.create_notification_app(other_membership.workspace, %{
+               name: "Billing Service"
+             })
+
+    development =
+      Enum.find(notification_app.environments, &(&1.environment_slug == "development"))
+
+    production =
+      Enum.find(notification_app.environments, &(&1.environment_slug == "production"))
+
+    other_development =
+      Enum.find(other_notification_app.environments, &(&1.environment_slug == "development"))
+
+    assert {:ok, _alpha_key} =
+             NotificationApps.create_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               %{
+                 name: "Alpha"
+               }
+             )
+
+    assert {:ok, _beta_key} =
+             NotificationApps.create_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               %{
+                 name: "Beta"
+               }
+             )
+
+    assert {:ok, _production_key} =
+             NotificationApps.create_server_api_key(
+               membership,
+               notification_app.id,
+               production.id,
+               %{
+                 name: "Alpha"
+               }
+             )
+
+    assert {:ok, _other_workspace_key} =
+             NotificationApps.create_server_api_key(
+               other_membership,
+               other_notification_app.id,
+               other_development.id,
+               %{name: "Alpha"}
+             )
+
+    assert {:ok, development_keys} =
+             NotificationApps.list_server_api_keys(
+               membership.workspace,
+               notification_app.id,
+               development.id
+             )
+
+    assert Enum.map(development_keys, & &1.name) == ["Alpha", "Beta"]
+    assert Enum.all?(development_keys, &(not Map.has_key?(&1, :secret_digest)))
+
+    assert {:ok, production_keys} =
+             NotificationApps.list_server_api_keys(
+               membership.workspace,
+               notification_app.id,
+               production.id
+             )
+
+    assert Enum.map(production_keys, & &1.name) == ["Alpha"]
+
+    assert {:error, :not_found} =
+             NotificationApps.list_server_api_keys(
+               membership.workspace,
+               other_notification_app.id,
+               other_development.id
+             )
+  end
+
+  test "revokes only the active server api key in the selected environment" do
+    membership = insert(:membership)
+
+    assert {:ok, notification_app} =
+             NotificationApps.create_notification_app(membership.workspace, %{
+               name: "Payments Service"
+             })
+
+    development =
+      Enum.find(notification_app.environments, &(&1.environment_slug == "development"))
+
+    production =
+      Enum.find(notification_app.environments, &(&1.environment_slug == "production"))
+
+    assert {:ok, %{server_api_key: server_api_key}} =
+             NotificationApps.create_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               %{
+                 name: "Ingest Worker"
+               }
+             )
+
+    assert {:error, :not_found} =
+             NotificationApps.revoke_server_api_key(
+               membership,
+               notification_app.id,
+               production.id,
+               server_api_key.id
+             )
+
+    assert {:ok, revoked_server_api_key} =
+             NotificationApps.revoke_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               server_api_key.id
+             )
+
+    assert revoked_server_api_key.revoked_at
+
+    assert {:error, :not_found} =
+             NotificationApps.revoke_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               server_api_key.id
+             )
+
+    assert %AuditEvent{action: "server_api_key_revoked", metadata: metadata} =
+             Repo.get_by(AuditEvent, action: "server_api_key_revoked")
+
+    assert metadata == %{
+             "app_environment_id" => development.id,
+             "environment_id" => development.id,
+             "name" => "Ingest Worker"
+           }
+  end
+
+  test "rotates a server api key atomically and leaves exactly one replacement active" do
+    membership = insert(:membership)
+
+    assert {:ok, notification_app} =
+             NotificationApps.create_notification_app(membership.workspace, %{
+               name: "Payments Service"
+             })
+
+    development =
+      Enum.find(notification_app.environments, &(&1.environment_slug == "development"))
+
+    assert {:ok, %{server_api_key: server_api_key}} =
+             NotificationApps.create_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               %{
+                 name: "Ingest Worker"
+               }
+             )
+
+    assert {:ok, %{server_api_key: replacement_server_api_key, secret: replacement_secret}} =
+             NotificationApps.rotate_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               server_api_key.id
+             )
+
+    assert String.starts_with?(replacement_secret, "nfy_sk_")
+
+    reloaded_server_api_key = Repo.get!(ServerApiKey, server_api_key.id)
+    replacement_record = Repo.get!(ServerApiKey, replacement_server_api_key.id)
+
+    assert reloaded_server_api_key.revoked_at
+    assert is_nil(replacement_record.revoked_at)
+    assert replacement_record.name == reloaded_server_api_key.name
+
+    assert Repo.aggregate(
+             from(server_api_key in ServerApiKey,
+               where:
+                 server_api_key.app_environment_id == ^development.id and
+                   is_nil(server_api_key.revoked_at)
+             ),
+             :count,
+             :id
+           ) == 1
+
+    assert %AuditEvent{action: "server_api_key_rotated", target_id: target_id, metadata: metadata} =
+             Repo.get_by(AuditEvent, action: "server_api_key_rotated")
+
+    assert target_id == server_api_key.id
+
+    assert metadata == %{
+             "app_environment_id" => development.id,
+             "environment_id" => development.id,
+             "name" => "Ingest Worker",
+             "replacement_server_api_key_id" => replacement_server_api_key.id
+           }
+  end
+
+  test "failed rotation leaves the original server api key active and creates no replacement" do
+    membership = insert(:membership)
+
+    assert {:ok, notification_app} =
+             NotificationApps.create_notification_app(membership.workspace, %{
+               name: "Payments Service"
+             })
+
+    development =
+      Enum.find(notification_app.environments, &(&1.environment_slug == "development"))
+
+    assert {:ok, %{server_api_key: server_api_key}} =
+             NotificationApps.create_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               %{
+                 name: "Ingest Worker"
+               }
+             )
+
+    assert {:error, :invalid_secret} =
+             NotificationApps.rotate_server_api_key(
+               membership,
+               notification_app.id,
+               development.id,
+               server_api_key.id,
+               fn -> "bad-secret" end
+             )
+
+    reloaded_server_api_key = Repo.get!(ServerApiKey, server_api_key.id)
+
+    assert is_nil(reloaded_server_api_key.revoked_at)
+
+    assert Repo.aggregate(
+             from(server_api_key in ServerApiKey,
+               where: server_api_key.app_environment_id == ^development.id
+             ),
+             :count,
+             :id
+           ) == 1
+
+    assert Repo.get_by(AuditEvent, action: "server_api_key_rotated") == nil
   end
 
   defp allocate_slug(workspace, name) do
