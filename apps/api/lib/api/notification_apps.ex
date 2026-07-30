@@ -121,7 +121,11 @@ defmodule Api.NotificationApps do
           Repo.all(
             from server_api_key in ServerApiKey,
               where: server_api_key.app_environment_id == ^resolved_environment_id,
-              order_by: [asc: server_api_key.inserted_at, asc: server_api_key.id]
+              order_by: [
+                asc: server_api_key.name,
+                asc: server_api_key.inserted_at,
+                asc: server_api_key.id
+              ]
           )
 
         {:ok, Enum.map(server_api_keys, &serialize_server_api_key/1)}
@@ -213,7 +217,7 @@ defmodule Api.NotificationApps do
            ),
          {:ok, %{server_api_key: revoked_server_api_key}} <-
            Multi.new()
-           |> Multi.run(:server_api_key, fn repo, _changes ->
+           |> Multi.run(:loaded_server_api_key, fn repo, _changes ->
              with {:ok, server_api_key_id} <- Ecto.UUID.cast(server_api_key_id),
                   %ServerApiKey{} = server_api_key <-
                     repo.one(
@@ -230,7 +234,7 @@ defmodule Api.NotificationApps do
                nil -> {:error, :not_found}
              end
            end)
-           |> Multi.update(:server_api_key, fn %{server_api_key: server_api_key} ->
+           |> Multi.update(:server_api_key, fn %{loaded_server_api_key: server_api_key} ->
              Ecto.Changeset.change(server_api_key, revoked_at: now)
            end)
            |> Multi.insert(:audit_event, fn %{server_api_key: revoked_server_api_key} ->
