@@ -21,15 +21,15 @@ import {
   BellRing,
   Clock3,
   Copy,
-  KeyRound,
   LockKeyhole,
   Plus,
-  RotateCcw,
   ShieldCheck,
   SlidersHorizontal,
   Webhook,
 } from "lucide-react";
 import type { WorkspaceSectionId } from "@/lib/workspace-sections";
+import type { WorkspaceSecuritySearch } from "./workspace-security-page";
+import { WorkspaceSecurityPage } from "./workspace-security-page";
 import { WorkspacePageHeader, WorkspaceShell } from "./workspace-shell";
 
 type LabelValueRow = readonly [label: string, value: string];
@@ -179,7 +179,15 @@ const notificationPreferences = [
   ["Incident contacts", "3 recipients"],
 ] satisfies LabelValueRow[];
 
-function WorkspaceSectionPage({ section }: Readonly<{ section: WorkspaceSectionId }>) {
+function WorkspaceSectionPage({
+  search,
+  section,
+  workspaceSlug,
+}: Readonly<{
+  search?: WorkspaceSecuritySearch;
+  section: WorkspaceSectionId;
+  workspaceSlug: string;
+}>) {
   const copy = pageCopy[section];
 
   return (
@@ -190,7 +198,7 @@ function WorkspaceSectionPage({ section }: Readonly<{ section: WorkspaceSectionI
         description={copy.description}
         title={copy.title}
       />
-      <SectionContent section={section} />
+      <SectionContent search={search} section={section} workspaceSlug={workspaceSlug} />
     </WorkspaceShell>
   );
 }
@@ -227,18 +235,7 @@ function SectionActions({ section }: Readonly<{ section: WorkspaceSectionId }>) 
   }
 
   if (section === "security") {
-    return (
-      <>
-        <Button variant="outline">
-          <RotateCcw />
-          Rotate key
-        </Button>
-        <Button>
-          <KeyRound />
-          New key
-        </Button>
-      </>
-    );
+    return null;
   }
 
   return (
@@ -249,7 +246,15 @@ function SectionActions({ section }: Readonly<{ section: WorkspaceSectionId }>) 
   );
 }
 
-function SectionContent({ section }: Readonly<{ section: WorkspaceSectionId }>) {
+function SectionContent({
+  search,
+  section,
+  workspaceSlug,
+}: Readonly<{
+  search?: WorkspaceSecuritySearch;
+  section: WorkspaceSectionId;
+  workspaceSlug: string;
+}>) {
   if (section === "apps") {
     return <AppsContent />;
   }
@@ -267,7 +272,7 @@ function SectionContent({ section }: Readonly<{ section: WorkspaceSectionId }>) 
   }
 
   if (section === "security") {
-    return <SecurityContent />;
+    return <WorkspaceSecurityPage search={search ?? {}} workspaceSlug={workspaceSlug} />;
   }
 
   return <SettingsContent />;
