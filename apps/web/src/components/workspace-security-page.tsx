@@ -93,29 +93,35 @@ function WorkspaceSecurityPage({
   const selectedEnvironment = selectedApp
     ? selectEnvironment(selectedApp, search.environment)
     : undefined;
+  const selectedScope =
+    selectedApp && selectedEnvironment
+      ? { appId: selectedApp.id, environmentId: selectedEnvironment.id }
+      : undefined;
   const selectedSearch =
     selectedApp && selectedEnvironment
       ? { app: selectedApp.slug, environment: selectedEnvironment.slug }
       : undefined;
 
-  const keysQueryKey =
-    selectedApp && selectedEnvironment
-      ? workspaceQueryKey(
-          workspaceSlug,
-          "security",
-          "server-api-keys",
-          selectedApp.id,
-          selectedEnvironment.id,
-        )
-      : undefined;
+  const keysQueryKey = selectedScope
+    ? workspaceQueryKey(
+        workspaceSlug,
+        "security",
+        "server-api-keys",
+        selectedScope.appId,
+        selectedScope.environmentId,
+      )
+    : undefined;
 
   const keysQuery = useQuery({
-    enabled: Boolean(selectedApp && selectedEnvironment && keysQueryKey),
+    enabled: Boolean(selectedScope && keysQueryKey),
     queryKey: keysQueryKey ?? workspaceQueryKey(workspaceSlug, "security", "server-api-keys"),
-    queryFn: () =>
-      auth.authenticatedRequest((token) =>
-        listEnvironmentServerApiKeys(token, selectedApp!.id, selectedEnvironment!.id),
-      ),
+    queryFn: () => {
+      const scope = requireSelectedScope(selectedScope);
+
+      return auth.authenticatedRequest((token) =>
+        listEnvironmentServerApiKeys(token, scope.appId, scope.environmentId),
+      );
+    },
   });
 
   useEffect(() => {
@@ -134,32 +140,31 @@ function WorkspaceSecurityPage({
   };
 
   const createMutation = useMutation({
-    mutationFn: (body: ApiCreateEnvironmentServerApiKeyRequest) =>
-      auth.authenticatedRequest((token) =>
-        createEnvironmentServerApiKey(token, selectedApp!.id, selectedEnvironment!.id, body),
-      ),
+    mutationFn: (body: ApiCreateEnvironmentServerApiKeyRequest) => {
+      const scope = requireSelectedScope(selectedScope);
+
+      return auth.authenticatedRequest((token) =>
+        createEnvironmentServerApiKey(token, scope.appId, scope.environmentId, body),
+      );
+    },
   });
   const rotateMutation = useMutation({
-    mutationFn: (serverApiKeyId: string) =>
-      auth.authenticatedRequest((token) =>
-        rotateEnvironmentServerApiKey(
-          token,
-          selectedApp!.id,
-          selectedEnvironment!.id,
-          serverApiKeyId,
-        ),
-      ),
+    mutationFn: (serverApiKeyId: string) => {
+      const scope = requireSelectedScope(selectedScope);
+
+      return auth.authenticatedRequest((token) =>
+        rotateEnvironmentServerApiKey(token, scope.appId, scope.environmentId, serverApiKeyId),
+      );
+    },
   });
   const revokeMutation = useMutation({
-    mutationFn: (serverApiKeyId: string) =>
-      auth.authenticatedRequest((token) =>
-        revokeEnvironmentServerApiKey(
-          token,
-          selectedApp!.id,
-          selectedEnvironment!.id,
-          serverApiKeyId,
-        ),
-      ),
+    mutationFn: (serverApiKeyId: string) => {
+      const scope = requireSelectedScope(selectedScope);
+
+      return auth.authenticatedRequest((token) =>
+        revokeEnvironmentServerApiKey(token, scope.appId, scope.environmentId, serverApiKeyId),
+      );
+    },
   });
 
   const createForm = useForm({
@@ -831,6 +836,14 @@ function statusLabel(status: ApiEnvironmentServerApiKey["status"]) {
 
 function roleCanManageCredentials(role: string | undefined) {
   return role === "owner" || role === "admin" || role === "developer";
+}
+
+function requireSelectedScope(selectedScope: { appId: string; environmentId: string } | undefined) {
+  if (!selectedScope) {
+    throw new Error("Expected a selected app and environment scope.");
+  }
+
+  return selectedScope;
 }
 
 function apiFieldError(error: unknown, field: string) {

@@ -237,11 +237,11 @@ Responsibilities:
 - socket token policy
 - future audit activity view
 
-Server API keys are future environment-scoped backend credentials for customer
+Server API keys are environment-scoped backend credentials for customer
 servers. They are distinct from environment client keys, which remain public
 browser identifiers with the `nfy_pk_` prefix. The dashboard keeps using
-workspace, app, and environment slugs for navigation, while future server API
-key endpoints identify the owning app and environment by `:appId` and
+workspace, app, and environment slugs for navigation, while server API key
+endpoints identify the owning app and environment by `:appId` and
 `:environmentId` UUIDs.
 
 The v1 key lifecycle is list, create, rotate, and revoke. Reads require the
@@ -254,15 +254,19 @@ and lifecycle state. Revocation is irreversible and retained as lifecycle
 history. Rotation atomically creates a replacement key and revokes the
 previously active key in the same environment.
 
-Server API keys exist for a future ingress authentication epic only. This
-contract does not add ingestion, request authentication middleware, event
-storage, or delivery behavior. Existing environment client-key, trusted-origin,
-and readiness rules remain unchanged.
+The Security page lets users pick an app and environment by slug, keeps that
+selection in the route search state, and then loads or mutates keys through the
+UUID-based API. Owners, admins, and developers can create, rotate, and revoke
+keys. Viewers can inspect metadata but cannot mutate secrets.
+
+Server API keys support management only in this phase. The later ingress
+authentication epic is still deferred. This contract does not add ingestion,
+request authentication middleware, event storage, or delivery behavior.
+Existing environment client-key, trusted-origin, and readiness rules remain
+unchanged.
 
 Expected future backend ownership:
 
-- API key storage and hashing
-- key rotation lifecycle
 - origin enforcement
 - audit-event retrieval and retention policy
 

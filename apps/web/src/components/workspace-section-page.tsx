@@ -16,17 +16,7 @@ import {
   UsageBar,
 } from "@notify/ui";
 import type { LucideIcon } from "lucide-react";
-import {
-  ArrowUpRight,
-  BellRing,
-  Clock3,
-  Copy,
-  LockKeyhole,
-  Plus,
-  ShieldCheck,
-  SlidersHorizontal,
-  Webhook,
-} from "lucide-react";
+import { ArrowUpRight, BellRing, Copy, Plus, SlidersHorizontal, Webhook } from "lucide-react";
 import type { WorkspaceSectionId } from "@/lib/workspace-sections";
 import type { WorkspaceSecuritySearch } from "./workspace-security-page";
 import { WorkspaceSecurityPage } from "./workspace-security-page";
@@ -145,25 +135,6 @@ const analyticsBreakdown = [
   ["Acme Support", "99.5%", "62ms", "9.4k"],
   ["Acme Labs", "98.1%", "91ms", "1.2k"],
 ] satisfies Array<readonly [app: string, success: string, latency: string, events: string]>;
-
-const apiKeys = [
-  ["Server live key", "sk_live_8fd2", "Rotated 2 days ago", "Active"],
-  ["Server test key", "sk_test_91aa", "Rotated 21 days ago", "Active"],
-  ["Legacy ingest key", "sk_live_2d10", "Expires in 6 days", "Rotate"],
-] satisfies Array<readonly [name: string, key: string, rotated: string, status: string]>;
-
-const trustedOrigins = [
-  ["app.acme.com", "Production"],
-  ["support.acme.com", "Production"],
-  ["labs.acme.com", "Sandbox"],
-] satisfies LabelValueRow[];
-
-const securityPosture = [
-  ["Socket token expiry", "15 minutes"],
-  ["Origin enforcement", "Enabled"],
-  ["Audit log retention", "180 days"],
-  ["Key rotation reminder", "30 days"],
-] satisfies LabelValueRow[];
 
 const workspaceSettings = [
   ["Workspace name", "Acme workspace"],
@@ -497,71 +468,6 @@ function SubscriptionContent() {
   );
 }
 
-function SecurityContent() {
-  return (
-    <div className="grid gap-6">
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>API keys</CardTitle>
-            <CardDescription>Server credentials used for signed ingress requests.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Key</TableHead>
-                  <TableHead>Rotation</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {apiKeys.map(([name, key, rotated, status]) => (
-                  <TableRow key={key}>
-                    <TableCell className="font-medium">{name}</TableCell>
-                    <TableCell className="font-mono text-xs">{key}</TableCell>
-                    <TableCell>{rotated}</TableCell>
-                    <TableCell>
-                      <Badge variant={status === "Rotate" ? "warning" : "success"}>{status}</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-        <ChecklistCard
-          description="Runtime safeguards for app and API access."
-          icon={ShieldCheck}
-          items={securityPosture}
-          title="Security posture"
-        />
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <ChecklistCard
-          description="Browser origins allowed to connect to client apps."
-          icon={LockKeyhole}
-          items={trustedOrigins}
-          title="Trusted origins"
-        />
-        <Card>
-          <CardHeader>
-            <CardTitle>Audit activity</CardTitle>
-            <CardDescription>Security-sensitive workspace changes.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            <ActivityRow detail="Production key rotated" meta="2 days ago" />
-            <ActivityRow detail="Trusted origin added" meta="5 days ago" />
-            <ActivityRow detail="Socket token policy updated" meta="12 days ago" />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
 function SettingsContent() {
   return (
     <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
@@ -577,20 +483,6 @@ function SettingsContent() {
         items={notificationPreferences}
         title="Notification preferences"
       />
-    </div>
-  );
-}
-
-function ActivityRow({ detail, meta }: Readonly<{ detail: string; meta: string }>) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-sm border p-3">
-      <div className="flex items-center gap-3">
-        <span className="grid size-8 place-items-center rounded-sm bg-secondary">
-          <Clock3 className="size-4" />
-        </span>
-        <p className="font-medium text-sm">{detail}</p>
-      </div>
-      <p className="text-muted-foreground text-sm">{meta}</p>
     </div>
   );
 }
