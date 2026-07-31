@@ -1,17 +1,101 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, click, render, waitFor } from "@/test/render";
+import {
+  blur,
+  buttonByText,
+  change,
+  cleanup,
+  click,
+  installBrowserCoordination,
+  render,
+  restoreBrowserCoordination,
+  waitFor,
+} from "@/test/render";
 import { server } from "@/test/server";
 import { NotificationAppLifecycleControls } from "./notification-app-lifecycle-controls";
 
 const apiBaseUrl = "http://localhost:4100";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  restoreBrowserCoordination();
+});
 
 describe("notification app lifecycle controls", () => {
+  it("renames an app successfully", async () => {
+    expect.hasAssertions();
+    let updatedName: string | undefined;
+    installBrowserCoordination({ includeScrollMocks: true });
+
+    server.use(
+      http.patch(`${apiBaseUrl}/api/apps/payments-service`, async ({ request }) => {
+        const body = (await request.json()) as { name: string };
+        updatedName = body.name;
+
+        return HttpResponse.json({ ...notificationApp(), name: body.name });
+      }),
+    );
+
+    renderLifecycleControls();
+
+    const nameInput = document.body.querySelector<HTMLInputElement>("#notification-app-name");
+    expect(nameInput).toBeInstanceOf(HTMLInputElement);
+    change(nameInput as HTMLInputElement, "Payments API");
+    click(buttonByText(document.body, "Save name"));
+
+    await waitFor(() => updatedName === "Payments API", "rename request");
+    expect(updatedName).toBe("Payments API");
+  });
+
+  it("shows validation and api field errors when renaming fails", async () => {
+    expect.hasAssertions();
+    installBrowserCoordination({ includeScrollMocks: true });
+
+    server.use(
+      http.patch(`${apiBaseUrl}/api/apps/payments-service`, () =>
+        HttpResponse.json(
+          {
+            errors: {
+              code: "validation_failed",
+              detail: "Name already exists.",
+              fields: { name: ["Name already exists."] },
+            },
+          },
+          { status: 422 },
+        ),
+      ),
+    );
+
+    renderLifecycleControls();
+
+    const nameInput = document.body.querySelector<HTMLInputElement>("#notification-app-name");
+    expect(nameInput).toBeInstanceOf(HTMLInputElement);
+    change(nameInput as HTMLInputElement, "   ");
+    blur(nameInput as HTMLInputElement);
+    await waitFor(() => document.body.textContent?.includes("Enter an app name.") === true);
+
+    change(nameInput as HTMLInputElement, "Payments API");
+    blur(nameInput as HTMLInputElement);
+    await waitFor(
+      () => buttonByText(document.body, "Save name").disabled === false,
+      "enabled save name button",
+    );
+    click(buttonByText(document.body, "Save name"));
+    await waitFor(() => document.body.textContent?.includes("Name already exists.") === true);
+  });
+
+  it("hides management controls when app management is disabled", () => {
+    installBrowserCoordination({ includeScrollMocks: true });
+    renderLifecycleControls({ canManageApps: false });
+
+    expect(document.body.textContent?.includes("Save name")).toBe(false);
+    expect(document.body.textContent?.includes("Archive app")).toBe(false);
+  });
+
   it("requires confirmation and prevents duplicate archive submissions", async () => {
     expect.hasAssertions();
+    installBrowserCoordination({ includeScrollMocks: true });
     let archiveCalls = 0;
     let archived = false;
     let resolveArchive: ((response: Response) => void) | undefined;
@@ -26,20 +110,11 @@ describe("notification app lifecycle controls", () => {
       }),
     );
 
-    render(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { mutations: { retry: false } } })}
-      >
-        <NotificationAppLifecycleControls
-          app={notificationApp()}
-          authenticatedRequest={(request) => request("access-token")}
-          canManageApps
-          onArchived={() => {
-            archived = true;
-          }}
-        />
-      </QueryClientProvider>,
-    );
+    renderLifecycleControls({
+      onArchived: () => {
+        archived = true;
+      },
+    });
 
     click(buttonByText(document.body, "Archive app"));
     expect(archiveCalls).toBe(0);
@@ -61,16 +136,25 @@ describe("notification app lifecycle controls", () => {
   });
 });
 
-function buttonByText(container: HTMLElement, text: string) {
-  const button = Array.from(container.querySelectorAll("button")).find(
-    (candidate) => candidate.textContent?.trim() === text,
+function renderLifecycleControls({
+  canManageApps = true,
+  onArchived,
+}: Readonly<{
+  canManageApps?: boolean;
+  onArchived?: () => void;
+}> = {}) {
+  return render(
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { mutations: { retry: false } } })}
+    >
+      <NotificationAppLifecycleControls
+        app={notificationApp()}
+        authenticatedRequest={(request) => request("access-token")}
+        canManageApps={canManageApps}
+        onArchived={onArchived}
+      />
+    </QueryClientProvider>,
   );
-
-  if (!button) {
-    throw new Error(`Could not find button: ${text}`);
-  }
-
-  return button;
 }
 
 function notificationApp() {

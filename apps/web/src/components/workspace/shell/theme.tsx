@@ -12,7 +12,12 @@ function useWorkspaceTheme() {
 
   function setThemeMode(nextTheme: ThemeMode) {
     setTheme(nextTheme);
-    window.localStorage.setItem("notify-theme", nextTheme);
+
+    try {
+      window.localStorage.setItem("notify-theme", nextTheme);
+    } catch {
+      // Keep the in-memory theme change even when storage is unavailable.
+    }
   }
 
   return { setThemeMode, theme };
@@ -45,7 +50,6 @@ function WorkspaceThemeButton({
 }>) {
   const switchId = useId();
 
-  const nextThemeLabel = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
   const isDark = theme === "dark";
   const visibleLabel = isDark ? "Dark mode" : "Light mode";
   const shortLabel = isDark ? "Dark" : "Light";
@@ -53,12 +57,11 @@ function WorkspaceThemeButton({
   return (
     <div
       className={cn(
-        "h-9 items-center gap-2 rounded-full border border-border/70 bg-background px-3 shadow-sm transition-[border-color,box-shadow,background-color] hover:border-primary/30 hover:bg-secondary/60 hover:shadow-md",
+        "flex h-9 items-center gap-2 rounded-full border border-border/70 bg-background px-3 shadow-sm transition-[border-color,box-shadow,background-color] hover:border-primary/30 hover:bg-secondary/60 hover:shadow-md",
         className,
       )}
     >
       <Switch
-        aria-label={nextThemeLabel}
         checked={isDark}
         id={switchId}
         onCheckedChange={(checked) => onThemeChange(checked ? "dark" : "light")}

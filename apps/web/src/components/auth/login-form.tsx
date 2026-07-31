@@ -110,10 +110,16 @@ function LoginForm({
             error={
               apiFieldError(mutation.error, "email") ?? firstFieldError(field.state.meta.errors)
             }
+            errorId={`${field.name}-error`}
             inputId={field.name}
             label="Email"
           >
             <Input
+              aria-describedby={
+                (apiFieldError(mutation.error, "email") ?? firstFieldError(field.state.meta.errors))
+                  ? `${field.name}-error`
+                  : undefined
+              }
               autoComplete="email"
               id={field.name}
               name={field.name}
@@ -150,10 +156,17 @@ function LoginForm({
             error={
               apiFieldError(mutation.error, "password") ?? firstFieldError(field.state.meta.errors)
             }
+            errorId={`${field.name}-error`}
             inputId={field.name}
             label="Password"
           >
             <PasswordInput
+              aria-describedby={
+                (apiFieldError(mutation.error, "password") ??
+                firstFieldError(field.state.meta.errors))
+                  ? `${field.name}-error`
+                  : undefined
+              }
               autoComplete="current-password"
               id={field.name}
               name={field.name}

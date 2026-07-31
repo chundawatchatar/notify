@@ -15,10 +15,16 @@ import {
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Archive, Pencil } from "lucide-react";
-import type { FormEvent } from "react";
 import { useState } from "react";
 import { z } from "zod";
-import { ApiRequestError, archiveNotificationApp, updateNotificationApp } from "@/lib/api-client";
+import { archiveNotificationApp, updateNotificationApp } from "@/lib/api-client";
+import {
+  apiFieldError,
+  firstFieldError,
+  formSubmitHandler,
+  requestErrorMessage,
+  zodError,
+} from "@/lib/form-utils";
 
 const appNameSchema = z
   .string()
@@ -87,27 +93,31 @@ function NotificationAppLifecycleControls({
             onSubmit: ({ value }) => zodError(appNameSchema, value),
           }}
         >
-          {(field) => (
-            <div className="grid min-w-0 flex-1 gap-2">
-              <Label htmlFor="notification-app-name">App name</Label>
-              <Input
-                id="notification-app-name"
-                onBlur={field.handleBlur}
-                onChange={(event) => {
-                  updateMutation.reset();
-                  field.handleChange(event.target.value);
-                }}
-                value={field.state.value}
-              />
-              {(apiFieldError(updateMutation.error, "name") ??
-              firstFieldError(field.state.meta.errors)) ? (
-                <p className="text-destructive text-sm" role="alert">
-                  {apiFieldError(updateMutation.error, "name") ??
-                    firstFieldError(field.state.meta.errors)}
-                </p>
-              ) : null}
-            </div>
-          )}
+          {(field) => {
+            const nameError =
+              apiFieldError(updateMutation.error, "name") ??
+              firstFieldError(field.state.meta.errors);
+
+            return (
+              <div className="grid min-w-0 flex-1 gap-2">
+                <Label htmlFor="notification-app-name">App name</Label>
+                <Input
+                  id="notification-app-name"
+                  onBlur={field.handleBlur}
+                  onChange={(event) => {
+                    updateMutation.reset();
+                    field.handleChange(event.target.value);
+                  }}
+                  value={field.state.value}
+                />
+                {nameError ? (
+                  <p className="text-destructive text-sm" role="alert">
+                    {nameError}
+                  </p>
+                ) : null}
+              </div>
+            );
+          }}
         </form.Field>
         <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
           {([canSubmit, isSubmitting]) => (
@@ -139,9 +149,15 @@ function NotificationAppLifecycleControls({
 
       <Dialog
         onOpenChange={(open) => {
-          if (!archiveMutation.isPending) {
-            setArchiveConfirmationOpen(open);
+          if (archiveMutation.isPending) {
+            return;
           }
+
+          if (open) {
+            archiveMutation.reset();
+          }
+
+          setArchiveConfirmationOpen(open);
         }}
         open={archiveConfirmationOpen}
       >
@@ -174,31 +190,4 @@ function NotificationAppLifecycleControls({
   );
 }
 
-function formSubmitHandler(handleSubmit: () => Promise<void>) {
-  return (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    void handleSubmit();
-  };
-}
-
-function zodError(schema: z.ZodType<string>, value: string) {
-  const result = schema.safeParse(value);
-  return result.success ? undefined : result.error.issues[0]?.message;
-}
-
-function apiFieldError(error: unknown, field: string) {
-  return error instanceof ApiRequestError ? error.fields?.[field]?.[0] : undefined;
-}
-
-function firstFieldError(errors: unknown[]) {
-  return errors.find((error): error is string => typeof error === "string");
-}
-
-function requestErrorMessage(error: unknown) {
-  return error instanceof Error
-    ? error.message
-    : "Unable to update the notification app. Try again.";
-}
-
-export { NotificationAppLifecycleControls };
+export { appNameSchema, NotificationAppLifecycleControls };

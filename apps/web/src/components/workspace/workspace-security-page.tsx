@@ -7,7 +7,6 @@ import type {
 import {
   Alert,
   AlertTitle,
-  Badge,
   Button,
   Card,
   CardContent,
@@ -27,22 +26,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from "@notify/ui";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "@tanstack/react-router";
-import { Copy, KeyRound, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
-import type { FormEvent, ReactNode } from "react";
+import { KeyRound, RefreshCw } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import {
-  ApiRequestError,
   createEnvironmentServerApiKey,
   listEnvironmentServerApiKeys,
   listNotificationApps,
@@ -50,7 +42,18 @@ import {
   rotateEnvironmentServerApiKey,
 } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
+import {
+  apiFieldError,
+  firstFieldError,
+  formatDate,
+  formSubmitHandler,
+  requestErrorMessage,
+  zodError,
+} from "@/lib/form-utils";
 import { workspaceQueryKey } from "@/lib/workspace-queries";
+import { WorkspaceSecurityConfirmationDialog } from "./workspace-security/confirmation-dialog";
+import { WorkspaceSecurityRevealDialog } from "./workspace-security/reveal-dialog";
+import { WorkspaceSecurityServerApiKeysTable } from "./workspace-security/server-api-keys-table";
 
 type WorkspaceSecuritySearch = {
   app?: string;
@@ -443,7 +446,7 @@ function WorkspaceSecurityPage({
         </DialogContent>
       </Dialog>
 
-      <ConfirmationDialog
+      <WorkspaceSecurityConfirmationDialog
         confirmation={confirmation}
         error={
           confirmation?.kind === "rotate"
@@ -462,58 +465,13 @@ function WorkspaceSecurityPage({
           }
         }}
       />
-
-      <Dialog
-        onOpenChange={(open) => {
-          if (!open) {
-            closeReveal();
-          }
-        }}
-        open={Boolean(revealSecret)}
-      >
-        <DialogContent
-          onEscapeKeyDown={(event) => event.preventDefault()}
-          onInteractOutside={(event) => event.preventDefault()}
-          showCloseButton={false}
-        >
-          <DialogHeader>
-            <DialogTitle>Copy this secret now</DialogTitle>
-            <DialogDescription>
-              This raw secret is shown exactly once. After this dialog closes, Notify cannot show it
-              again.
-            </DialogDescription>
-          </DialogHeader>
-          {revealSecret ? (
-            <div className="grid gap-3">
-              <div className="rounded-sm border bg-secondary/35 p-3">
-                <p className="text-muted-foreground text-xs">Server API key secret</p>
-                <code className="mt-2 block break-all text-sm">{revealSecret.secret}</code>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={revealSecret.status === "active" ? "success" : "outline"}>
-                  {statusLabel(revealSecret.status)}
-                </Badge>
-                <span className="text-muted-foreground text-sm">{revealSecret.name}</span>
-              </div>
-              {copyError ? (
-                <Alert severity="error">
-                  <AlertTitle>Copy failed</AlertTitle>
-                  {copyError}
-                </Alert>
-              ) : null}
-            </div>
-          ) : null}
-          <DialogFooter>
-            <Button onClick={() => void copySecret()} type="button" variant="outline">
-              <Copy />
-              {copiedSecret ? "Copied" : "Copy secret"}
-            </Button>
-            <Button onClick={closeReveal} type="button">
-              I copied the secret
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <WorkspaceSecurityRevealDialog
+        copiedSecret={copiedSecret}
+        copyError={copyError}
+        onClose={closeReveal}
+        onCopy={() => void copySecret()}
+        revealSecret={revealSecret}
+      />
     </>
   );
 
@@ -622,149 +580,24 @@ function WorkspaceSecurityPage({
     }
 
     return (
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Key hint</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Revoked</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {keysQuery.data.api_keys.map((apiKey) => {
-              const active = apiKey.status === "active";
-
-              return (
-                <TableRow key={apiKey.id}>
-                  <TableCell className="font-medium">{apiKey.name}</TableCell>
-                  <TableCell className="font-mono text-xs">{apiKey.masked_hint}</TableCell>
-                  <TableCell>
-                    <Badge variant={active ? "success" : "outline"}>
-                      {statusLabel(apiKey.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{formatDate(apiKey.created_at)}</TableCell>
-                  <TableCell>{apiKey.revoked_at ? formatDate(apiKey.revoked_at) : "-"}</TableCell>
-                  <TableCell className="text-right">
-                    {canManageCredentials && active ? (
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          aria-label={`Rotate ${apiKey.name}`}
-                          disabled={rotateMutation.isPending || revokeMutation.isPending}
-                          onClick={() => {
-                            rotateMutation.reset();
-                            revokeMutation.reset();
-                            setConfirmation({ key: apiKey, kind: "rotate" });
-                          }}
-                          size="sm"
-                          type="button"
-                          variant="outline"
-                        >
-                          <RotateCcw />
-                          Rotate
-                        </Button>
-                        <Button
-                          aria-label={`Revoke ${apiKey.name}`}
-                          disabled={rotateMutation.isPending || revokeMutation.isPending}
-                          onClick={() => {
-                            rotateMutation.reset();
-                            revokeMutation.reset();
-                            setConfirmation({ key: apiKey, kind: "revoke" });
-                          }}
-                          size="sm"
-                          type="button"
-                          variant="outline"
-                        >
-                          <Trash2 />
-                          Revoke
-                        </Button>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">
-                        {active ? "Read-only" : "No actions"}
-                      </span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
+      <WorkspaceSecurityServerApiKeysTable
+        apiKeys={keysQuery.data.api_keys}
+        canManageCredentials={canManageCredentials}
+        disabled={rotateMutation.isPending || revokeMutation.isPending}
+        formatDate={(value) => formatDate(value, { dateStyle: "medium", timeStyle: "short" })}
+        onRevoke={(apiKey) => {
+          rotateMutation.reset();
+          revokeMutation.reset();
+          setConfirmation({ key: apiKey, kind: "revoke" });
+        }}
+        onRotate={(apiKey) => {
+          rotateMutation.reset();
+          revokeMutation.reset();
+          setConfirmation({ key: apiKey, kind: "rotate" });
+        }}
+      />
     );
   }
-}
-
-function ConfirmationDialog({
-  confirmation,
-  error,
-  isPending,
-  onConfirm,
-  onOpenChange,
-}: Readonly<{
-  confirmation: ConfirmationState;
-  error?: string;
-  isPending: boolean;
-  onConfirm: () => void;
-  onOpenChange: (open: boolean) => void;
-}>) {
-  if (!confirmation) {
-    return (
-      <Dialog onOpenChange={onOpenChange} open={false}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm server API key action</DialogTitle>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  return (
-    <Dialog onOpenChange={onOpenChange} open={Boolean(confirmation)}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {confirmation.kind === "rotate"
-              ? "Rotate this server API key?"
-              : "Revoke this server API key?"}
-          </DialogTitle>
-          <DialogDescription>
-            {confirmation.kind === "rotate"
-              ? `${confirmation.key.name} will be revoked and replaced with a new secret for the same environment.`
-              : `${confirmation.key.name} will be revoked immediately and cannot be restored.`}
-          </DialogDescription>
-        </DialogHeader>
-        {error ? (
-          <Alert severity="error">
-            <AlertTitle>Action failed</AlertTitle>
-            {error}
-          </Alert>
-        ) : null}
-        <DialogFooter>
-          <Button
-            disabled={isPending}
-            onClick={() => onOpenChange(false)}
-            type="button"
-            variant="outline"
-          >
-            Cancel
-          </Button>
-          <Button disabled={isPending} onClick={onConfirm} type="button" variant="destructive">
-            {isPending
-              ? "Working..."
-              : confirmation.kind === "rotate"
-                ? "Rotate key"
-                : "Revoke key"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
 }
 
 function FormField({
@@ -830,10 +663,6 @@ function defaultEnvironment(app: ApiNotificationApp) {
   );
 }
 
-function statusLabel(status: ApiEnvironmentServerApiKey["status"]) {
-  return status === "active" ? "Active" : "Revoked";
-}
-
 function roleCanManageCredentials(role: string | undefined) {
   return role === "owner" || role === "admin" || role === "developer";
 }
@@ -844,44 +673,6 @@ function requireSelectedScope(selectedScope: { appId: string; environmentId: str
   }
 
   return selectedScope;
-}
-
-function apiFieldError(error: unknown, field: string) {
-  return error instanceof ApiRequestError ? error.fields?.[field]?.[0] : undefined;
-}
-
-function firstFieldError(errors: unknown[]) {
-  const [error] = errors;
-
-  if (!error) return undefined;
-  if (typeof error === "string") return error;
-  if (typeof error === "object" && error !== null && "message" in error) {
-    return String(error.message);
-  }
-  return String(error);
-}
-
-function zodError(schema: z.ZodType, value: unknown) {
-  const result = schema.safeParse(value);
-  return result.success ? undefined : (result.error.issues[0]?.message ?? "Invalid value.");
-}
-
-function formSubmitHandler(handleSubmit: () => Promise<void>) {
-  return (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    void handleSubmit();
-  };
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-    new Date(value),
-  );
-}
-
-function requestErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Unable to complete the request. Try again.";
 }
 
 export type { WorkspaceSecuritySearch };

@@ -1,7 +1,13 @@
 import { Alert, AlertTitle, Label } from "@notify/ui";
 import type { ReactNode } from "react";
 import { z } from "zod";
-import { ApiRequestError } from "@/lib/api-client";
+import {
+  apiFieldError,
+  firstFieldError,
+  formSubmitHandler,
+  requestErrorMessage,
+  zodError,
+} from "@/lib/form-utils";
 
 const emailSchema = z.email("Enter a valid work email.").max(160, "Email is too long.");
 const loginPasswordSchema = z.string().min(1, "Enter your password.");
@@ -19,12 +25,14 @@ function FormField({
   action,
   children,
   error,
+  errorId,
   inputId,
   label,
 }: Readonly<{
   action?: ReactNode;
   children: ReactNode;
   error?: string;
+  errorId?: string;
   inputId: string;
   label: string;
 }>) {
@@ -35,7 +43,7 @@ function FormField({
         {action}
       </div>
       {children}
-      <FieldError message={error} />
+      <FieldError id={errorId} message={error} />
     </div>
   );
 }
@@ -57,47 +65,12 @@ function MutationMessage({ error }: Readonly<{ error: unknown }>) {
   ) : null;
 }
 
-function apiFieldError(error: unknown, field: string) {
-  return error instanceof ApiRequestError ? error.fields?.[field]?.[0] : undefined;
-}
-
-function requestErrorMessage(
-  error: unknown,
-  fallback = "Unable to complete the request. Try again.",
-) {
-  return error instanceof Error ? error.message : fallback;
-}
-
-function firstFieldError(errors: unknown[]) {
-  const [error] = errors;
-
-  if (!error) return undefined;
-  if (typeof error === "string") return error;
-  if (typeof error === "object" && error !== null && "message" in error) {
-    return String(error.message);
-  }
-  return String(error);
-}
-
-function zodError(schema: z.ZodType, value: unknown) {
-  const result = schema.safeParse(value);
-  return result.success ? undefined : (result.error.issues[0]?.message ?? "Invalid value.");
-}
-
 function passwordConfirmationError(value: string, password: string) {
   if (!value) {
     return "Confirm your password.";
   }
 
   return value === password ? undefined : "Passwords do not match.";
-}
-
-function formSubmitHandler(handleSubmit: () => Promise<void>) {
-  return (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    void handleSubmit();
-  };
 }
 
 export {

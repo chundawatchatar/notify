@@ -63,7 +63,11 @@ function WorkspaceHeader({
         />
         <div className="relative flex-1 md:max-w-md">
           <Search className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 size-4 text-muted-foreground" />
-          <Input className="pl-9" placeholder="Search apps, recipients, events" />
+          <Input
+            aria-label="Search apps, recipients, and events"
+            className="pl-9"
+            placeholder="Search apps, recipients, events"
+          />
         </div>
         <WorkspaceThemeButton
           className="hidden md:inline-flex"

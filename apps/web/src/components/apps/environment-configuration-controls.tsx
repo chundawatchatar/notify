@@ -14,10 +14,8 @@ import {
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Globe2, KeyRound, Plus, Trash2 } from "lucide-react";
-import type { FormEvent } from "react";
 import { z } from "zod";
 import {
-  ApiRequestError,
   createEnvironmentClientKey,
   createEnvironmentTrustedOrigin,
   listEnvironmentClientKeys,
@@ -26,9 +24,39 @@ import {
   revokeEnvironmentClientKey,
 } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
+import {
+  apiFieldError,
+  firstFieldError,
+  formatDate,
+  formSubmitHandler,
+  requestErrorMessage,
+  zodError,
+} from "@/lib/form-utils";
 import { workspaceQueryKey } from "@/lib/workspace-queries";
 
-const originSchema = z.string().trim().min(1, "Enter an origin.");
+const originSchema = z
+  .string()
+  .trim()
+  .min(1, "Enter an origin.")
+  .superRefine((value, context) => {
+    try {
+      const origin = new URL(value);
+      const exactOrigin = origin.origin === value;
+      const supportedScheme = origin.protocol === "http:" || origin.protocol === "https:";
+      const hasNoCredentials = origin.username === "" && origin.password === "";
+
+      if (supportedScheme && hasNoCredentials && exactOrigin) {
+        return;
+      }
+    } catch {
+      // Report the shared validation message below.
+    }
+
+    context.addIssue({
+      code: "custom",
+      message: "Enter a valid browser origin, such as https://console.example.com.",
+    });
+  });
 
 function EnvironmentConfigurationControls({
   appSlug,
@@ -379,42 +407,6 @@ function RequestError({ error, title }: Readonly<{ error: unknown; title: string
 
 function roleCanManageCredentials(role: string | undefined) {
   return role === "owner" || role === "admin" || role === "developer";
-}
-
-function apiFieldError(error: unknown, field: string) {
-  return error instanceof ApiRequestError ? error.fields?.[field]?.[0] : undefined;
-}
-
-function firstFieldError(errors: unknown[]) {
-  const [error] = errors;
-
-  if (!error) return undefined;
-  if (typeof error === "string") return error;
-  if (typeof error === "object" && error !== null && "message" in error) {
-    return String(error.message);
-  }
-  return String(error);
-}
-
-function zodError(schema: z.ZodType, value: unknown) {
-  const result = schema.safeParse(value);
-  return result.success ? undefined : (result.error.issues[0]?.message ?? "Invalid value.");
-}
-
-function formSubmitHandler(handleSubmit: () => Promise<void>) {
-  return (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    void handleSubmit();
-  };
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value));
-}
-
-function requestErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Unable to complete the request. Try again.";
 }
 
 export { EnvironmentConfigurationControls, roleCanManageCredentials };

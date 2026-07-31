@@ -93,10 +93,16 @@ function SignupForm() {
             error={
               apiFieldError(mutation.error, "email") ?? firstFieldError(field.state.meta.errors)
             }
+            errorId={`${field.name}-error`}
             inputId={field.name}
             label="Work email"
           >
             <Input
+              aria-describedby={
+                (apiFieldError(mutation.error, "email") ?? firstFieldError(field.state.meta.errors))
+                  ? `${field.name}-error`
+                  : undefined
+              }
               autoComplete="email"
               id={field.name}
               name={field.name}
@@ -200,12 +206,20 @@ function CompleteSignupForm({
               apiFieldError(mutation.error, "workspace_name") ??
               firstFieldError(field.state.meta.errors)
             }
+            errorId={`${field.name}-error`}
             inputId={field.name}
             label="Workspace name"
           >
             <Input
+              aria-describedby={
+                (apiFieldError(mutation.error, "workspace_name") ??
+                firstFieldError(field.state.meta.errors))
+                  ? `${field.name}-error`
+                  : undefined
+              }
               autoComplete="organization"
               id={field.name}
+              name={field.name}
               onBlur={field.handleBlur}
               onChange={(event) => {
                 mutation.reset();
@@ -230,10 +244,17 @@ function CompleteSignupForm({
             error={
               apiFieldError(mutation.error, "password") ?? firstFieldError(field.state.meta.errors)
             }
+            errorId={`${field.name}-error`}
             inputId={field.name}
             label="Password"
           >
             <PasswordInput
+              aria-describedby={
+                (apiFieldError(mutation.error, "password") ??
+                firstFieldError(field.state.meta.errors))
+                  ? `${field.name}-error`
+                  : undefined
+              }
               autoComplete="new-password"
               id={field.name}
               name={field.name}
@@ -261,10 +282,14 @@ function CompleteSignupForm({
         {(field) => (
           <FormField
             error={firstFieldError(field.state.meta.errors)}
+            errorId={`${field.name}-error`}
             inputId={field.name}
             label="Confirm password"
           >
             <PasswordInput
+              aria-describedby={
+                firstFieldError(field.state.meta.errors) ? `${field.name}-error` : undefined
+              }
               autoComplete="new-password"
               id={field.name}
               name={field.name}

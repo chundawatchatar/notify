@@ -8,23 +8,28 @@ import {
   redirect,
 } from "@tanstack/react-router";
 import { HttpResponse, http } from "msw";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { AuthProvider, createAuthClient } from "@/lib/auth";
-import { change, cleanup, click, render, waitFor, waitForText } from "@/test/render";
+import {
+  authResponse,
+  buttonByText,
+  change,
+  cleanup,
+  click,
+  installBrowserCoordination,
+  render,
+  restoreBrowserCoordination,
+  waitFor,
+  waitForText,
+} from "@/test/render";
 import { server } from "@/test/server";
 import { NotificationAppsPage } from "./notification-apps-page";
 
 const apiBaseUrl = "http://localhost:4100";
-const originalLocksDescriptor = Object.getOwnPropertyDescriptor(navigator, "locks");
 
 afterEach(() => {
   cleanup();
-  if (originalLocksDescriptor) {
-    Object.defineProperty(navigator, "locks", originalLocksDescriptor);
-  } else {
-    Reflect.deleteProperty(navigator, "locks");
-  }
-  vi.unstubAllGlobals();
+  restoreBrowserCoordination();
 });
 
 describe("notification apps page", () => {
@@ -136,33 +141,6 @@ async function renderAppsPage() {
   return { container, router };
 }
 
-function buttonByText(container: HTMLElement, text: string) {
-  const button = [...container.querySelectorAll("button")].find(
-    (candidate) => candidate.textContent?.trim() === text,
-  );
-
-  if (!button) {
-    throw new Error(`Expected ${text} button.`);
-  }
-
-  return button;
-}
-
-function authResponse() {
-  return {
-    access_token: "access-token",
-    expires_in: 900,
-    role: "owner",
-    token_type: "Bearer",
-    user: { email: "owner@example.com", id: "3dc20706-9944-4743-8121-c0429c622c0b" },
-    workspace: {
-      id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4",
-      name: "Acme Cloud",
-      slug: "acme-cloud",
-    },
-  };
-}
-
 function notificationApp() {
   return {
     environments: [
@@ -185,21 +163,4 @@ function notificationApp() {
     name: "Payments Service",
     slug: "payments-service",
   };
-}
-
-function installBrowserCoordination() {
-  Object.defineProperty(navigator, "locks", {
-    configurable: true,
-    value: {
-      request: async <Result,>(_name: string, callback: () => Promise<Result>) => callback(),
-    },
-  });
-
-  class BroadcastChannelMock {
-    onmessage: ((event: MessageEvent) => void) | null = null;
-    close() {}
-    postMessage() {}
-  }
-
-  vi.stubGlobal("BroadcastChannel", BroadcastChannelMock);
 }

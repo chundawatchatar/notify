@@ -7,6 +7,7 @@ import {
   AppShellSidebar,
   AppShellSidebarFooter,
   Button,
+  cn,
   NotifyLogoMark,
   Tooltip,
   TooltipContent,
@@ -29,9 +30,10 @@ function WorkspaceShell({
 }: Readonly<{ activeItem: WorkspaceNavId; children: ReactNode }>) {
   const [sidebarPinned, setSidebarPinned] = useState(true);
   const [sidebarHovered, setSidebarHovered] = useState(false);
+  const [sidebarFocused, setSidebarFocused] = useState(false);
   const { setThemeMode, theme } = useWorkspaceTheme();
   const auth = useAuth();
-  const sidebarExpanded = sidebarPinned || sidebarHovered;
+  const sidebarExpanded = sidebarPinned || sidebarHovered || sidebarFocused;
   const workspaceName = auth.principal?.workspace.name ?? "Workspace";
 
   return (
@@ -41,6 +43,7 @@ function WorkspaceShell({
           <WorkspaceSidebar
             activeItem={activeItem}
             expanded={sidebarExpanded}
+            onFocusedChange={setSidebarFocused}
             onHoveredChange={setSidebarHovered}
             onPinnedChange={setSidebarPinned}
             pinned={sidebarPinned}
@@ -60,6 +63,7 @@ function WorkspaceShell({
 function WorkspaceSidebar({
   activeItem,
   expanded,
+  onFocusedChange,
   onHoveredChange,
   onPinnedChange,
   pinned,
@@ -67,6 +71,7 @@ function WorkspaceSidebar({
 }: Readonly<{
   activeItem: WorkspaceNavId;
   expanded: boolean;
+  onFocusedChange: (focused: boolean) => void;
   onHoveredChange: (hovered: boolean) => void;
   onPinnedChange: (pinned: boolean) => void;
   pinned: boolean;
@@ -77,6 +82,16 @@ function WorkspaceSidebar({
       className={!pinned && expanded ? "shadow-xl shadow-foreground/10" : undefined}
       collapsed={!pinned}
       expanded={expanded}
+      onBlur={(event) => {
+        if (!pinned && !event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          onFocusedChange(false);
+        }
+      }}
+      onFocus={() => {
+        if (!pinned) {
+          onFocusedChange(true);
+        }
+      }}
       onMouseEnter={() => {
         if (!pinned) {
           onHoveredChange(true);
@@ -91,11 +106,10 @@ function WorkspaceSidebar({
       <AppShellBrand className="relative px-6">
         <NotifyLogoMark />
         <div
-          className={
-            expanded
-              ? "-translate-y-1/2 absolute top-1/2 right-14 left-[68px] min-w-0 overflow-hidden opacity-100 transition-opacity duration-200 ease-out"
-              : "-translate-y-1/2 absolute top-1/2 right-14 left-[68px] min-w-0 overflow-hidden opacity-0 transition-opacity duration-200 ease-out"
-          }
+          className={cn(
+            "-translate-y-1/2 absolute top-1/2 right-14 left-[68px] min-w-0 overflow-hidden transition-opacity duration-200 ease-out",
+            expanded ? "opacity-100" : "opacity-0",
+          )}
         >
           <p className="font-semibold">Notify</p>
           <p className="truncate text-muted-foreground text-xs whitespace-nowrap">

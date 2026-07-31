@@ -78,10 +78,16 @@ function ForgotPasswordForm() {
             error={
               apiFieldError(mutation.error, "email") ?? firstFieldError(field.state.meta.errors)
             }
+            errorId={`${field.name}-error`}
             inputId={field.name}
             label="Account email"
           >
             <Input
+              aria-describedby={
+                (apiFieldError(mutation.error, "email") ?? firstFieldError(field.state.meta.errors))
+                  ? `${field.name}-error`
+                  : undefined
+              }
               autoComplete="email"
               id={field.name}
               name={field.name}
@@ -203,10 +209,17 @@ function ResetPasswordForm({
             error={
               apiFieldError(mutation.error, "password") ?? firstFieldError(field.state.meta.errors)
             }
+            errorId={`${field.name}-error`}
             inputId={field.name}
             label="New password"
           >
             <PasswordInput
+              aria-describedby={
+                (apiFieldError(mutation.error, "password") ??
+                firstFieldError(field.state.meta.errors))
+                  ? `${field.name}-error`
+                  : undefined
+              }
               autoComplete="new-password"
               id={field.name}
               name={field.name}
@@ -237,10 +250,17 @@ function ResetPasswordForm({
               apiFieldError(mutation.error, "password_confirmation") ??
               firstFieldError(field.state.meta.errors)
             }
+            errorId={`${field.name}-error`}
             inputId={field.name}
             label="Confirm new password"
           >
             <PasswordInput
+              aria-describedby={
+                (apiFieldError(mutation.error, "password_confirmation") ??
+                firstFieldError(field.state.meta.errors))
+                  ? `${field.name}-error`
+                  : undefined
+              }
               autoComplete="new-password"
               id={field.name}
               name={field.name}
