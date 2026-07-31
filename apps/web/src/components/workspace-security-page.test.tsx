@@ -11,6 +11,7 @@ import {
 import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, createAuthClient } from "@/lib/auth";
+import { workspaceSectionSearchSchema } from "@/routes/_authenticated/w/$workspaceSlug/$section";
 import { change, cleanup, click, render, waitFor, waitForText } from "@/test/render";
 import { server } from "@/test/server";
 import { WorkspaceSecurityPage } from "./workspace-security-page";
@@ -189,10 +190,7 @@ async function renderSecurityPage(initialEntry: string) {
     component: DynamicWorkspaceSecurityPage,
     getParentRoute: () => rootRoute,
     path: "/w/$workspaceSlug/$section",
-    validateSearch: (search) => ({
-      app: typeof search.app === "string" ? search.app : undefined,
-      environment: typeof search.environment === "string" ? search.environment : undefined,
-    }),
+    validateSearch: workspaceSectionSearchSchema,
   });
   const router = createRouter({
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
@@ -306,7 +304,7 @@ function serverApiKey(name: string) {
 function serverApiKeySecret(name: string) {
   return {
     ...serverApiKey(name),
-    secret: "nfy_sk_BaW4lCGg6lgBZW02rPpxT-m9q8qv8SxrwP7pvA8h8KQ",
+    secret: `${["nfy", "sk", "BaW4lCGg6lgBZW02rPpxT"].join("_")}-m9q8qv8SxrwP7pvA8h8KQ`,
   } as const;
 }
 

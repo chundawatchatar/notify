@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/w/$workspaceSlug/$section"
   validateSearch: workspaceSectionSearchSchema,
 });
 
+export { workspaceSectionSearchSchema };
+
 function WorkspaceSectionRoute() {
   const { section, workspaceSlug } = Route.useParams();
   const search = Route.useSearch();

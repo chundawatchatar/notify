@@ -39,7 +39,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "@tanstack/react-router";
 import { Copy, KeyRound, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import {
   ApiRequestError,
@@ -118,6 +118,13 @@ function WorkspaceSecurityPage({
       ),
   });
 
+  useEffect(() => {
+    setConfirmation(undefined);
+    setRevealSecret(undefined);
+    setCopiedSecret(false);
+    setCopyError(undefined);
+  }, [selectedApp?.id, selectedEnvironment?.id]);
+
   const refreshSelectedEnvironmentKeys = async () => {
     if (!keysQueryKey) {
       return;
@@ -163,10 +170,10 @@ function WorkspaceSecurityPage({
       try {
         const secret = await createMutation.mutateAsync({ name: value.name.trim() });
         createMutation.reset();
-        await refreshSelectedEnvironmentKeys();
         createForm.reset();
         setCreateDialogOpen(false);
         openReveal(secret);
+        await refreshSelectedEnvironmentKeys();
       } catch {
         // Keep the entered value so the person can correct and retry.
       }
@@ -192,7 +199,7 @@ function WorkspaceSecurityPage({
     );
   }
 
-  if (appsQuery.data.apps.length === 0 || !selectedApp || !selectedEnvironment || !selectedSearch) {
+  if (appsQuery.data.apps.length === 0 || !selectedApp) {
     return (
       <Card>
         <CardContent className="grid gap-3 py-8">
@@ -201,6 +208,20 @@ function WorkspaceSecurityPage({
           </p>
           <p className="text-muted-foreground text-sm">
             Create an app first, then return here to issue environment-scoped server API keys.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!selectedEnvironment || !selectedSearch) {
+    return (
+      <Card>
+        <CardContent className="grid gap-3 py-8">
+          <p className="font-medium text-sm">{selectedApp.name} has no available environments.</p>
+          <p className="text-muted-foreground text-sm">
+            Server API keys require an environment selection. Add or restore an environment for this
+            app before managing backend secrets here.
           </p>
         </CardContent>
       </Card>
@@ -445,7 +466,11 @@ function WorkspaceSecurityPage({
         }}
         open={Boolean(revealSecret)}
       >
-        <DialogContent showCloseButton={false}>
+        <DialogContent
+          onEscapeKeyDown={(event) => event.preventDefault()}
+          onInteractOutside={(event) => event.preventDefault()}
+          showCloseButton={false}
+        >
           <DialogHeader>
             <DialogTitle>Copy this secret now</DialogTitle>
             <DialogDescription>
@@ -537,9 +562,9 @@ function WorkspaceSecurityPage({
       try {
         const secret = await rotateMutation.mutateAsync(confirmation.key.id);
         rotateMutation.reset();
-        await refreshSelectedEnvironmentKeys();
-        clearConfirmation();
         openReveal(secret);
+        clearConfirmation();
+        await refreshSelectedEnvironmentKeys();
       } catch {
         // Keep the confirmation dialog open so the person can retry.
       }
@@ -618,9 +643,7 @@ function WorkspaceSecurityPage({
                     </Badge>
                   </TableCell>
                   <TableCell>{formatDate(apiKey.created_at)}</TableCell>
-                  <TableCell>
-                    {apiKey.revoked_at ? formatDate(apiKey.revoked_at) : "Active"}
-                  </TableCell>
+                  <TableCell>{apiKey.revoked_at ? formatDate(apiKey.revoked_at) : "-"}</TableCell>
                   <TableCell className="text-right">
                     {canManageCredentials && active ? (
                       <div className="flex justify-end gap-2">
@@ -684,19 +707,31 @@ function ConfirmationDialog({
   onConfirm: () => void;
   onOpenChange: (open: boolean) => void;
 }>) {
+  if (!confirmation) {
+    return (
+      <Dialog onOpenChange={onOpenChange} open={false}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm server API key action</DialogTitle>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(confirmation)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {confirmation?.kind === "rotate"
+            {confirmation.kind === "rotate"
               ? "Rotate this server API key?"
               : "Revoke this server API key?"}
           </DialogTitle>
           <DialogDescription>
-            {confirmation?.kind === "rotate"
+            {confirmation.kind === "rotate"
               ? `${confirmation.key.name} will be revoked and replaced with a new secret for the same environment.`
-              : `${confirmation?.key.name} will be revoked immediately and cannot be restored.`}
+              : `${confirmation.key.name} will be revoked immediately and cannot be restored.`}
           </DialogDescription>
         </DialogHeader>
         {error ? (
@@ -717,7 +752,7 @@ function ConfirmationDialog({
           <Button disabled={isPending} onClick={onConfirm} type="button" variant="destructive">
             {isPending
               ? "Working..."
-              : confirmation?.kind === "rotate"
+              : confirmation.kind === "rotate"
                 ? "Rotate key"
                 : "Revoke key"}
           </Button>
