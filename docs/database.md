@@ -159,21 +159,18 @@ Implemented tables:
 - `environment_client_keys`: environment-scoped, server-generated browser
   client identifiers with a recognizable `nfy_pk_` prefix and optional
   revocation timestamp. They are not server ingestion secrets.
+- `environment_server_api_keys`: environment-scoped backend credentials for
+  customer servers. Each row stores its owning environment, display name,
+  SHA-256 `secret_digest`, masked hint, and optional revocation timestamp.
+  Raw secrets are disclosed only at create or rotate time and are never
+  persisted. Rotation creates the replacement key, revokes the prior active
+  key, and writes append-only audit records in the same transaction.
 - `environment_trusted_origins`: environment-scoped normalized exact HTTP(S)
   origins. A unique `(app_environment_id, origin)` constraint prevents the
   same normalized origin from being trusted twice in an environment.
 
 ## Future Product Tables
 
-- server API keys: future environment-scoped credentials for customer backend
-  authentication, introduced only with their owning product contract. Each key
-  belongs to exactly one app environment. Persistence stores only a digest and
-  safe metadata, never the raw secret. Safe metadata may include ownership,
-  display label, creation time, revocation time, replacement relationships, and
-  actor or audit references that do not expose credential material. Revocation
-  is irreversible, and revoked rows remain retained as lifecycle history.
-  Rotation must create the replacement key, revoke the previous key, and write
-  append-only audit records in the same transaction.
 - notification_events and delivery_attempts: future environment-scoped data,
   introduced only with their owning product contracts
 - subscription_plans or workspace_subscriptions
@@ -192,7 +189,8 @@ membership, role, and workspace authorization - app tables do not add
 app-specific grants.
 
 Notification app and environment persistence is owned by this API application.
-HTTP contracts for managing those records are introduced separately.
+HTTP contracts for managing notification apps, environment client keys,
+environment server API keys, and trusted origins are owned by `apps/api`.
 
 Notification apps are soft-archived by setting `archived_at`. Active list and
 detail queries exclude archived apps, while the archived row and its stable slug
