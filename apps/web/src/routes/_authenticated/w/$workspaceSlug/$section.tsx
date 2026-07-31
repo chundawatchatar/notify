@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { WorkspaceSectionPage } from "@/components/workspace-section-page";
+import { WorkspaceSectionPage } from "@/components/workspace/section-page";
 import { isWorkspaceSection } from "@/lib/workspace-sections";
 
 const workspaceSectionSearchSchema = z.object({

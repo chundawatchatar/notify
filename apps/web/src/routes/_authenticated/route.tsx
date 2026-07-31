@@ -3,7 +3,7 @@ import {
   AuthenticatedRoute,
   AuthenticatedRouteError,
   AuthenticatedRoutePending,
-} from "@/components/auth-route";
+} from "@/components/auth/auth-route";
 import { productRedirectPath } from "@/lib/workspace-paths";
 
 export const Route = createFileRoute("/_authenticated")({

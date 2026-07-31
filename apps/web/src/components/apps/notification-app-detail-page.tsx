@@ -12,11 +12,11 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { CheckCircle2, Circle, RefreshCw } from "lucide-react";
+import { WorkspacePageHeader, WorkspaceShell } from "@/components/workspace/shell";
 import { getNotificationApp } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
 import { workspaceQueryKey } from "@/lib/workspace-queries";
 import { EnvironmentConfigurationControls } from "./environment-configuration-controls";
-import { WorkspacePageHeader, WorkspaceShell } from "./workspace-shell";
 
 function NotificationAppDetailPage({
   appSlug,

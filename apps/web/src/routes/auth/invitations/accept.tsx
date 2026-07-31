@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
-import { InvitationAcceptancePage } from "@/components/invitation-acceptance-page";
-import { PageLoader } from "@/components/page-loader";
+import { InvitationAcceptancePage } from "@/components/auth/invitation-acceptance-page";
+import { PageLoader } from "@/components/shared/page-loader";
 
 const searchSchema = z.object({ token: z.string().min(1).optional().catch(undefined) });
 
