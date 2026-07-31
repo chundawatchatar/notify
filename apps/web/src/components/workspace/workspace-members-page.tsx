@@ -45,7 +45,7 @@ import {
   updateWorkspaceMemberRole,
 } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
-import { WorkspacePageHeader, WorkspaceShell } from "./workspace-shell";
+import { WorkspacePageHeader, WorkspaceShell } from "./shell";
 
 type WorkspaceRole = ApiWorkspaceMember["role"];
 type Confirmation =

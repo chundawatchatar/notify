@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { NotFoundPage } from "@/components/not-found-page";
+import { NotFoundPage } from "@/components/shared/not-found-page";
 import { AuthProvider } from "@/lib/auth";
 import type { RouterContext } from "@/lib/router-context";
 

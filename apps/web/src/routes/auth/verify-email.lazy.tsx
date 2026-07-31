@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { AuthShell, VerifyEmailFlow } from "@/components/auth-page";
+import { AuthShell, VerifyEmailFlow } from "@/components/auth";
 
 export const Route = createLazyFileRoute("/auth/verify-email")({
   component: VerifyEmailPage,

@@ -31,10 +31,10 @@ import { BellRing, Plus, RefreshCw } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
+import { WorkspacePageHeader, WorkspaceShell } from "@/components/workspace/shell";
 import { ApiRequestError, createNotificationApp, listNotificationApps } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
 import { workspaceQueryKey } from "@/lib/workspace-queries";
-import { WorkspacePageHeader, WorkspaceShell } from "./workspace-shell";
 
 const appNameSchema = z
   .string()

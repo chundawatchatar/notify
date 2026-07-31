@@ -1,8 +1,8 @@
 import { Alert, Button } from "@notify/ui";
 import { Navigate, Outlet, useLocation, useRouter } from "@tanstack/react-router";
+import { PageLoader } from "@/components/shared/page-loader";
 import { useAuth } from "@/lib/auth";
 import { productRedirectPath } from "@/lib/workspace-paths";
-import { PageLoader } from "./page-loader";
 
 const invitationAcceptancePath = "/auth/invitations/accept";
 

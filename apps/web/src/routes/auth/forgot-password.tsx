@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
-import { AuthShell, PasswordResetFlow } from "@/components/auth-page";
-import { PageLoader } from "@/components/page-loader";
+import { AuthShell, PasswordResetFlow } from "@/components/auth";
+import { PageLoader } from "@/components/shared/page-loader";
 import type { PasswordResetClient } from "@/lib/password-reset";
 
 const passwordResetSearchSchema = z.object({

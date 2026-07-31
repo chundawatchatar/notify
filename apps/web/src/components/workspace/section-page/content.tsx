@@ -15,164 +15,22 @@ import {
   TableRow,
   UsageBar,
 } from "@notify/ui";
-import type { LucideIcon } from "lucide-react";
 import { ArrowUpRight, BellRing, Copy, Plus, SlidersHorizontal, Webhook } from "lucide-react";
 import type { WorkspaceSectionId } from "@/lib/workspace-sections";
-import type { WorkspaceSecuritySearch } from "./workspace-security-page";
-import { WorkspaceSecurityPage } from "./workspace-security-page";
-import { WorkspacePageHeader, WorkspaceShell } from "./workspace-shell";
-
-type LabelValueRow = readonly [label: string, value: string];
-type BadgeTone = "default" | "info" | "success" | "warning";
-
-const pageCopy: Record<WorkspaceSectionId, { badge: string; description: string; title: string }> =
-  {
-    apps: {
-      badge: "Client surfaces",
-      title: "Notification apps",
-      description:
-        "Create and operate the customer-facing apps that connect browser sessions, scoped keys, and delivery settings.",
-    },
-    ingress: {
-      badge: "API intake",
-      title: "Ingress endpoint",
-      description:
-        "Manage the signed event endpoint, validation rules, idempotency windows, and intake health.",
-    },
-    analytics: {
-      badge: "Delivery insight",
-      title: "Analytics",
-      description:
-        "Track delivery rates, fanout latency, retries, and client engagement across every notification app.",
-    },
-    subscription: {
-      badge: "Plan control",
-      title: "Subscription",
-      description:
-        "Review workspace limits, billing health, seats, and the usage signals that keep the account predictable.",
-    },
-    security: {
-      badge: "Access policy",
-      title: "Security and API keys",
-      description:
-        "Control API keys, trusted origins, session token rules, and audit posture for the notification platform.",
-    },
-    settings: {
-      badge: "Workspace admin",
-      title: "Settings",
-      description:
-        "Configure workspace identity, team defaults, environment behavior, and notification platform preferences.",
-    },
-  };
-
-const appRows = [
-  {
-    clientKey: "pk_live_8fd2",
-    environment: "Production",
-    events: "31.8k",
-    name: "Acme Cloud",
-    origin: "app.acme.com",
-    status: "Live",
-    tone: "success",
-  },
-  {
-    clientKey: "pk_live_4c10",
-    environment: "Production",
-    events: "9.4k",
-    name: "Acme Support",
-    origin: "support.acme.com",
-    status: "Live",
-    tone: "success",
-  },
-  {
-    clientKey: "pk_test_91aa",
-    environment: "Sandbox",
-    events: "1.2k",
-    name: "Acme Labs",
-    origin: "labs.acme.com",
-    status: "Testing",
-    tone: "info",
-  },
-] satisfies Array<{
-  clientKey: string;
-  environment: string;
-  events: string;
-  name: string;
-  origin: string;
-  status: string;
-  tone: BadgeTone;
-}>;
-
-const appSetup = [
-  ["Client app created", "Complete"],
-  ["Trusted origin configured", "Complete"],
-  ["Server key issued", "Complete"],
-  ["Realtime token endpoint", "Ready"],
-] satisfies LabelValueRow[];
-
-const ingressRules = [
-  ["Signature validation", "Required"],
-  ["Idempotency key", "24 hour window"],
-  ["Payload schema", "Strict mode"],
-  ["Rate limit", "318 requests/min"],
-] satisfies LabelValueRow[];
-
-const recentIngressEvents = [
-  ["invoice.payment_failed", "Acme Cloud", "Delivered", "71ms"],
-  ["ticket.assigned", "Acme Support", "Queued", "118ms"],
-  ["trial.expiring", "Acme Labs", "Retrying", "204ms"],
-] satisfies Array<readonly [topic: string, app: string, status: string, latency: string]>;
-
-const analyticsCards = [
-  { label: "Delivered", tone: "success", trend: "+12.4%", value: "48,214" },
-  { label: "Queued", tone: "info", trend: "-3.1%", value: "824" },
-  { label: "Retried", tone: "warning", trend: "+0.6%", value: "119" },
-  { label: "Failed", tone: "warning", trend: "-0.8%", value: "37" },
-] satisfies Array<{ label: string; tone: BadgeTone; trend: string; value: string }>;
-
-const analyticsBreakdown = [
-  ["Acme Cloud", "99.8%", "44ms", "31.8k"],
-  ["Acme Support", "99.5%", "62ms", "9.4k"],
-  ["Acme Labs", "98.1%", "91ms", "1.2k"],
-] satisfies Array<readonly [app: string, success: string, latency: string, events: string]>;
-
-const workspaceSettings = [
-  ["Workspace name", "Acme workspace"],
-  ["Default environment", "Production"],
-  ["Notification timezone", "Asia/Kolkata"],
-  ["Data residency", "US region"],
-] satisfies LabelValueRow[];
-
-const notificationPreferences = [
-  ["Delivery alerts", "Enabled"],
-  ["Usage alerts", "80% threshold"],
-  ["Weekly report", "Monday morning"],
-  ["Incident contacts", "3 recipients"],
-] satisfies LabelValueRow[];
-
-function WorkspaceSectionPage({
-  search,
-  section,
-  workspaceSlug,
-}: Readonly<{
-  search?: WorkspaceSecuritySearch;
-  section: WorkspaceSectionId;
-  workspaceSlug: string;
-}>) {
-  const copy = pageCopy[section];
-
-  return (
-    <WorkspaceShell activeItem={section}>
-      <WorkspacePageHeader
-        actions={<SectionActions section={section} />}
-        badges={<Badge variant="secondary">{copy.badge}</Badge>}
-        description={copy.description}
-        title={copy.title}
-      />
-      <SectionContent search={search} section={section} workspaceSlug={workspaceSlug} />
-    </WorkspaceShell>
-  );
-}
+import type { WorkspaceSecuritySearch } from "../workspace-security-page";
+import { WorkspaceSecurityPage } from "../workspace-security-page";
+import { ChecklistCard } from "./cards";
+import type { BadgeTone } from "./data";
+import {
+  analyticsBreakdown,
+  analyticsCards,
+  appRows,
+  appSetup,
+  ingressRules,
+  notificationPreferences,
+  recentIngressEvents,
+  workspaceSettings,
+} from "./data";
 
 function SectionActions({ section }: Readonly<{ section: WorkspaceSectionId }>) {
   if (section === "apps") {
@@ -487,39 +345,6 @@ function SettingsContent() {
   );
 }
 
-function ChecklistCard({
-  description,
-  icon: Icon,
-  items,
-  title,
-}: Readonly<{
-  description: string;
-  icon: LucideIcon;
-  items: LabelValueRow[];
-  title: string;
-}>) {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-start gap-3">
-          <span className="grid size-9 place-items-center rounded-sm border bg-secondary">
-            <Icon className="size-4" />
-          </span>
-          <div>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="grid gap-3">
-        {items.map(([label, value]) => (
-          <StatusLine key={label} label={label} value={value} />
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
-
 function eventTone(status: string): BadgeTone {
   if (status === "Delivered") {
     return "success";
@@ -532,4 +357,4 @@ function eventTone(status: string): BadgeTone {
   return "info";
 }
 
-export { WorkspaceSectionPage };
+export { SectionActions, SectionContent };

@@ -12,35 +12,33 @@ import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, createAuthClient } from "@/lib/auth";
 import { workspaceSectionSearchSchema } from "@/routes/_authenticated/w/$workspaceSlug/$section";
-import { change, cleanup, click, render, waitFor, waitForText } from "@/test/render";
+import {
+  authResponse,
+  buttonByLabel,
+  buttonByText,
+  change,
+  cleanup,
+  click,
+  installBrowserCoordination,
+  render,
+  restoreBrowserCoordination,
+  textMatch,
+  waitFor,
+  waitForText,
+} from "@/test/render";
 import { server } from "@/test/server";
 import { WorkspaceSecurityPage } from "./workspace-security-page";
 
 const apiBaseUrl = "http://localhost:4100";
-const originalLocksDescriptor = Object.getOwnPropertyDescriptor(navigator, "locks");
-const originalClipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, "clipboard");
 
 afterEach(() => {
   cleanup();
-
-  if (originalLocksDescriptor) {
-    Object.defineProperty(navigator, "locks", originalLocksDescriptor);
-  } else {
-    Reflect.deleteProperty(navigator, "locks");
-  }
-
-  if (originalClipboardDescriptor) {
-    Object.defineProperty(navigator, "clipboard", originalClipboardDescriptor);
-  } else {
-    Reflect.deleteProperty(navigator, "clipboard");
-  }
-
-  vi.unstubAllGlobals();
+  restoreBrowserCoordination();
 });
 
 describe("workspace security page", () => {
   it("switches the selected environment, updates search state, and reveals a new secret exactly once", async () => {
-    installBrowserCoordination();
+    installBrowserCoordination({ includeScrollMocks: true });
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -50,6 +48,7 @@ describe("workspace security page", () => {
     let developmentListRequests = 0;
     let productionListRequests = 0;
     let createBody: unknown;
+    const createdSecret = serverApiKeySecret("Production worker");
 
     server.use(
       http.post(`${apiBaseUrl}/api/auth/refresh`, () => HttpResponse.json(authResponse("owner"))),
@@ -73,7 +72,7 @@ describe("workspace security page", () => {
         `${apiBaseUrl}/api/apps/${appId}/environments/${productionEnvironmentId}/server-api-keys`,
         async ({ request }) => {
           createBody = await request.json();
-          return HttpResponse.json(serverApiKeySecret("Production worker"), { status: 201 });
+          return HttpResponse.json(createdSecret, { status: 201 });
         },
       ),
     );
@@ -108,7 +107,7 @@ describe("workspace security page", () => {
     click(createButton as HTMLButtonElement);
 
     await waitForText(document.body, "Copy this secret now");
-    await waitForText(document.body, "nfy_sk_BaW4lCGg6lgBZW02rPpxT-m9q8qv8SxrwP7pvA8h8KQ");
+    await waitForText(document.body, createdSecret.secret);
     click(buttonByText(document.body, "Copy secret"));
     await waitFor(() => writeText.mock.calls.length === 1, "copied secret");
     click(buttonByText(document.body, "I copied the secret"));
@@ -124,7 +123,7 @@ describe("workspace security page", () => {
   });
 
   it("asks for confirmation before revoking a key", async () => {
-    installBrowserCoordination();
+    installBrowserCoordination({ includeScrollMocks: true });
     let revokeRequests = 0;
 
     server.use(
@@ -162,7 +161,7 @@ describe("workspace security page", () => {
   });
 
   it("keeps mutation controls unavailable for viewers", async () => {
-    installBrowserCoordination();
+    installBrowserCoordination({ includeScrollMocks: true });
 
     server.use(
       http.post(`${apiBaseUrl}/api/auth/refresh`, () => HttpResponse.json(authResponse("viewer"))),
@@ -230,42 +229,6 @@ function DynamicWorkspaceSecurityPage() {
   );
 }
 
-function buttonByLabel(container: HTMLElement, label: string) {
-  const button = [...container.querySelectorAll("button")].find(
-    (candidate) => candidate.getAttribute("aria-label") === label,
-  );
-
-  if (!button) {
-    throw new Error(`Expected button with aria-label ${label}.`);
-  }
-
-  return button;
-}
-
-function buttonByText(container: HTMLElement, text: string) {
-  const button = [...container.querySelectorAll("button")].find(
-    (candidate) => candidate.textContent?.trim() === text,
-  );
-
-  if (!button) {
-    throw new Error(`Expected ${text} button.`);
-  }
-
-  return button;
-}
-
-function textMatch(container: HTMLElement, text: string) {
-  const match = [...container.querySelectorAll("*")].find(
-    (candidate) => candidate.textContent?.trim() === text,
-  );
-
-  if (!match) {
-    throw new Error(`Expected text: ${text}`);
-  }
-
-  return match as HTMLElement;
-}
-
 function notificationApp() {
   return {
     environments: [
@@ -306,40 +269,6 @@ function serverApiKeySecret(name: string) {
     ...serverApiKey(name),
     secret: `${["nfy", "sk", "BaW4lCGg6lgBZW02rPpxT"].join("_")}-m9q8qv8SxrwP7pvA8h8KQ`,
   } as const;
-}
-
-function authResponse(role: "owner" | "viewer") {
-  return {
-    access_token: "access-token",
-    expires_in: 900,
-    role,
-    token_type: "Bearer",
-    user: { email: "owner@example.com", id: "3dc20706-9944-4743-8121-c0429c622c0b" },
-    workspace: {
-      id: "7ad7137b-d5a5-4411-9993-463c7f7e71f4",
-      name: "Acme Cloud",
-      slug: "acme-cloud",
-    },
-  };
-}
-
-function installBrowserCoordination() {
-  Object.defineProperty(navigator, "locks", {
-    configurable: true,
-    value: {
-      request: async <Result,>(_name: string, callback: () => Promise<Result>) => callback(),
-    },
-  });
-  window.scrollTo = vi.fn();
-  Element.prototype.scrollIntoView = vi.fn();
-
-  class BroadcastChannelMock {
-    onmessage: ((event: MessageEvent) => void) | null = null;
-    close() {}
-    postMessage() {}
-  }
-
-  vi.stubGlobal("BroadcastChannel", BroadcastChannelMock);
 }
 
 const appId = "3dc20706-9944-4743-8121-c0429c622c0b";

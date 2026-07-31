@@ -17,7 +17,7 @@ import {
   LoginForm,
   ResetPasswordForm,
   SignupForm,
-} from "./auth-page";
+} from "./index";
 
 const originalLocks = navigator.locks;
 const apiBaseUrl = "http://localhost:4100";

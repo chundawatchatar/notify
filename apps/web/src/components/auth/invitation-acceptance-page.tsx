@@ -4,15 +4,9 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import {
-  AuthShell,
-  apiFieldError,
-  FieldError,
-  firstFieldError,
-  MutationMessage,
-} from "@/components/auth-page";
 import { useAuth } from "@/lib/auth";
 import type { InvitationAcceptanceState } from "@/lib/invitation-acceptance";
+import { AuthShell, apiFieldError, FieldError, firstFieldError, MutationMessage } from "./index";
 
 const passwordSchema = z
   .string()

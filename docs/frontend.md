@@ -121,13 +121,13 @@ has passed.
 Shared dashboard layout lives in:
 
 ```text
-apps/web/src/components/workspace-shell.tsx
+apps/web/src/components/workspace/shell/layout.tsx
 ```
 
 Domain page content lives in:
 
 ```text
-apps/web/src/components/workspace-section-page.tsx
+apps/web/src/components/workspace/section-page/page.tsx
 ```
 
 The shared workspace sections use one constrained `$section` child route under
@@ -135,6 +135,16 @@ the pathless authenticated layout. Dashboard routes remain explicit because
 they render different page composition. Unmatched paths and unsupported section
 values render the root route's not-found component without replacing the
 requested URL. The explicit `/404` route renders the same page.
+
+Shared not-found handling lives in:
+
+```text
+apps/web/src/components/shared/not-found-page.tsx
+```
+
+`apps/web/src/routes/__root.tsx` and `apps/web/src/routes/404.tsx` both render
+that shared module. When authentication is available, it routes people back to
+their current workspace dashboard. Otherwise it sends them to sign-in.
 
 ## React Conventions
 

@@ -23,7 +23,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { Activity, ArrowUpRight, KeyRound, Plus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { WorkspacePageHeader, WorkspaceShell } from "./workspace-shell";
+import { WorkspacePageHeader, WorkspaceShell } from "./shell";
 
 const summaryMetrics = [
   {
