@@ -131,7 +131,9 @@ function installBrowserCoordination({
   class BroadcastChannelMock {
     onmessage: ((event: MessageEvent) => void) | null = null;
     close() {}
-    postMessage() {}
+    postMessage(data: unknown) {
+      this.onmessage?.({ data } as MessageEvent);
+    }
   }
 
   vi.stubGlobal("BroadcastChannel", BroadcastChannelMock);
@@ -152,10 +154,14 @@ function restoreBrowserCoordination() {
 
   if (originalScrollToDescriptor) {
     Object.defineProperty(window, "scrollTo", originalScrollToDescriptor);
+  } else {
+    Reflect.deleteProperty(window, "scrollTo");
   }
 
   if (originalScrollIntoViewDescriptor) {
     Object.defineProperty(Element.prototype, "scrollIntoView", originalScrollIntoViewDescriptor);
+  } else {
+    Reflect.deleteProperty(Element.prototype, "scrollIntoView");
   }
 
   vi.unstubAllGlobals();

@@ -39,7 +39,7 @@ function LoginForm({
         return;
       }
 
-      const workspaceSlug = state.principal?.workspace.slug;
+      const workspaceSlug = state.principal?.workspace?.slug;
 
       if (!workspaceSlug) {
         throw new Error(
