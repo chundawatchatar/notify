@@ -5,7 +5,11 @@ defmodule ApiWeb.Routes.WorkspaceRoutes do
     quote do
       get "/workspaces/:workspaceSlug/members", WorkspaceMemberController, :index
       patch "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :update
-      delete "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :delete
+
+      delete "/workspaces/:workspaceSlug/members/:membershipId",
+             WorkspaceMemberController,
+             :delete
+
       get "/workspaces/:workspaceSlug/invitations", WorkspaceMemberController, :list_invitations
       post "/workspaces/:workspaceSlug/invitations", WorkspaceMemberController, :create_invitation
 

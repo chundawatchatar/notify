@@ -1,4 +1,4 @@
-import { Button, NotifyLogoMark } from "@notify/ui";
+import { NotifyLogoMark } from "@notify/ui";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Database, KeyRound, RadioTower, Server, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";

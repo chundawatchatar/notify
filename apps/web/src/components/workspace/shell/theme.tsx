@@ -1,5 +1,4 @@
-import { Button, cn, Switch } from "@notify/ui";
-import { Menu, Search } from "lucide-react";
+import { cn, Switch } from "@notify/ui";
 import { useId, useLayoutEffect, useState } from "react";
 
 type ThemeMode = "light" | "dark";

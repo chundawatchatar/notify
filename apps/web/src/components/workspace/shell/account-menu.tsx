@@ -1,5 +1,4 @@
 import {
-  AppShellSidebarFooter,
   Avatar,
   AvatarFallback,
   Button,
