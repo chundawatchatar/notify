@@ -100,9 +100,10 @@ selected app and environment UUIDs.
 The raw server API key secret is disclosed exactly once after create or rotate.
 After that response, the UI may show only safe metadata such as label, created
 time, revoked state, and replacement history. The browser must never persist a
-server API key secret in local storage, session storage, URL state, or any
-TanStack Query cache, including in-memory and durable caches. Existing
-client-key, trusted-origin, and readiness behavior remains unchanged.
+server API key secret, or retain the secret-bearing create or rotate response,
+in local storage, session storage, URL state, or any TanStack Query cache,
+including in-memory and durable caches. Existing client-key, trusted-origin,
+and readiness behavior remains unchanged.
 
 The workspace switcher lists every active membership, including both the owned
 and invited workspaces created during invitation signup. After an explicit

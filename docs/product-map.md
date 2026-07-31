@@ -267,8 +267,6 @@ unchanged.
 
 Expected future backend ownership:
 
-- API key storage and hashing
-- key rotation lifecycle
 - origin enforcement
 - audit-event retrieval and retention policy
 
