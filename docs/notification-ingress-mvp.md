@@ -113,14 +113,18 @@ Canonical request fingerprinting uses serialization algorithm
 `ingress-body-v1`:
 
 - serialize only the validated JSON request body, not headers
+- reject duplicate object keys before validation succeeds
 - sort all object keys lexicographically at every nesting level
 - preserve array element order exactly as received
-- render strings with standard JSON escaping and UTF-8 encoding
-- render numbers in their normalized JSON decimal form without insignificant
-  whitespace
+- normalize all strings to Unicode NFC before JSON escaping and UTF-8 encoding
+- render integers and decimals in canonical decimal form:
+  `1`, `1.0`, and `1e0` serialize as `1`; exponent notation is never emitted;
+  fractional values keep only the minimum decimal digits required to preserve
+  value; `-0` serializes as `0`
 - omit no validated fields and add no derived fields
-- hash the resulting byte sequence and compare only fingerprints created with
-  the same algorithm version
+- hash the resulting byte sequence with SHA-256 and store the lowercase
+  hexadecimal digest
+- compare only fingerprints created with the same algorithm version
 
 If a future version changes canonicalization, the stored fingerprint version
 must be persisted beside the fingerprint and comparisons must use matching
@@ -210,12 +214,15 @@ Persistence and privacy rules for `notification_events`:
 
 - workspace, app, and environment ownership remain the only access path for
   reading or deleting an event
-- caller-controlled payload JSON is retained only for the minimum ingress MVP
-  operational window and must support later retention-based deletion
+- caller-controlled payload JSON is retained for 30 days in MVP, after which
+  the ingress data-retention job owned by `apps/api` deletes or redacts the
+  persisted payload and metadata fields by event age
 - payload and metadata columns must use the repository's standard database
   encryption-at-rest posture
-- secrets, credentials, and request-auth material must never be copied into the
-  event payload or metadata
+- the ingress API must sanitize payload and metadata before persistence by
+  rejecting or removing caller-supplied secrets, credentials, bearer tokens,
+  API keys, passwords, cookies, authorization headers, and other request-auth
+  material detected by reserved field names or configured sensitive-field rules
 - later event-detail APIs must support field-level redaction before showing
   caller-controlled payload content in the dashboard
 - logs, audit events, and metrics may reference the stable event id and safe
@@ -248,6 +255,13 @@ One row per accepted event for future fanout handoff with:
 
 The idempotency record, accepted event, and outbox row are inserted in one
 transaction before the API returns the first `202 Accepted` response.
+
+On a concurrent `UNIQUE (environment_id, idempotency_key_digest)` conflict, the
+API reloads the existing idempotency row inside the conflict path, compares the
+stored fingerprint and fingerprint version with the current request, returns the
+stored accepted response when they match, and returns
+`409 idempotency_key_conflict` when they differ. The API must not surface the
+raw database uniqueness error to clients.
 
 The outbox exists so later delivery work can consume a stable handoff record
 without redefining ingress persistence. The MVP does not yet perform retries,
