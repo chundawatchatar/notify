@@ -113,6 +113,9 @@ Canonical request fingerprinting uses serialization algorithm
 `ingress-body-v1`:
 
 - serialize only the validated JSON request body, not headers
+- reject duplicate object members before converting JSON objects into maps or
+  keyword lists; rejection applies to both exact duplicate names and names that
+  collide after Unicode NFC normalization
 - normalize all object-key strings to Unicode NFC before duplicate-key
   detection and reject any object whose normalized keys collide
 - sort all object keys lexicographically by Unicode code point at every nesting
@@ -124,12 +127,15 @@ Canonical request fingerprinting uses serialization algorithm
 - escape strings exactly as JSON requires: quote, reverse solidus, and control
   characters use standard short escapes when available, otherwise `\u00XX`;
   other characters are emitted as UTF-8 after NFC normalization
-- parse numeric input with deterministic decimal precision before
-  canonicalization so semantically equal validated numbers map to one value
+- parse numeric input into an exact base-10 decimal representation before
+  canonicalization; reject any numeric token that cannot be represented without
+  precision loss, overflow, or underflow in the chosen exact-decimal parser
 - render integers and decimals in canonical decimal form:
   `1`, `1.0`, and `1e0` serialize as `1`; exponent notation is never emitted;
   fractional values keep only the minimum decimal digits required to preserve
-  value; `-0` serializes as `0`
+  value with no trailing zeroes; `-0` serializes as `0`; no rounding is
+  allowed at canonicalization time because non-exact numeric inputs must be
+  rejected earlier
 - omit no validated fields and add no derived fields
 - hash the resulting byte sequence with SHA-256 and store the lowercase
   hexadecimal digest
@@ -232,9 +238,15 @@ Persistence and privacy rules for `notification_events`:
   generation, and persistence when payload or metadata contains caller-supplied
   secrets, credentials, bearer tokens, API keys, passwords, cookies,
   authorization headers, or other request-auth material
-- sensitive-field detection uses a deterministic reserved-field and configured
-  rule set applied to all payload and metadata object keys after Unicode NFC
-  normalization, with exact key-name matching at any nesting depth
+- sensitive-field detection uses a deterministic, versioned detector applied to
+  arbitrary JSON values before fingerprinting, canonicalization, or
+  persistence; it recursively inspects nested objects, arrays, scalar values,
+  and otherwise unclassified content and fails closed when content cannot be
+  classified safely
+- the detector matches reserved or configured field names after Unicode NFC
+  normalization at any nesting depth, including generic containers such as
+  `data`, and may reject scalar or array content when their surrounding key
+  path or content classification is sensitive
 - the sanitization rule set version must be fixed for the request lifecycle so
   the validated, fingerprinted, and persisted representations cannot diverge
 - later event-detail APIs must support field-level redaction before showing
