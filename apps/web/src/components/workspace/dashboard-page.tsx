@@ -85,32 +85,28 @@ const recentEvents = [
     app: "Acme Cloud",
     recipient: "user_9012",
     status: "Accepted",
-    latency: "71ms",
-    time: "2 min ago",
+    acceptedAt: "2 min ago",
   },
   {
     event: "billing.invoice_sent",
     app: "Acme Cloud",
     recipient: "user_1337",
     status: "Duplicate",
-    latency: "19ms",
-    time: "5 min ago",
+    acceptedAt: "5 min ago",
   },
   {
     event: "test.notification_sent",
     app: "Acme Labs",
     recipient: "agent_442",
     status: "Test event",
-    latency: "44ms",
-    time: "8 min ago",
+    acceptedAt: "8 min ago",
   },
   {
     event: "security.device_added",
     app: "Acme Support",
     recipient: "user_6200",
     status: "Accepted",
-    latency: "82ms",
-    time: "14 min ago",
+    acceptedAt: "14 min ago",
   },
 ];
 
@@ -295,7 +291,7 @@ function DashboardPage() {
                   {recentEvents.map((item) => (
                     <div
                       className="grid gap-3 border-b px-4 py-3 last:border-b-0 md:grid-cols-[1.2fr_0.8fr_0.8fr_100px_84px]"
-                      key={`${item.event}-${item.time}`}
+                      key={`${item.event}-${item.acceptedAt}`}
                     >
                       <div>
                         <p className="font-mono text-sm">{item.event}</p>
@@ -303,8 +299,8 @@ function DashboardPage() {
                       </div>
                       <p className="text-muted-foreground text-sm">{item.recipient}</p>
                       <Badge variant={eventBadgeVariant(item.status)}>{item.status}</Badge>
-                      <p className="font-mono text-sm">{item.latency}</p>
-                      <p className="text-muted-foreground text-sm">{item.time}</p>
+                      <p className="font-mono text-sm">{item.acceptedAt}</p>
+                      <p className="text-muted-foreground text-sm">accepted</p>
                     </div>
                   ))}
                 </div>

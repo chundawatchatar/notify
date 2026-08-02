@@ -109,6 +109,23 @@ browser identifiers and must not authenticate `POST /api/v1/notifications`.
 - a replay with the same key but a different canonical request returns
   `409 idempotency_key_conflict`
 
+Canonical request fingerprinting uses serialization algorithm
+`ingress-body-v1`:
+
+- serialize only the validated JSON request body, not headers
+- sort all object keys lexicographically at every nesting level
+- preserve array element order exactly as received
+- render strings with standard JSON escaping and UTF-8 encoding
+- render numbers in their normalized JSON decimal form without insignificant
+  whitespace
+- omit no validated fields and add no derived fields
+- hash the resulting byte sequence and compare only fingerprints created with
+  the same algorithm version
+
+If a future version changes canonicalization, the stored fingerprint version
+must be persisted beside the fingerprint and comparisons must use matching
+versions only.
+
 The retention window is an MVP assumption, not a long-term guarantee.
 
 ## Success And Error Responses
@@ -189,6 +206,21 @@ One row per accepted event with:
 - accepted-at timestamp
 - payload size in bytes
 
+Persistence and privacy rules for `notification_events`:
+
+- workspace, app, and environment ownership remain the only access path for
+  reading or deleting an event
+- caller-controlled payload JSON is retained only for the minimum ingress MVP
+  operational window and must support later retention-based deletion
+- payload and metadata columns must use the repository's standard database
+  encryption-at-rest posture
+- secrets, credentials, and request-auth material must never be copied into the
+  event payload or metadata
+- later event-detail APIs must support field-level redaction before showing
+  caller-controlled payload content in the dashboard
+- logs, audit events, and metrics may reference the stable event id and safe
+  metadata only, not raw payload bodies by default
+
 ### `notification_ingress_idempotency_keys`
 
 One row per retained idempotency key with:
@@ -196,8 +228,11 @@ One row per retained idempotency key with:
 - environment id
 - idempotency-key digest
 - canonical request fingerprint
+- canonical request fingerprint version, initially `ingress-body-v1`
 - accepted event id
 - expires-at timestamp
+
+The database enforces `UNIQUE (environment_id, idempotency_key_digest)`.
 
 ### `notification_event_outbox`
 
@@ -210,6 +245,9 @@ One row per accepted event for future fanout handoff with:
 - next dispatch status, initially `pending`
 - available-at timestamp
 - created-at timestamp
+
+The idempotency record, accepted event, and outbox row are inserted in one
+transaction before the API returns the first `202 Accepted` response.
 
 The outbox exists so later delivery work can consume a stable handoff record
 without redefining ingress persistence. The MVP does not yet perform retries,
@@ -233,8 +271,7 @@ ingest contract.
 - show masked server API key metadata or setup state, never the raw secret
 - show the idempotency window and request validation rules
 - list recent accepted-event summaries for the selected environment
-- allow an authenticated test-event action that creates a synthetic accepted
-  event with source kind `dashboard_test`
+- show the planned authenticated test-event action and its contract boundary
 
 ### Authenticated dashboard APIs
 
@@ -245,9 +282,23 @@ The follow-on authenticated APIs should stay separate from
 - `GET /api/apps/:appId/environments/:environmentId/ingress/events`
 - `POST /api/apps/:appId/environments/:environmentId/ingress/test-events`
 
-The dashboard test-event action uses the authenticated workspace member and the
-selected app and environment UUIDs. It does not require the browser to know or
-send the environment's raw server API key.
+The planned dashboard test-event action uses the authenticated workspace member
+and the selected app and environment UUIDs. It does not require the browser to
+know or send the environment's raw server API key.
+
+Its follow-on behavior is:
+
+- require normal authenticated dashboard authorization for the selected
+  workspace, app, and environment
+- accept a minimal validated synthetic event body and create an accepted event
+  with source kind `dashboard_test`
+- use server-side deduplication semantics defined for the action itself rather
+  than reusing the public `Idempotency-Key` header contract from
+  `POST /api/v1/notifications`
+- return the same safe validation and authorization failure shapes used by
+  other authenticated dashboard APIs
+- treat replay-conflict handling as planned work owned by the follow-on
+  implementation ticket, not as implicit browser behavior
 
 ## Safe Data Rules
 
@@ -258,6 +309,11 @@ send the environment's raw server API key.
 - masked server API key hint and server-side key digest
 - idempotency-key digest and request fingerprint
 - accepted-event and outbox timestamps and status metadata
+
+Server-side payload persistence must keep the same privacy boundary defined for
+`notification_events`: tenant-scoped access only, retention-based deletion,
+database encryption-at-rest, and redaction before any later operator-facing
+display of caller-controlled payload content.
 
 ### Safe to display in the dashboard
 

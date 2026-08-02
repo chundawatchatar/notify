@@ -168,20 +168,25 @@ Implemented tables:
 - `environment_trusted_origins`: environment-scoped normalized exact HTTP(S)
   origins. A unique `(app_environment_id, origin)` constraint prevents the
   same normalized origin from being trusted twice in an environment.
-
-## Future Product Tables
-
 - `notification_events`: environment-scoped accepted ingress events. Each row
   stores the owning workspace, app, and environment, source kind, optional
   source key id, event name, recipient id, canonical payload JSON, optional
   metadata JSON, occurred-at timestamp, payload size, and accepted-at time.
 - `notification_ingress_idempotency_keys`: environment-scoped retained
   idempotency key digests with the canonical request fingerprint, accepted
-  event reference, and expiry time.
+  event reference, and expiry time. The database must enforce
+  `UNIQUE (environment_id, idempotency_key_digest)`.
 - `notification_event_outbox`: append-only future handoff records created in
   the same transaction as an accepted event. Each row stores the accepted event
   reference, environment scope, recipient id, event name, pending dispatch
   status, and availability timestamp.
+
+The idempotency record, accepted event, and outbox row are inserted in one
+transaction so a first `202 Accepted` response cannot be committed without its
+deduplication and handoff records.
+
+## Future Product Tables
+
 - `delivery_attempts`: future worker-owned delivery execution data, introduced
   only when realtime fanout and retry orchestration exist
 - subscription_plans or workspace_subscriptions
