@@ -171,8 +171,19 @@ Implemented tables:
 
 ## Future Product Tables
 
-- notification_events and delivery_attempts: future environment-scoped data,
-  introduced only with their owning product contracts
+- `notification_events`: environment-scoped accepted ingress events. Each row
+  stores the owning workspace, app, and environment, source kind, optional
+  source key id, event name, recipient id, canonical payload JSON, optional
+  metadata JSON, occurred-at timestamp, payload size, and accepted-at time.
+- `notification_ingress_idempotency_keys`: environment-scoped retained
+  idempotency key digests with the canonical request fingerprint, accepted
+  event reference, and expiry time.
+- `notification_event_outbox`: append-only future handoff records created in
+  the same transaction as an accepted event. Each row stores the accepted event
+  reference, environment scope, recipient id, event name, pending dispatch
+  status, and availability timestamp.
+- `delivery_attempts`: future worker-owned delivery execution data, introduced
+  only when realtime fanout and retry orchestration exist
 - subscription_plans or workspace_subscriptions
 
 Notification app and environment UUIDs are database identities. Readable app
@@ -205,6 +216,13 @@ valid UUID or slug cannot expose another tenant's records. Future server API
 key queries must follow the same tenant isolation path through workspace,
 notification app, and environment ownership, even when API endpoints identify
 the app and environment by UUID.
+
+Notification ingress follows the same ownership path. Public
+`POST /api/v1/notifications` derives workspace, app, and environment from the
+authenticated server API key and never trusts identifiers from the request
+body. Authenticated dashboard ingress APIs may identify the selected app and
+environment by UUID only after membership-scoped authorization resolves the
+workspace boundary.
 
 ## Ecto Guidance
 

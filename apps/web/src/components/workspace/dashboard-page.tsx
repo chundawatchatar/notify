@@ -27,15 +27,15 @@ import { WorkspacePageHeader, WorkspaceShell } from "./shell";
 
 const summaryMetrics = [
   {
-    label: "Delivered today",
+    label: "Accepted today",
     value: "48,214",
-    detail: "+12.4% from yesterday",
+    detail: "Public ingest accepts one event per request",
     tone: "success",
   },
   {
-    label: "Ingress rate",
-    value: "318/min",
-    detail: "p95 validation 42ms",
+    label: "Duplicate replays",
+    value: "184",
+    detail: "Returned from the 24 hour idempotency window",
     tone: "info",
   },
   {
@@ -45,9 +45,9 @@ const summaryMetrics = [
     tone: "default",
   },
   {
-    label: "Failed events",
+    label: "Rejected requests",
     value: "37",
-    detail: "0.08% failure rate",
+    detail: "Validation and auth failures only",
     tone: "warning",
   },
 ];
@@ -84,41 +84,41 @@ const recentEvents = [
     event: "invoice.payment_failed",
     app: "Acme Cloud",
     recipient: "user_9012",
-    status: "Delivered",
+    status: "Accepted",
     latency: "71ms",
     time: "2 min ago",
   },
   {
-    event: "security.device_added",
+    event: "billing.invoice_sent",
     app: "Acme Cloud",
     recipient: "user_1337",
-    status: "Streaming",
-    latency: "39ms",
+    status: "Duplicate",
+    latency: "19ms",
     time: "5 min ago",
   },
   {
-    event: "ticket.assigned",
-    app: "Acme Support",
+    event: "test.notification_sent",
+    app: "Acme Labs",
     recipient: "agent_442",
-    status: "Queued",
-    latency: "118ms",
+    status: "Test event",
+    latency: "44ms",
     time: "8 min ago",
   },
   {
-    event: "trial.expiring",
-    app: "Acme Labs",
+    event: "security.device_added",
+    app: "Acme Support",
     recipient: "user_6200",
-    status: "Retrying",
-    latency: "204ms",
+    status: "Accepted",
+    latency: "82ms",
     time: "14 min ago",
   },
 ];
 
 const activityItems = [
-  "Production API key rotated",
-  "Sandbox app origin updated",
-  "Billing usage threshold reached",
-  "Realtime client token issued",
+  "Production server API key rotated",
+  "Ingress validation contract copied",
+  "Duplicate replay returned for billing.invoice_sent",
+  "Dashboard test event accepted",
 ];
 
 function DashboardPage() {
@@ -226,7 +226,7 @@ function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Ingress endpoint</CardTitle>
-            <CardDescription>Production ingest health and key controls.</CardDescription>
+            <CardDescription>Production ingest contract and key controls.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="rounded-sm border bg-secondary/35 p-3">
@@ -234,10 +234,10 @@ function DashboardPage() {
               <p className="mt-1 break-all font-mono text-sm">POST /api/v1/notifications</p>
             </div>
             <div className="grid gap-3">
-              <StatusLine label="Auth" value="Scoped keys active" />
-              <StatusLine label="Idempotency" value="Required" />
-              <StatusLine label="Realtime fanout" value="Healthy" />
-              <StatusLine label="Rate limit" value="72% available" />
+              <StatusLine label="Auth" value="Environment-scoped server keys" />
+              <StatusLine label="Idempotency" value="24 hour replay window" />
+              <StatusLine label="Persistence" value="Accepted event plus outbox" />
+              <StatusLine label="Fanout" value="Deferred in MVP" />
             </div>
             <Button asChild className="w-full" variant="outline">
               <Link params={{ section: "ingress", workspaceSlug }} to="/w/$workspaceSlug/$section">
@@ -278,13 +278,15 @@ function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Delivery analytics</CardTitle>
-            <CardDescription>Realtime delivery trends across all apps.</CardDescription>
+            <CardTitle>Ingress activity</CardTitle>
+            <CardDescription>
+              Accepted event activity before delivery fanout exists.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="events">
               <TabsList>
-                <TabsTrigger value="events">Events</TabsTrigger>
+                <TabsTrigger value="events">Accepted events</TabsTrigger>
                 <TabsTrigger value="activity">Activity</TabsTrigger>
               </TabsList>
 
@@ -329,11 +331,11 @@ function DashboardPage() {
 }
 
 function eventBadgeVariant(status: string) {
-  if (status === "Delivered") {
+  if (status === "Accepted") {
     return "success";
   }
 
-  if (status === "Retrying") {
+  if (status === "Duplicate") {
     return "warning";
   }
 

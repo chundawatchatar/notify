@@ -118,6 +118,33 @@ and no audit credential or event metadata belongs in browser storage. The same
 rule applies to server API key responses after the one-time disclosure window
 has passed.
 
+### Ingress Dashboard Behavior
+
+The ingress page stays at `/w/:workspaceSlug/ingress`. It does not embed app or
+environment UUIDs in the URL path. The browser keeps the selected `appSlug` and
+`environmentSlug` in route search state, resolves the matching app and
+environment from authenticated workspace data, and then calls authenticated
+dashboard ingress APIs by `:appId` and `:environmentId`.
+
+The ingress page may:
+
+- show the public `POST /api/v1/notifications` path
+- show masked server API key setup metadata
+- show the idempotency window and request validation rules
+- list recent accepted-event summaries for the selected environment
+- submit an authenticated test-event request for the selected environment
+
+The ingress page must not:
+
+- store raw server API key secrets, raw idempotency keys, or `Authorization`
+  headers in browser storage
+- persist full accepted-event payload JSON in local storage, session storage,
+  IndexedDB, URL state, or durable query caches
+- imply that realtime fanout, retries, delivery receipts, or analytics rollups
+  are already part of the ingress MVP
+
+Safe accepted-event summaries may stay in in-memory TanStack Query state.
+
 Shared dashboard layout lives in:
 
 ```text
