@@ -113,10 +113,19 @@ Canonical request fingerprinting uses serialization algorithm
 `ingress-body-v1`:
 
 - serialize only the validated JSON request body, not headers
-- reject duplicate object keys before validation succeeds
-- sort all object keys lexicographically at every nesting level
+- normalize all object-key strings to Unicode NFC before duplicate-key
+  detection and reject any object whose normalized keys collide
+- sort all object keys lexicographically by Unicode code point at every nesting
+  level
 - preserve array element order exactly as received
 - normalize all strings to Unicode NFC before JSON escaping and UTF-8 encoding
+- emit compact JSON with `,` between array or object elements and `:` between
+  keys and values, with no insignificant whitespace anywhere
+- escape strings exactly as JSON requires: quote, reverse solidus, and control
+  characters use standard short escapes when available, otherwise `\u00XX`;
+  other characters are emitted as UTF-8 after NFC normalization
+- parse numeric input with deterministic decimal precision before
+  canonicalization so semantically equal validated numbers map to one value
 - render integers and decimals in canonical decimal form:
   `1`, `1.0`, and `1e0` serialize as `1`; exponent notation is never emitted;
   fractional values keep only the minimum decimal digits required to preserve
@@ -219,10 +228,15 @@ Persistence and privacy rules for `notification_events`:
   persisted payload and metadata fields by event age
 - payload and metadata columns must use the repository's standard database
   encryption-at-rest posture
-- the ingress API must sanitize payload and metadata before persistence by
-  rejecting or removing caller-supplied secrets, credentials, bearer tokens,
-  API keys, passwords, cookies, authorization headers, and other request-auth
-  material detected by reserved field names or configured sensitive-field rules
+- the ingress API must reject requests before fingerprinting, canonical payload
+  generation, and persistence when payload or metadata contains caller-supplied
+  secrets, credentials, bearer tokens, API keys, passwords, cookies,
+  authorization headers, or other request-auth material
+- sensitive-field detection uses a deterministic reserved-field and configured
+  rule set applied to all payload and metadata object keys after Unicode NFC
+  normalization, with exact key-name matching at any nesting depth
+- the sanitization rule set version must be fixed for the request lifecycle so
+  the validated, fingerprinted, and persisted representations cannot diverge
 - later event-detail APIs must support field-level redaction before showing
   caller-controlled payload content in the dashboard
 - logs, audit events, and metrics may reference the stable event id and safe

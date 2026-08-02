@@ -175,7 +175,9 @@ Implemented tables:
 - `notification_ingress_idempotency_keys`: environment-scoped retained
   idempotency key digests with the canonical request fingerprint, accepted
   event reference, and expiry time. The database must enforce
-  `UNIQUE (environment_id, idempotency_key_digest)`.
+  `UNIQUE (environment_id, idempotency_key_digest)`. The stored fingerprint
+  must use the `ingress-body-v1` algorithm version defined in
+  `docs/notification-ingress-mvp.md`, alongside its persisted version marker.
 - `notification_event_outbox`: append-only future handoff records created in
   the same transaction as an accepted event. Each row stores the accepted event
   reference, environment scope, recipient id, event name, pending dispatch
