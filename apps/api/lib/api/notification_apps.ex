@@ -136,6 +136,35 @@ defmodule Api.NotificationApps do
   end
 
   @doc """
+  Resolves an active server API key to its workspace, app, and environment.
+
+  The returned scope is the only source of tenant identity for public ingress.
+  """
+  def authenticate_server_api_key(secret) when is_binary(secret) do
+    if ServerApiKey.valid_secret?(secret) do
+      digest = ServerApiKey.digest_secret(secret)
+
+      Repo.one(
+        from server_api_key in ServerApiKey,
+          join: environment in assoc(server_api_key, :environment),
+          join: notification_app in assoc(environment, :notification_app),
+          where:
+            server_api_key.secret_digest == ^digest and
+              is_nil(server_api_key.revoked_at) and
+              is_nil(notification_app.archived_at),
+          select: %{
+            server_api_key: server_api_key,
+            workspace_id: notification_app.workspace_id,
+            notification_app_id: notification_app.id,
+            app_environment_id: environment.id
+          }
+      )
+    end
+  end
+
+  def authenticate_server_api_key(_secret), do: nil
+
+  @doc """
   Creates a server API key for an environment and reveals the raw secret once.
   """
   def create_server_api_key(

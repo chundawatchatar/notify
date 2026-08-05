@@ -368,6 +368,23 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetRequestResponse",
         "x-validate": null
       },
+      "NotificationIngressEventsResponse": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationIngressEvent"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["events"],
+        "title": "NotificationIngressEventsResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.IngressEventsResponse",
+        "x-validate": null
+      },
       "CreateEnvironmentTrustedOriginRequest": {
         "additionalProperties": false,
         "properties": {
@@ -486,6 +503,57 @@
         "title": "WorkspaceInvitation",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.Invitation",
+        "x-validate": null
+      },
+      "NotificationIngressDetailsResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "app_id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "endpoint": {
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "environment_id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "idempotency_window_hours": {
+                "type": "integer",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "source": {
+                "enum": ["server_api_key"],
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": [
+              "app_id",
+              "environment_id",
+              "endpoint",
+              "idempotency_window_hours",
+              "source"
+            ],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["data"],
+        "title": "NotificationIngressDetailsResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.IngressDetailsResponse",
         "x-validate": null
       },
       "AuthWorkspace": {
@@ -1004,6 +1072,40 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SwitchWorkspaceRequest",
         "x-validate": null
       },
+      "NotificationIngestResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "accepted_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "duplicate": {
+                "type": "boolean",
+                "x-struct": null,
+                "x-validate": null
+              },
+              "event_id": {
+                "format": "uuid",
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": ["event_id", "duplicate", "accepted_at"],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["data"],
+        "title": "NotificationIngestResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.IngestResponse",
+        "x-validate": null
+      },
       "PasswordResetCompletionResponse": {
         "properties": {
           "status": {
@@ -1018,6 +1120,58 @@
         "title": "PasswordResetCompletionResponse",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.PasswordResetCompletionResponse",
+        "x-validate": null
+      },
+      "NotificationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "event": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "^[a-z0-9_]+(?:\\.[a-z0-9_]+)*$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "recipient": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "maxLength": 255,
+                "minLength": 1,
+                "type": "string",
+                "x-struct": null,
+                "x-validate": null
+              }
+            },
+            "required": ["id"],
+            "type": "object",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["event", "recipient", "payload"],
+        "title": "NotificationRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.NotificationRequest",
         "x-validate": null
       },
       "ReadinessChecks": {
@@ -1350,6 +1504,50 @@
         "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessResponse",
         "x-validate": null
       },
+      "NotificationIngressEvent": {
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "event": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "event_id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "recipient_id": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "source": {
+            "enum": ["public_api", "dashboard_test"],
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["event_id", "event", "recipient_id", "source", "accepted_at", "occurred_at"],
+        "title": "NotificationIngressEvent",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.IngressEvent",
+        "x-validate": null
+      },
       "EnvironmentServerApiKeysResponse": {
         "properties": {
           "api_keys": {
@@ -1418,6 +1616,380 @@
   },
   "openapi": "3.0.0",
   "paths": {
+    "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys/{clientKeyId}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "revokeEnvironmentClientKey",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment slug",
+            "in": "path",
+            "name": "environmentSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Client key ID",
+            "in": "path",
+            "name": "clientKeyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Client key revoked"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment or client key unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revoke an environment client key",
+        "tags": ["environment configuration"]
+      }
+    },
+    "/api/auth/email-verification/resend": {
+      "post": {
+        "callbacks": {},
+        "operationId": "resendEmailVerification",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendVerificationRequest"
+              }
+            }
+          },
+          "description": "Email verification request",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthStatusResponse"
+                }
+              }
+            },
+            "description": "Verification request accepted"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Verification delivery failed"
+          }
+        },
+        "summary": "Resend email verification instructions",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/health/live": {
+      "get": {
+        "callbacks": {},
+        "description": "Reports whether the API process is running and able to serve requests.",
+        "operationId": "getApiLiveness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivenessResponse"
+                }
+              }
+            },
+            "description": "Live response"
+          }
+        },
+        "summary": "Read API liveness",
+        "tags": ["system"]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "callbacks": {},
+        "operationId": "login",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "description": "Login credentials",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "Authenticated session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Rotating HttpOnly refresh-token cookie",
+                "schema": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Credentials invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Email not verified or origin rejected"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Sign in with email and password",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/v1/notifications": {
+      "post": {
+        "callbacks": {},
+        "operationId": "createNotification",
+        "parameters": [
+          {
+            "description": "",
+            "in": "header",
+            "name": "authorization",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "header",
+            "name": "idempotency_key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationRequest"
+              }
+            }
+          },
+          "description": "Notification event",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationIngestResponse"
+                }
+              }
+            },
+            "description": "Duplicate notification"
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationIngestResponse"
+                }
+              }
+            },
+            "description": "Accepted notification"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid server API key"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency conflict"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Accept a notification event",
+        "tags": []
+      }
+    },
+    "/api/version": {
+      "get": {
+        "callbacks": {},
+        "description": "Returns the API service name and application version.",
+        "operationId": "getApiVersion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            },
+            "description": "Version response"
+          }
+        },
+        "summary": "Read API version",
+        "tags": ["system"]
+      }
+    },
     "/api/apps": {
       "get": {
         "callbacks": {},
@@ -1537,6 +2109,238 @@
         ],
         "summary": "Create a notification app in the active workspace",
         "tags": ["notification apps"]
+      }
+    },
+    "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "revokeEnvironmentServerApiKey",
+        "parameters": [
+          {
+            "description": "Notification app ID",
+            "in": "path",
+            "name": "appId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment ID",
+            "in": "path",
+            "name": "environmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Server API key ID",
+            "in": "path",
+            "name": "keyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Server API key revoked"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Server API key resource unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revoke a server API key for an environment",
+        "tags": ["environment configuration"]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "callbacks": {},
+        "operationId": "getCurrentUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponse"
+                }
+              }
+            },
+            "description": "Authenticated principal"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read the authenticated account and workspace",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "callbacks": {},
+        "operationId": "signup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequest"
+              }
+            }
+          },
+          "description": "Signup email",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthStatusResponse"
+                }
+              }
+            },
+            "description": "Verification request accepted"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Verification delivery failed"
+          }
+        },
+        "summary": "Start email-first signup",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/workspaces/{workspaceSlug}/members": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listWorkspaceMembers",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceMembersResponse"
+                }
+              }
+            },
+            "description": "Active members"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List active workspace members",
+        "tags": ["workspaces"]
       }
     },
     "/api/apps/{appId}/environments/{environmentId}/server-api-keys": {
@@ -1720,53 +2524,34 @@
         "tags": ["environment configuration"]
       }
     },
-    "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}": {
-      "delete": {
+    "/api/auth/password-reset/complete": {
+      "post": {
         "callbacks": {},
-        "operationId": "revokeEnvironmentServerApiKey",
-        "parameters": [
-          {
-            "description": "Notification app ID",
-            "in": "path",
-            "name": "appId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+        "operationId": "completePasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletePasswordResetRequest"
+              }
             }
           },
-          {
-            "description": "Environment ID",
-            "in": "path",
-            "name": "environmentId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          },
-          {
-            "description": "Server API key ID",
-            "in": "path",
-            "name": "keyId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          }
-        ],
+          "description": "New password",
+          "required": true
+        },
         "responses": {
-          "204": {
-            "description": "Server API key revoked"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetCompletionResponse"
+                }
+              }
+            },
+            "description": "Password reset"
           },
-          "401": {
+          "400": {
             "content": {
               "application/json": {
                 "schema": {
@@ -1774,7 +2559,7 @@
                 }
               }
             },
-            "description": "Access token invalid"
+            "description": "Reset token invalid or expired"
           },
           "403": {
             "content": {
@@ -1784,80 +2569,143 @@
                 }
               }
             },
-            "description": "Permission denied"
+            "description": "Origin rejected"
           },
-          "404": {
+          "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
                 }
               }
             },
-            "description": "Server API key resource unavailable"
+            "description": "Validation failed"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Revoke a server API key for an environment",
-        "tags": ["environment configuration"]
+        "summary": "Set a new password",
+        "tags": ["authentication"]
       }
     },
-    "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}/rotate": {
+    "/api/auth/invitations/signup": {
       "post": {
         "callbacks": {},
-        "operationId": "rotateEnvironmentServerApiKey",
-        "parameters": [
-          {
-            "description": "Notification app ID",
-            "in": "path",
-            "name": "appId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+        "operationId": "completeInvitationSignup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteInvitationSignupRequest"
+              }
             }
           },
-          {
-            "description": "Environment ID",
-            "in": "path",
-            "name": "environmentId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          },
-          {
-            "description": "Server API key ID",
-            "in": "path",
-            "name": "keyId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          }
-        ],
+          "description": "Invitation signup details",
+          "required": true
+        },
         "responses": {
           "201": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EnvironmentServerApiKeySecret"
+                  "$ref": "#/components/schemas/AuthResponse"
                 }
               }
             },
-            "description": "Rotated environment server API key"
+            "description": "Authenticated invitation session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "HttpOnly refresh-token cookie for the invited workspace",
+                "schema": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation invalid or expired"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Email already registered"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Create an invited account and join its workspace",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/workspace/switch": {
+      "post": {
+        "callbacks": {},
+        "operationId": "switchWorkspace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwitchWorkspaceRequest"
+              }
+            }
+          },
+          "description": "Target workspace",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "Switched workspace session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Rotated HttpOnly refresh-token cookie",
+                "schema": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
           },
           "401": {
             "content": {
@@ -1877,7 +2725,7 @@
                 }
               }
             },
-            "description": "Permission denied"
+            "description": "Origin rejected"
           },
           "404": {
             "content": {
@@ -1887,7 +2735,27 @@
                 }
               }
             },
-            "description": "Server API key resource unavailable"
+            "description": "Workspace unavailable"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace switch failed"
           }
         },
         "security": [
@@ -1895,8 +2763,8 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Rotate a server API key for an environment",
-        "tags": ["environment configuration"]
+        "summary": "Switch the authenticated session to another workspace",
+        "tags": ["authentication"]
       }
     },
     "/api/apps/{appSlug}": {
@@ -2132,6 +3000,446 @@
         "tags": ["notification apps"]
       }
     },
+    "/api/apps/{appId}/environments/{environmentId}/ingress/events": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listNotificationIngressEvents",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "appId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "path",
+            "name": "environmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationIngressEventsResponse"
+                }
+              }
+            },
+            "description": "Recent accepted events"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List recent accepted notification events",
+        "tags": []
+      }
+    },
+    "/api/apps/{appSlug}/environments/{environmentSlug}/trusted-origins/{trustedOriginId}": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "removeEnvironmentTrustedOrigin",
+        "parameters": [
+          {
+            "description": "Notification app slug",
+            "in": "path",
+            "name": "appSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment slug",
+            "in": "path",
+            "name": "environmentSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Trusted origin ID",
+            "in": "path",
+            "name": "trustedOriginId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Trusted origin removed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment or trusted origin unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove a trusted origin from an environment",
+        "tags": ["environment configuration"]
+      }
+    },
+    "/api/auth/email-verification/confirm": {
+      "post": {
+        "callbacks": {},
+        "operationId": "confirmEmail",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmEmailRequest"
+              }
+            }
+          },
+          "description": "Email verification token",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupTokenResponse"
+                }
+              }
+            },
+            "description": "Email verified for signup completion"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Token invalid or expired"
+          }
+        },
+        "summary": "Confirm an account email",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/workspaces/{workspaceSlug}/invitations": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listWorkspaceInvitations",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceInvitationsResponse"
+                }
+              }
+            },
+            "description": "Pending invitations"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List pending workspace invitations",
+        "tags": ["workspaces"]
+      },
+      "post": {
+        "callbacks": {},
+        "operationId": "createWorkspaceInvitation",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceInvitationRequest"
+              }
+            }
+          },
+          "description": "Invitation details",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceInvitation"
+                }
+              }
+            },
+            "description": "Invitation created"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Already an active member"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation delivery failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Invite a person to a workspace",
+        "tags": ["workspaces"]
+      }
+    },
+    "/api/auth/signup/complete": {
+      "post": {
+        "callbacks": {},
+        "operationId": "completeSignup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteSignupRequest"
+              }
+            }
+          },
+          "description": "Verified signup details",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupCompletionResponse"
+                }
+              }
+            },
+            "description": "Account and owner workspace created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Signup token invalid or expired"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Email already registered"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Complete a verified signup",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/health/ready": {
+      "get": {
+        "callbacks": {},
+        "description": "Reports whether the API and its required dependencies can serve traffic.",
+        "operationId": "getApiReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            },
+            "description": "Ready response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            },
+            "description": "Not ready response"
+          }
+        },
+        "summary": "Read API readiness",
+        "tags": ["system"]
+      }
+    },
     "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys": {
       "get": {
         "callbacks": {},
@@ -2296,41 +3604,27 @@
         "tags": ["environment configuration"]
       }
     },
-    "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys/{clientKeyId}": {
-      "delete": {
+    "/api/apps/{appId}/environments/{environmentId}/ingress": {
+      "get": {
         "callbacks": {},
-        "operationId": "revokeEnvironmentClientKey",
+        "operationId": "getNotificationIngress",
         "parameters": [
           {
-            "description": "Notification app slug",
+            "description": "",
             "in": "path",
-            "name": "appSlug",
+            "name": "appId",
             "required": true,
             "schema": {
-              "maxLength": 50,
-              "minLength": 1,
+              "format": "uuid",
               "type": "string",
               "x-struct": null,
               "x-validate": null
             }
           },
           {
-            "description": "Environment slug",
+            "description": "",
             "in": "path",
-            "name": "environmentSlug",
-            "required": true,
-            "schema": {
-              "maxLength": 50,
-              "minLength": 1,
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          },
-          {
-            "description": "Client key ID",
-            "in": "path",
-            "name": "clientKeyId",
+            "name": "environmentId",
             "required": true,
             "schema": {
               "format": "uuid",
@@ -2341,8 +3635,191 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "Client key revoked"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationIngressDetailsResponse"
+                }
+              }
+            },
+            "description": "Ingress details"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get notification ingress details",
+        "tags": []
+      }
+    },
+    "/api/auth/password-reset/confirm": {
+      "post": {
+        "callbacks": {},
+        "operationId": "confirmPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmPasswordResetRequest"
+              }
+            }
+          },
+          "description": "Password reset token",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetTokenResponse"
+                }
+              }
+            },
+            "description": "Password reset confirmed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Token invalid or expired"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          }
+        },
+        "summary": "Confirm a password reset link",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/invitations/accept": {
+      "post": {
+        "callbacks": {},
+        "operationId": "acceptInvitation",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationRequest"
+              }
+            }
+          },
+          "description": "Invitation token",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "Authenticated invitation session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "HttpOnly refresh-token cookie for the invited workspace",
+                "schema": {
+                  "type": "string",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation invalid or expired"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invitation email does not match or origin is rejected"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "User is already an active member"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Accept a workspace invitation for the authenticated user",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/workspaces": {
+      "get": {
+        "callbacks": {},
+        "operationId": "listWorkspaces",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceListResponse"
+                }
+              }
+            },
+            "description": "Active workspace memberships"
           },
           "401": {
             "content": {
@@ -2353,26 +3830,6 @@
               }
             },
             "description": "Access token invalid"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Permission denied"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Environment or client key unavailable"
           }
         },
         "security": [
@@ -2380,8 +3837,8 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Revoke an environment client key",
-        "tags": ["environment configuration"]
+        "summary": "List active workspaces for the authenticated user",
+        "tags": ["authentication"]
       }
     },
     "/api/apps/{appSlug}/environments/{environmentSlug}/trusted-origins": {
@@ -2579,676 +4036,6 @@
         "tags": ["environment configuration"]
       }
     },
-    "/api/apps/{appSlug}/environments/{environmentSlug}/trusted-origins/{trustedOriginId}": {
-      "delete": {
-        "callbacks": {},
-        "operationId": "removeEnvironmentTrustedOrigin",
-        "parameters": [
-          {
-            "description": "Notification app slug",
-            "in": "path",
-            "name": "appSlug",
-            "required": true,
-            "schema": {
-              "maxLength": 50,
-              "minLength": 1,
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          },
-          {
-            "description": "Environment slug",
-            "in": "path",
-            "name": "environmentSlug",
-            "required": true,
-            "schema": {
-              "maxLength": 50,
-              "minLength": 1,
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          },
-          {
-            "description": "Trusted origin ID",
-            "in": "path",
-            "name": "trustedOriginId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Trusted origin removed"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Access token invalid"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Permission denied"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Environment or trusted origin unavailable"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Remove a trusted origin from an environment",
-        "tags": ["environment configuration"]
-      }
-    },
-    "/api/auth/email-verification/confirm": {
-      "post": {
-        "callbacks": {},
-        "operationId": "confirmEmail",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfirmEmailRequest"
-              }
-            }
-          },
-          "description": "Email verification token",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SignupTokenResponse"
-                }
-              }
-            },
-            "description": "Email verified for signup completion"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Token invalid or expired"
-          }
-        },
-        "summary": "Confirm an account email",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/email-verification/resend": {
-      "post": {
-        "callbacks": {},
-        "operationId": "resendEmailVerification",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResendVerificationRequest"
-              }
-            }
-          },
-          "description": "Email verification request",
-          "required": true
-        },
-        "responses": {
-          "202": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthStatusResponse"
-                }
-              }
-            },
-            "description": "Verification request accepted"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            },
-            "description": "Validation failed"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Verification delivery failed"
-          }
-        },
-        "summary": "Resend email verification instructions",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/invitations/accept": {
-      "post": {
-        "callbacks": {},
-        "operationId": "acceptInvitation",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AcceptInvitationRequest"
-              }
-            }
-          },
-          "description": "Invitation token",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthResponse"
-                }
-              }
-            },
-            "description": "Authenticated invitation session",
-            "headers": {
-              "Set-Cookie": {
-                "description": "HttpOnly refresh-token cookie for the invited workspace",
-                "schema": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
-                },
-                "style": "simple"
-              }
-            }
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Invitation invalid or expired"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Invitation email does not match or origin is rejected"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "User is already an active member"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Accept a workspace invitation for the authenticated user",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/invitations/resolve": {
-      "post": {
-        "callbacks": {},
-        "operationId": "resolveInvitation",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResolveInvitationRequest"
-              }
-            }
-          },
-          "description": "Invitation token",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InvitationPreviewResponse"
-                }
-              }
-            },
-            "description": "Invitation details"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Invitation invalid or expired"
-          }
-        },
-        "summary": "Resolve an invitation for acceptance",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/invitations/signup": {
-      "post": {
-        "callbacks": {},
-        "operationId": "completeInvitationSignup",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompleteInvitationSignupRequest"
-              }
-            }
-          },
-          "description": "Invitation signup details",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthResponse"
-                }
-              }
-            },
-            "description": "Authenticated invitation session",
-            "headers": {
-              "Set-Cookie": {
-                "description": "HttpOnly refresh-token cookie for the invited workspace",
-                "schema": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
-                },
-                "style": "simple"
-              }
-            }
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Invitation invalid or expired"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Origin rejected"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Email already registered"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            },
-            "description": "Validation failed"
-          }
-        },
-        "summary": "Create an invited account and join its workspace",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/login": {
-      "post": {
-        "callbacks": {},
-        "operationId": "login",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              }
-            }
-          },
-          "description": "Login credentials",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthResponse"
-                }
-              }
-            },
-            "description": "Authenticated session",
-            "headers": {
-              "Set-Cookie": {
-                "description": "Rotating HttpOnly refresh-token cookie",
-                "schema": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
-                },
-                "style": "simple"
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Credentials invalid"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Email not verified or origin rejected"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            },
-            "description": "Validation failed"
-          }
-        },
-        "summary": "Sign in with email and password",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/me": {
-      "get": {
-        "callbacks": {},
-        "operationId": "getCurrentUser",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrentUserResponse"
-                }
-              }
-            },
-            "description": "Authenticated principal"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Access token invalid"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Read the authenticated account and workspace",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/password-reset": {
-      "post": {
-        "callbacks": {},
-        "operationId": "requestPasswordReset",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PasswordResetRequest"
-              }
-            }
-          },
-          "description": "Password reset email",
-          "required": true
-        },
-        "responses": {
-          "202": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PasswordResetRequestResponse"
-                }
-              }
-            },
-            "description": "Password reset request accepted"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Origin rejected"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            },
-            "description": "Validation failed"
-          }
-        },
-        "summary": "Request password reset instructions",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/password-reset/complete": {
-      "post": {
-        "callbacks": {},
-        "operationId": "completePasswordReset",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompletePasswordResetRequest"
-              }
-            }
-          },
-          "description": "New password",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PasswordResetCompletionResponse"
-                }
-              }
-            },
-            "description": "Password reset"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Reset token invalid or expired"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Origin rejected"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            },
-            "description": "Validation failed"
-          }
-        },
-        "summary": "Set a new password",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/password-reset/confirm": {
-      "post": {
-        "callbacks": {},
-        "operationId": "confirmPasswordReset",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfirmPasswordResetRequest"
-              }
-            }
-          },
-          "description": "Password reset token",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PasswordResetTokenResponse"
-                }
-              }
-            },
-            "description": "Password reset confirmed"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Token invalid or expired"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Origin rejected"
-          }
-        },
-        "summary": "Confirm a password reset link",
-        "tags": ["authentication"]
-      }
-    },
     "/api/auth/refresh": {
       "post": {
         "callbacks": {},
@@ -3301,187 +4088,58 @@
         "tags": ["authentication"]
       }
     },
-    "/api/auth/session": {
-      "delete": {
+    "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}/rotate": {
+      "post": {
         "callbacks": {},
-        "operationId": "logout",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": "Session revoked"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Origin rejected"
-          }
-        },
-        "security": [
-          {},
+        "operationId": "rotateEnvironmentServerApiKey",
+        "parameters": [
           {
-            "bearerAuth": []
+            "description": "Notification app ID",
+            "in": "path",
+            "name": "appId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment ID",
+            "in": "path",
+            "name": "environmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Server API key ID",
+            "in": "path",
+            "name": "keyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
           }
         ],
-        "summary": "Sign out and revoke the current session",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/signup": {
-      "post": {
-        "callbacks": {},
-        "operationId": "signup",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SignupRequest"
-              }
-            }
-          },
-          "description": "Signup email",
-          "required": true
-        },
-        "responses": {
-          "202": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthStatusResponse"
-                }
-              }
-            },
-            "description": "Verification request accepted"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            },
-            "description": "Validation failed"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Verification delivery failed"
-          }
-        },
-        "summary": "Start email-first signup",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/signup/complete": {
-      "post": {
-        "callbacks": {},
-        "operationId": "completeSignup",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompleteSignupRequest"
-              }
-            }
-          },
-          "description": "Verified signup details",
-          "required": true
-        },
         "responses": {
           "201": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignupCompletionResponse"
+                  "$ref": "#/components/schemas/EnvironmentServerApiKeySecret"
                 }
               }
             },
-            "description": "Account and owner workspace created"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Signup token invalid or expired"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Email already registered"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            },
-            "description": "Validation failed"
-          }
-        },
-        "summary": "Complete a verified signup",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/auth/workspace/switch": {
-      "post": {
-        "callbacks": {},
-        "operationId": "switchWorkspace",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SwitchWorkspaceRequest"
-              }
-            }
-          },
-          "description": "Target workspace",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthResponse"
-                }
-              }
-            },
-            "description": "Switched workspace session",
-            "headers": {
-              "Set-Cookie": {
-                "description": "Rotated HttpOnly refresh-token cookie",
-                "schema": {
-                  "type": "string",
-                  "x-struct": null,
-                  "x-validate": null
-                },
-                "style": "simple"
-              }
-            }
+            "description": "Rotated environment server API key"
           },
           "401": {
             "content": {
@@ -3501,196 +4159,6 @@
                 }
               }
             },
-            "description": "Origin rejected"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Workspace unavailable"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            },
-            "description": "Validation failed"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Workspace switch failed"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Switch the authenticated session to another workspace",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/health/live": {
-      "get": {
-        "callbacks": {},
-        "description": "Reports whether the API process is running and able to serve requests.",
-        "operationId": "getApiLiveness",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LivenessResponse"
-                }
-              }
-            },
-            "description": "Live response"
-          }
-        },
-        "summary": "Read API liveness",
-        "tags": ["system"]
-      }
-    },
-    "/api/health/ready": {
-      "get": {
-        "callbacks": {},
-        "description": "Reports whether the API and its required dependencies can serve traffic.",
-        "operationId": "getApiReadiness",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReadinessResponse"
-                }
-              }
-            },
-            "description": "Ready response"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReadinessResponse"
-                }
-              }
-            },
-            "description": "Not ready response"
-          }
-        },
-        "summary": "Read API readiness",
-        "tags": ["system"]
-      }
-    },
-    "/api/version": {
-      "get": {
-        "callbacks": {},
-        "description": "Returns the API service name and application version.",
-        "operationId": "getApiVersion",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VersionResponse"
-                }
-              }
-            },
-            "description": "Version response"
-          }
-        },
-        "summary": "Read API version",
-        "tags": ["system"]
-      }
-    },
-    "/api/workspaces": {
-      "get": {
-        "callbacks": {},
-        "operationId": "listWorkspaces",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkspaceListResponse"
-                }
-              }
-            },
-            "description": "Active workspace memberships"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Access token invalid"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "List active workspaces for the authenticated user",
-        "tags": ["authentication"]
-      }
-    },
-    "/api/workspaces/{workspaceSlug}/invitations": {
-      "get": {
-        "callbacks": {},
-        "operationId": "listWorkspaceInvitations",
-        "parameters": [
-          {
-            "description": "Workspace slug",
-            "in": "path",
-            "name": "workspaceSlug",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkspaceInvitationsResponse"
-                }
-              }
-            },
-            "description": "Pending invitations"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
             "description": "Permission denied"
           },
           "404": {
@@ -3701,7 +4169,7 @@
                 }
               }
             },
-            "description": "Workspace unavailable"
+            "description": "Server API key resource unavailable"
           }
         },
         "security": [
@@ -3709,105 +4177,8 @@
             "bearerAuth": []
           }
         ],
-        "summary": "List pending workspace invitations",
-        "tags": ["workspaces"]
-      },
-      "post": {
-        "callbacks": {},
-        "operationId": "createWorkspaceInvitation",
-        "parameters": [
-          {
-            "description": "Workspace slug",
-            "in": "path",
-            "name": "workspaceSlug",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateWorkspaceInvitationRequest"
-              }
-            }
-          },
-          "description": "Invitation details",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkspaceInvitation"
-                }
-              }
-            },
-            "description": "Invitation created"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Permission denied"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Workspace unavailable"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Already an active member"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            },
-            "description": "Validation failed"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Invitation delivery failed"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Invite a person to a workspace",
-        "tags": ["workspaces"]
+        "summary": "Rotate a server API key for an environment",
+        "tags": ["environment configuration"]
       }
     },
     "/api/workspaces/{workspaceSlug}/invitations/{invitationId}": {
@@ -3872,35 +4243,86 @@
         "tags": ["workspaces"]
       }
     },
-    "/api/workspaces/{workspaceSlug}/members": {
-      "get": {
+    "/api/auth/password-reset": {
+      "post": {
         "callbacks": {},
-        "operationId": "listWorkspaceMembers",
-        "parameters": [
-          {
-            "description": "Workspace slug",
-            "in": "path",
-            "name": "workspaceSlug",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "x-struct": null,
-              "x-validate": null
+        "operationId": "requestPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
             }
+          },
+          "description": "Password reset email",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetRequestResponse"
+                }
+              }
+            },
+            "description": "Password reset request accepted"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Origin rejected"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
           }
-        ],
+        },
+        "summary": "Request password reset instructions",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/invitations/resolve": {
+      "post": {
+        "callbacks": {},
+        "operationId": "resolveInvitation",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveInvitationRequest"
+              }
+            }
+          },
+          "description": "Invitation token",
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceMembersResponse"
+                  "$ref": "#/components/schemas/InvitationPreviewResponse"
                 }
               }
             },
-            "description": "Active members"
+            "description": "Invitation details"
           },
-          "401": {
+          "400": {
             "content": {
               "application/json": {
                 "schema": {
@@ -3908,9 +4330,23 @@
                 }
               }
             },
-            "description": "Access token invalid"
+            "description": "Invitation invalid or expired"
+          }
+        },
+        "summary": "Resolve an invitation for acceptance",
+        "tags": ["authentication"]
+      }
+    },
+    "/api/auth/session": {
+      "delete": {
+        "callbacks": {},
+        "operationId": "logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Session revoked"
           },
-          "404": {
+          "403": {
             "content": {
               "application/json": {
                 "schema": {
@@ -3918,16 +4354,17 @@
                 }
               }
             },
-            "description": "Workspace unavailable"
+            "description": "Origin rejected"
           }
         },
         "security": [
+          {},
           {
             "bearerAuth": []
           }
         ],
-        "summary": "List active workspace members",
-        "tags": ["workspaces"]
+        "summary": "Sign out and revoke the current session",
+        "tags": ["authentication"]
       }
     },
     "/api/workspaces/{workspaceSlug}/members/{membershipId}": {

@@ -15,6 +15,107 @@ defmodule NotifyOpenApi.NotificationAppSchemas do
     })
   end
 
+  defmodule NotificationRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "NotificationRequest",
+      type: :object,
+      additionalProperties: false,
+      properties: %{
+        event: %Schema{
+          type: :string,
+          minLength: 1,
+          maxLength: 120,
+          pattern: "^[a-z0-9_]+(?:\\.[a-z0-9_]+)*$"
+        },
+        recipient: %Schema{
+          type: :object,
+          additionalProperties: false,
+          properties: %{id: %Schema{type: :string, minLength: 1, maxLength: 255}},
+          required: [:id]
+        },
+        payload: %Schema{type: :object, additionalProperties: true},
+        occurredAt: %Schema{type: :string, format: "date-time"},
+        metadata: %Schema{type: :object, additionalProperties: true}
+      },
+      required: [:event, :recipient, :payload]
+    })
+  end
+
+  defmodule IngestResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "NotificationIngestResponse",
+      type: :object,
+      properties: %{
+        data: %Schema{
+          type: :object,
+          properties: %{
+            event_id: %Schema{type: :string, format: :uuid},
+            duplicate: %Schema{type: :boolean},
+            accepted_at: %Schema{type: :string, format: "date-time"}
+          },
+          required: [:event_id, :duplicate, :accepted_at]
+        }
+      },
+      required: [:data]
+    })
+  end
+
+  defmodule IngressDetailsResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "NotificationIngressDetailsResponse",
+      type: :object,
+      properties: %{
+        data: %Schema{
+          type: :object,
+          properties: %{
+            app_id: %Schema{type: :string, format: :uuid},
+            environment_id: %Schema{type: :string, format: :uuid},
+            endpoint: %Schema{type: :string},
+            idempotency_window_hours: %Schema{type: :integer},
+            source: %Schema{type: :string, enum: ["server_api_key"]}
+          },
+          required: [:app_id, :environment_id, :endpoint, :idempotency_window_hours, :source]
+        }
+      },
+      required: [:data]
+    })
+  end
+
+  defmodule IngressEvent do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "NotificationIngressEvent",
+      type: :object,
+      properties: %{
+        event_id: %Schema{type: :string, format: :uuid},
+        event: %Schema{type: :string},
+        recipient_id: %Schema{type: :string},
+        source: %Schema{type: :string, enum: ["public_api", "dashboard_test"]},
+        accepted_at: %Schema{type: :string, format: "date-time"},
+        occurred_at: %Schema{type: :string, format: "date-time", nullable: true}
+      },
+      required: [:event_id, :event, :recipient_id, :source, :accepted_at, :occurred_at]
+    })
+  end
+
+  defmodule IngressEventsResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "NotificationIngressEventsResponse",
+      type: :object,
+      properties: %{events: %Schema{type: :array, items: IngressEvent}},
+      required: [:events]
+    })
+  end
+
   defmodule UpdateNotificationAppRequest do
     require OpenApiSpex
 

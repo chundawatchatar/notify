@@ -22,6 +22,7 @@ defmodule ApiWeb.Router do
     get "/version", VersionController, :show
 
     public_auth_routes()
+    notification_ingress_routes()
   end
 
   scope "/api", ApiWeb do
@@ -30,6 +31,7 @@ defmodule ApiWeb.Router do
     authenticated_auth_routes()
     notification_app_routes()
     environment_configuration_routes()
+    notification_dashboard_ingress_routes()
     workspace_member_routes()
   end
 

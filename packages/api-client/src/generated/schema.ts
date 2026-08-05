@@ -4,6 +4,114 @@
  */
 
 export interface paths {
+  "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys/{clientKeyId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revoke an environment client key */
+    delete: operations["revokeEnvironmentClientKey"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/email-verification/resend": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Resend email verification instructions */
+    post: operations["resendEmailVerification"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/health/live": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read API liveness
+     * @description Reports whether the API process is running and able to serve requests.
+     */
+    get: operations["getApiLiveness"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/login": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Sign in with email and password */
+    post: operations["login"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/notifications": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Accept a notification event */
+    post: operations["createNotification"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/version": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read API version
+     * @description Returns the API service name and application version.
+     */
+    get: operations["getApiVersion"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/apps": {
     parameters: {
       query?: never;
@@ -16,6 +124,74 @@ export interface paths {
     put?: never;
     /** Create a notification app in the active workspace */
     post: operations["createNotificationApp"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revoke a server API key for an environment */
+    delete: operations["revokeEnvironmentServerApiKey"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read the authenticated account and workspace */
+    get: operations["getCurrentUser"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/signup": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Start email-first signup */
+    post: operations["signup"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/workspaces/{workspaceSlug}/members": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List active workspace members */
+    get: operations["listWorkspaceMembers"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -40,7 +216,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}": {
+  "/api/auth/password-reset/complete": {
     parameters: {
       query?: never;
       header?: never;
@@ -49,15 +225,15 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post?: never;
-    /** Revoke a server API key for an environment */
-    delete: operations["revokeEnvironmentServerApiKey"];
+    /** Set a new password */
+    post: operations["completePasswordReset"];
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}/rotate": {
+  "/api/auth/invitations/signup": {
     parameters: {
       query?: never;
       header?: never;
@@ -66,8 +242,25 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Rotate a server API key for an environment */
-    post: operations["rotateEnvironmentServerApiKey"];
+    /** Create an invited account and join its workspace */
+    post: operations["completeInvitationSignup"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/workspace/switch": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Switch the authenticated session to another workspace */
+    post: operations["switchWorkspace"];
     delete?: never;
     options?: never;
     head?: never;
@@ -93,53 +286,17 @@ export interface paths {
     patch: operations["updateNotificationApp"];
     trace?: never;
   };
-  "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys": {
+  "/api/apps/{appId}/environments/{environmentId}/ingress/events": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** List client keys for an environment */
-    get: operations["listEnvironmentClientKeys"];
-    put?: never;
-    /** Create a client key for an environment */
-    post: operations["createEnvironmentClientKey"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys/{clientKeyId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
+    /** List recent accepted notification events */
+    get: operations["listNotificationIngressEvents"];
     put?: never;
     post?: never;
-    /** Revoke an environment client key */
-    delete: operations["revokeEnvironmentClientKey"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/apps/{appSlug}/environments/{environmentSlug}/trusted-origins": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List trusted origins for an environment */
-    get: operations["listEnvironmentTrustedOrigins"];
-    put?: never;
-    /** Add a trusted origin to an environment */
-    post: operations["createEnvironmentTrustedOrigin"];
     delete?: never;
     options?: never;
     head?: never;
@@ -180,204 +337,18 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/auth/email-verification/resend": {
+  "/api/workspaces/{workspaceSlug}/invitations": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** List pending workspace invitations */
+    get: operations["listWorkspaceInvitations"];
     put?: never;
-    /** Resend email verification instructions */
-    post: operations["resendEmailVerification"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/invitations/accept": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Accept a workspace invitation for the authenticated user */
-    post: operations["acceptInvitation"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/invitations/resolve": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Resolve an invitation for acceptance */
-    post: operations["resolveInvitation"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/invitations/signup": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Create an invited account and join its workspace */
-    post: operations["completeInvitationSignup"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/login": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Sign in with email and password */
-    post: operations["login"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/me": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Read the authenticated account and workspace */
-    get: operations["getCurrentUser"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/password-reset": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Request password reset instructions */
-    post: operations["requestPasswordReset"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/password-reset/complete": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Set a new password */
-    post: operations["completePasswordReset"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/password-reset/confirm": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Confirm a password reset link */
-    post: operations["confirmPasswordReset"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/refresh": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Rotate a refresh credential */
-    post: operations["refreshSession"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/session": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Sign out and revoke the current session */
-    delete: operations["logout"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/signup": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Start email-first signup */
-    post: operations["signup"];
+    /** Invite a person to a workspace */
+    post: operations["createWorkspaceInvitation"];
     delete?: never;
     options?: never;
     head?: never;
@@ -395,43 +366,6 @@ export interface paths {
     put?: never;
     /** Complete a verified signup */
     post: operations["completeSignup"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/auth/workspace/switch": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Switch the authenticated session to another workspace */
-    post: operations["switchWorkspace"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/health/live": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Read API liveness
-     * @description Reports whether the API process is running and able to serve requests.
-     */
-    get: operations["getApiLiveness"];
-    put?: never;
-    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -458,20 +392,69 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/version": {
+  "/api/apps/{appSlug}/environments/{environmentSlug}/client-keys": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /**
-     * Read API version
-     * @description Returns the API service name and application version.
-     */
-    get: operations["getApiVersion"];
+    /** List client keys for an environment */
+    get: operations["listEnvironmentClientKeys"];
+    put?: never;
+    /** Create a client key for an environment */
+    post: operations["createEnvironmentClientKey"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/apps/{appId}/environments/{environmentId}/ingress": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get notification ingress details */
+    get: operations["getNotificationIngress"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/password-reset/confirm": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Confirm a password reset link */
+    post: operations["confirmPasswordReset"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/invitations/accept": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Accept a workspace invitation for the authenticated user */
+    post: operations["acceptInvitation"];
     delete?: never;
     options?: never;
     head?: never;
@@ -495,18 +478,52 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/workspaces/{workspaceSlug}/invitations": {
+  "/api/apps/{appSlug}/environments/{environmentSlug}/trusted-origins": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** List pending workspace invitations */
-    get: operations["listWorkspaceInvitations"];
+    /** List trusted origins for an environment */
+    get: operations["listEnvironmentTrustedOrigins"];
     put?: never;
-    /** Invite a person to a workspace */
-    post: operations["createWorkspaceInvitation"];
+    /** Add a trusted origin to an environment */
+    post: operations["createEnvironmentTrustedOrigin"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/refresh": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Rotate a refresh credential */
+    post: operations["refreshSession"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/apps/{appId}/environments/{environmentId}/server-api-keys/{keyId}/rotate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Rotate a server API key for an environment */
+    post: operations["rotateEnvironmentServerApiKey"];
     delete?: never;
     options?: never;
     head?: never;
@@ -530,18 +547,52 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/workspaces/{workspaceSlug}/members": {
+  "/api/auth/password-reset": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** List active workspace members */
-    get: operations["listWorkspaceMembers"];
+    get?: never;
+    put?: never;
+    /** Request password reset instructions */
+    post: operations["requestPasswordReset"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/invitations/resolve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Resolve an invitation for acceptance */
+    post: operations["resolveInvitation"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/session": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
     put?: never;
     post?: never;
-    delete?: never;
+    /** Sign out and revoke the current session */
+    delete: operations["logout"];
     options?: never;
     head?: never;
     patch?: never;
@@ -705,6 +756,10 @@ export interface components {
        */
       status: "password_reset_requested";
     };
+    /** NotificationIngressEventsResponse */
+    NotificationIngressEventsResponse: {
+      events: components["schemas"]["NotificationIngressEvent"][];
+    };
     /** CreateEnvironmentTrustedOriginRequest */
     CreateEnvironmentTrustedOriginRequest: {
       /** @example https://console.example.com */
@@ -751,6 +806,19 @@ export interface components {
       /** Format: date-time */
       invited_at: string;
       role: components["schemas"]["AuthWorkspaceRole"];
+    };
+    /** NotificationIngressDetailsResponse */
+    NotificationIngressDetailsResponse: {
+      data: {
+        /** Format: uuid */
+        app_id: string;
+        endpoint: string;
+        /** Format: uuid */
+        environment_id: string;
+        idempotency_window_hours: number;
+        /** @enum {string} */
+        source: "server_api_key";
+      };
     };
     /** AuthWorkspace */
     AuthWorkspace: {
@@ -930,6 +998,16 @@ export interface components {
       /** @example notify-labs */
       workspace_slug: string;
     };
+    /** NotificationIngestResponse */
+    NotificationIngestResponse: {
+      data: {
+        /** Format: date-time */
+        accepted_at: string;
+        duplicate: boolean;
+        /** Format: uuid */
+        event_id: string;
+      };
+    };
     /** PasswordResetCompletionResponse */
     PasswordResetCompletionResponse: {
       /**
@@ -937,6 +1015,21 @@ export interface components {
        * @enum {string}
        */
       status: "password_reset";
+    };
+    /** NotificationRequest */
+    NotificationRequest: {
+      event: string;
+      metadata?: {
+        [key: string]: unknown;
+      };
+      /** Format: date-time */
+      occurredAt?: string;
+      payload: {
+        [key: string]: unknown;
+      };
+      recipient: {
+        id: string;
+      };
     };
     /**
      * ReadinessChecks
@@ -1069,6 +1162,19 @@ export interface components {
        */
       status: "ok" | "degraded";
     };
+    /** NotificationIngressEvent */
+    NotificationIngressEvent: {
+      /** Format: date-time */
+      accepted_at: string;
+      event: string;
+      /** Format: uuid */
+      event_id: string;
+      /** Format: date-time */
+      occurred_at: string | null;
+      recipient_id: string;
+      /** @enum {string} */
+      source: "public_api" | "dashboard_test";
+    };
     /** EnvironmentServerApiKeysResponse */
     EnvironmentServerApiKeysResponse: {
       api_keys: components["schemas"]["EnvironmentServerApiKey"][];
@@ -1094,6 +1200,277 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  revokeEnvironmentClientKey: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+        /** @description Environment slug */
+        environmentSlug: string;
+        /** @description Client key ID */
+        clientKeyId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Client key revoked */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Environment or client key unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  resendEmailVerification: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Email verification request */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ResendVerificationRequest"];
+      };
+    };
+    responses: {
+      /** @description Verification request accepted */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthStatusResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+      /** @description Verification delivery failed */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  getApiLiveness: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Live response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LivenessResponse"];
+        };
+      };
+    };
+  };
+  login: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Login credentials */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LoginRequest"];
+      };
+    };
+    responses: {
+      /** @description Authenticated session */
+      200: {
+        headers: {
+          /** @description Rotating HttpOnly refresh-token cookie */
+          "Set-Cookie"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Credentials invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Email not verified or origin rejected */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  createNotification: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization: string;
+        idempotency_key: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Notification event */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["NotificationRequest"];
+      };
+    };
+    responses: {
+      /** @description Duplicate notification */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["NotificationIngestResponse"];
+        };
+      };
+      /** @description Accepted notification */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["NotificationIngestResponse"];
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Invalid server API key */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Idempotency conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Unsupported media type */
+      415: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  getApiVersion: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Version response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["VersionResponse"];
+        };
+      };
+    };
+  };
   listNotificationApps: {
     parameters: {
       query?: never;
@@ -1189,6 +1566,171 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  revokeEnvironmentServerApiKey: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app ID */
+        appId: string;
+        /** @description Environment ID */
+        environmentId: string;
+        /** @description Server API key ID */
+        keyId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Server API key revoked */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Server API key resource unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  getCurrentUser: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Authenticated principal */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CurrentUserResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  signup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Signup email */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SignupRequest"];
+      };
+    };
+    responses: {
+      /** @description Verification request accepted */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthStatusResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+      /** @description Verification delivery failed */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  listWorkspaceMembers: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Active members */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceMembersResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Workspace unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
         };
       };
     };
@@ -1311,31 +1853,31 @@ export interface operations {
       };
     };
   };
-  revokeEnvironmentServerApiKey: {
+  completePasswordReset: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        /** @description Notification app ID */
-        appId: string;
-        /** @description Environment ID */
-        environmentId: string;
-        /** @description Server API key ID */
-        keyId: string;
-      };
+      path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    /** @description New password */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompletePasswordResetRequest"];
+      };
+    };
     responses: {
-      /** @description Server API key revoked */
-      204: {
+      /** @description Password reset */
+      200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["PasswordResetCompletionResponse"];
+        };
       };
-      /** @description Access token invalid */
-      401: {
+      /** @description Reset token invalid or expired */
+      400: {
         headers: {
           [name: string]: unknown;
         };
@@ -1343,7 +1885,7 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Permission denied */
+      /** @description Origin rejected */
       403: {
         headers: {
           [name: string]: unknown;
@@ -1352,40 +1894,103 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Server API key resource unavailable */
-      404: {
+      /** @description Validation failed */
+      422: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ErrorResponse"];
+          "application/json": components["schemas"]["ValidationErrorResponse"];
         };
       };
     };
   };
-  rotateEnvironmentServerApiKey: {
+  completeInvitationSignup: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        /** @description Notification app ID */
-        appId: string;
-        /** @description Environment ID */
-        environmentId: string;
-        /** @description Server API key ID */
-        keyId: string;
-      };
+      path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    /** @description Invitation signup details */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompleteInvitationSignupRequest"];
+      };
+    };
     responses: {
-      /** @description Rotated environment server API key */
+      /** @description Authenticated invitation session */
       201: {
+        headers: {
+          /** @description HttpOnly refresh-token cookie for the invited workspace */
+          "Set-Cookie"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Invitation invalid or expired */
+      400: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["EnvironmentServerApiKeySecret"];
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Origin rejected */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Email already registered */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  switchWorkspace: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Target workspace */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SwitchWorkspaceRequest"];
+      };
+    };
+    responses: {
+      /** @description Switched workspace session */
+      200: {
+        headers: {
+          /** @description Rotated HttpOnly refresh-token cookie */
+          "Set-Cookie"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthResponse"];
         };
       };
       /** @description Access token invalid */
@@ -1397,7 +2002,7 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Permission denied */
+      /** @description Origin rejected */
       403: {
         headers: {
           [name: string]: unknown;
@@ -1406,8 +2011,26 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Server API key resource unavailable */
+      /** @description Workspace unavailable */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+      /** @description Workspace switch failed */
+      500: {
         headers: {
           [name: string]: unknown;
         };
@@ -1588,6 +2211,319 @@ export interface operations {
       };
     };
   };
+  listNotificationIngressEvents: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        appId: string;
+        environmentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Recent accepted events */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["NotificationIngressEventsResponse"];
+        };
+      };
+      /** @description Environment unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  removeEnvironmentTrustedOrigin: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Notification app slug */
+        appSlug: string;
+        /** @description Environment slug */
+        environmentSlug: string;
+        /** @description Trusted origin ID */
+        trustedOriginId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Trusted origin removed */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Environment or trusted origin unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  confirmEmail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Email verification token */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ConfirmEmailRequest"];
+      };
+    };
+    responses: {
+      /** @description Email verified for signup completion */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SignupTokenResponse"];
+        };
+      };
+      /** @description Token invalid or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  listWorkspaceInvitations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Pending invitations */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceInvitationsResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Workspace unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  createWorkspaceInvitation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+      };
+      cookie?: never;
+    };
+    /** @description Invitation details */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateWorkspaceInvitationRequest"];
+      };
+    };
+    responses: {
+      /** @description Invitation created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceInvitation"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Workspace unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Already an active member */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+      /** @description Invitation delivery failed */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  completeSignup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Verified signup details */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompleteSignupRequest"];
+      };
+    };
+    responses: {
+      /** @description Account and owner workspace created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SignupCompletionResponse"];
+        };
+      };
+      /** @description Signup token invalid or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Email already registered */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  getApiReadiness: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ready response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReadinessResponse"];
+        };
+      };
+      /** @description Not ready response */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReadinessResponse"];
+        };
+      };
+    };
+  };
   listEnvironmentClientKeys: {
     parameters: {
       query?: never;
@@ -1692,31 +2628,29 @@ export interface operations {
       };
     };
   };
-  revokeEnvironmentClientKey: {
+  getNotificationIngress: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        /** @description Notification app slug */
-        appSlug: string;
-        /** @description Environment slug */
-        environmentSlug: string;
-        /** @description Client key ID */
-        clientKeyId: string;
+        appId: string;
+        environmentId: string;
       };
       cookie?: never;
     };
     requestBody?: never;
     responses: {
-      /** @description Client key revoked */
-      204: {
+      /** @description Ingress details */
+      200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["NotificationIngressDetailsResponse"];
+        };
       };
-      /** @description Access token invalid */
-      401: {
+      /** @description Environment unavailable */
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -1724,7 +2658,41 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Permission denied */
+    };
+  };
+  confirmPasswordReset: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Password reset token */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ConfirmPasswordResetRequest"];
+      };
+    };
+    responses: {
+      /** @description Password reset confirmed */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PasswordResetTokenResponse"];
+        };
+      };
+      /** @description Token invalid or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Origin rejected */
       403: {
         headers: {
           [name: string]: unknown;
@@ -1733,8 +2701,91 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Environment or client key unavailable */
-      404: {
+    };
+  };
+  acceptInvitation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Invitation token */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AcceptInvitationRequest"];
+      };
+    };
+    responses: {
+      /** @description Authenticated invitation session */
+      200: {
+        headers: {
+          /** @description HttpOnly refresh-token cookie for the invited workspace */
+          "Set-Cookie"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Invitation invalid or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Authentication required */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Invitation email does not match or origin is rejected */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description User is already an active member */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  listWorkspaces: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Active workspace memberships */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceListResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
         headers: {
           [name: string]: unknown;
         };
@@ -1871,28 +2922,70 @@ export interface operations {
       };
     };
   };
-  removeEnvironmentTrustedOrigin: {
+  refreshSession: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Refreshed session */
+      200: {
+        headers: {
+          /** @description Rotated HttpOnly refresh-token cookie */
+          "Set-Cookie"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Refresh credential invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Origin rejected */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  rotateEnvironmentServerApiKey: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        /** @description Notification app slug */
-        appSlug: string;
-        /** @description Environment slug */
-        environmentSlug: string;
-        /** @description Trusted origin ID */
-        trustedOriginId: string;
+        /** @description Notification app ID */
+        appId: string;
+        /** @description Environment ID */
+        environmentId: string;
+        /** @description Server API key ID */
+        keyId: string;
       };
       cookie?: never;
     };
     requestBody?: never;
     responses: {
-      /** @description Trusted origin removed */
-      204: {
+      /** @description Rotated environment server API key */
+      201: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["EnvironmentServerApiKeySecret"];
+        };
       };
       /** @description Access token invalid */
       401: {
@@ -1912,7 +3005,7 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Environment or trusted origin unavailable */
+      /** @description Server API key resource unavailable */
       404: {
         headers: {
           [name: string]: unknown;
@@ -1923,317 +3016,38 @@ export interface operations {
       };
     };
   };
-  confirmEmail: {
+  revokeWorkspaceInvitation: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Email verification token */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ConfirmEmailRequest"];
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+        /** @description Invitation ID */
+        invitationId: string;
       };
-    };
-    responses: {
-      /** @description Email verified for signup completion */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["SignupTokenResponse"];
-        };
-      };
-      /** @description Token invalid or expired */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  resendEmailVerification: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Email verification request */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ResendVerificationRequest"];
-      };
-    };
-    responses: {
-      /** @description Verification request accepted */
-      202: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AuthStatusResponse"];
-        };
-      };
-      /** @description Validation failed */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ValidationErrorResponse"];
-        };
-      };
-      /** @description Verification delivery failed */
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  acceptInvitation: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Invitation token */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["AcceptInvitationRequest"];
-      };
-    };
-    responses: {
-      /** @description Authenticated invitation session */
-      200: {
-        headers: {
-          /** @description HttpOnly refresh-token cookie for the invited workspace */
-          "Set-Cookie"?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AuthResponse"];
-        };
-      };
-      /** @description Invitation invalid or expired */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Authentication required */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Invitation email does not match or origin is rejected */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description User is already an active member */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  resolveInvitation: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Invitation token */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ResolveInvitationRequest"];
-      };
-    };
-    responses: {
-      /** @description Invitation details */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["InvitationPreviewResponse"];
-        };
-      };
-      /** @description Invitation invalid or expired */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  completeInvitationSignup: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Invitation signup details */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CompleteInvitationSignupRequest"];
-      };
-    };
-    responses: {
-      /** @description Authenticated invitation session */
-      201: {
-        headers: {
-          /** @description HttpOnly refresh-token cookie for the invited workspace */
-          "Set-Cookie"?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AuthResponse"];
-        };
-      };
-      /** @description Invitation invalid or expired */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Origin rejected */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Email already registered */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Validation failed */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ValidationErrorResponse"];
-        };
-      };
-    };
-  };
-  login: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Login credentials */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["LoginRequest"];
-      };
-    };
-    responses: {
-      /** @description Authenticated session */
-      200: {
-        headers: {
-          /** @description Rotating HttpOnly refresh-token cookie */
-          "Set-Cookie"?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AuthResponse"];
-        };
-      };
-      /** @description Credentials invalid */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Email not verified or origin rejected */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Validation failed */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ValidationErrorResponse"];
-        };
-      };
-    };
-  };
-  getCurrentUser: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
       cookie?: never;
     };
     requestBody?: never;
     responses: {
-      /** @description Authenticated principal */
-      200: {
+      /** @description Invitation revoked */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Permission denied */
+      403: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["CurrentUserResponse"];
+          "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Access token invalid */
-      401: {
+      /** @description Invitation unavailable */
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -2286,132 +3100,31 @@ export interface operations {
       };
     };
   };
-  completePasswordReset: {
+  resolveInvitation: {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** @description New password */
+    /** @description Invitation token */
     requestBody: {
       content: {
-        "application/json": components["schemas"]["CompletePasswordResetRequest"];
+        "application/json": components["schemas"]["ResolveInvitationRequest"];
       };
     };
     responses: {
-      /** @description Password reset */
+      /** @description Invitation details */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["PasswordResetCompletionResponse"];
+          "application/json": components["schemas"]["InvitationPreviewResponse"];
         };
       };
-      /** @description Reset token invalid or expired */
+      /** @description Invitation invalid or expired */
       400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Origin rejected */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Validation failed */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ValidationErrorResponse"];
-        };
-      };
-    };
-  };
-  confirmPasswordReset: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Password reset token */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ConfirmPasswordResetRequest"];
-      };
-    };
-    responses: {
-      /** @description Password reset confirmed */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["PasswordResetTokenResponse"];
-        };
-      };
-      /** @description Token invalid or expired */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Origin rejected */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  refreshSession: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Refreshed session */
-      200: {
-        headers: {
-          /** @description Rotated HttpOnly refresh-token cookie */
-          "Set-Cookie"?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AuthResponse"];
-        };
-      };
-      /** @description Refresh credential invalid */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Origin rejected */
-      403: {
         headers: {
           [name: string]: unknown;
         };
@@ -2439,467 +3152,6 @@ export interface operations {
       };
       /** @description Origin rejected */
       403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  signup: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Signup email */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["SignupRequest"];
-      };
-    };
-    responses: {
-      /** @description Verification request accepted */
-      202: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AuthStatusResponse"];
-        };
-      };
-      /** @description Validation failed */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ValidationErrorResponse"];
-        };
-      };
-      /** @description Verification delivery failed */
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  completeSignup: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Verified signup details */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CompleteSignupRequest"];
-      };
-    };
-    responses: {
-      /** @description Account and owner workspace created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["SignupCompletionResponse"];
-        };
-      };
-      /** @description Signup token invalid or expired */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Email already registered */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Validation failed */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ValidationErrorResponse"];
-        };
-      };
-    };
-  };
-  switchWorkspace: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Target workspace */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["SwitchWorkspaceRequest"];
-      };
-    };
-    responses: {
-      /** @description Switched workspace session */
-      200: {
-        headers: {
-          /** @description Rotated HttpOnly refresh-token cookie */
-          "Set-Cookie"?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AuthResponse"];
-        };
-      };
-      /** @description Access token invalid */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Origin rejected */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Workspace unavailable */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Validation failed */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ValidationErrorResponse"];
-        };
-      };
-      /** @description Workspace switch failed */
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  getApiLiveness: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Live response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["LivenessResponse"];
-        };
-      };
-    };
-  };
-  getApiReadiness: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Ready response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ReadinessResponse"];
-        };
-      };
-      /** @description Not ready response */
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ReadinessResponse"];
-        };
-      };
-    };
-  };
-  getApiVersion: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Version response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["VersionResponse"];
-        };
-      };
-    };
-  };
-  listWorkspaces: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Active workspace memberships */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["WorkspaceListResponse"];
-        };
-      };
-      /** @description Access token invalid */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  listWorkspaceInvitations: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Workspace slug */
-        workspaceSlug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Pending invitations */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["WorkspaceInvitationsResponse"];
-        };
-      };
-      /** @description Permission denied */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Workspace unavailable */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  createWorkspaceInvitation: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Workspace slug */
-        workspaceSlug: string;
-      };
-      cookie?: never;
-    };
-    /** @description Invitation details */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateWorkspaceInvitationRequest"];
-      };
-    };
-    responses: {
-      /** @description Invitation created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["WorkspaceInvitation"];
-        };
-      };
-      /** @description Permission denied */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Workspace unavailable */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Already an active member */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Validation failed */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ValidationErrorResponse"];
-        };
-      };
-      /** @description Invitation delivery failed */
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  revokeWorkspaceInvitation: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Workspace slug */
-        workspaceSlug: string;
-        /** @description Invitation ID */
-        invitationId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Invitation revoked */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Permission denied */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Invitation unavailable */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  listWorkspaceMembers: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Workspace slug */
-        workspaceSlug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Active members */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["WorkspaceMembersResponse"];
-        };
-      };
-      /** @description Access token invalid */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Workspace unavailable */
-      404: {
         headers: {
           [name: string]: unknown;
         };

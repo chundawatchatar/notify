@@ -68,6 +68,11 @@ type ApiEnvironmentServerApiKeySecret = JsonResponse<"createEnvironmentServerApi
 type ApiEnvironmentTrustedOriginsResponse = JsonResponse<"listEnvironmentTrustedOrigins", 200>;
 type ApiEnvironmentTrustedOrigin = JsonResponse<"createEnvironmentTrustedOrigin", 201>;
 type ApiCreateEnvironmentTrustedOriginRequest = JsonRequestBody<"createEnvironmentTrustedOrigin">;
+type ApiNotificationRequest = JsonRequestBody<"createNotification">;
+type ApiNotificationIngestResponse = JsonResponse<"createNotification", 202>;
+type ApiNotificationIngressDetailsResponse = JsonResponse<"getNotificationIngress", 200>;
+type ApiNotificationIngressEventsResponse = JsonResponse<"listNotificationIngressEvents", 200>;
+type ApiNotificationIngressEvent = ApiNotificationIngressEventsResponse["events"][number];
 type ApiErrorResponse = JsonResponse<"login", 401>;
 type ApiValidationErrorResponse = JsonResponse<"login", 422>;
 
@@ -99,6 +104,11 @@ export type {
   ApiNotificationApp,
   ApiNotificationAppEnvironment,
   ApiNotificationAppsResponse,
+  ApiNotificationIngestResponse,
+  ApiNotificationIngressDetailsResponse,
+  ApiNotificationIngressEvent,
+  ApiNotificationIngressEventsResponse,
+  ApiNotificationRequest,
   ApiOperation,
   ApiOperationId,
   ApiOperations,

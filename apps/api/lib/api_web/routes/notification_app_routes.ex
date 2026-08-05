@@ -54,4 +54,22 @@ defmodule ApiWeb.Routes.NotificationAppRoutes do
              :remove_trusted_origin
     end
   end
+
+  defmacro notification_ingress_routes do
+    quote do
+      post "/v1/notifications", NotificationIngressController, :create
+    end
+  end
+
+  defmacro notification_dashboard_ingress_routes do
+    quote do
+      get "/apps/:appId/environments/:environmentId/ingress",
+          NotificationIngressController,
+          :show
+
+      get "/apps/:appId/environments/:environmentId/ingress/events",
+          NotificationIngressController,
+          :events
+    end
+  end
 end
