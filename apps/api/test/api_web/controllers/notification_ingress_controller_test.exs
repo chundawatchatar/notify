@@ -99,6 +99,36 @@ defmodule ApiWeb.NotificationIngressControllerTest do
     assert response["errors"]["code"] == "idempotency_key_conflict"
   end
 
+  test "rejects sensitive nested payload keys before accepting an event", %{conn: conn} do
+    membership = insert(:membership, role: "developer")
+
+    {:ok, app} =
+      NotificationApps.create_notification_app(membership.workspace, %{name: "Payments"})
+
+    environment = Enum.find(app.environments, &(&1.environment_slug == "development"))
+
+    {:ok, %{secret: secret}} =
+      NotificationApps.create_server_api_key(
+        membership,
+        app.id,
+        environment.id,
+        %{name: "Worker"}
+      )
+
+    response =
+      conn
+      |> put_req_header("authorization", "Bearer #{secret}")
+      |> put_req_header("idempotency-key", "payment-sensitive")
+      |> post("/api/v1/notifications", %{
+        event: "invoice.payment_failed",
+        recipient: %{id: "user_123"},
+        payload: %{data: [%{"Authorization" => "Bearer secret"}]}
+      })
+      |> json_response(422)
+
+    assert response["errors"]["code"] == "invalid_request"
+  end
+
   test "dashboard ingress resolution is workspace scoped", %{conn: conn} do
     membership = insert(:membership)
     other_workspace = insert(:workspace)
