@@ -97,7 +97,7 @@ const ingressRules = [
 
 const recentIngressEvents = [
   ["invoice.payment_failed", "Acme Cloud / Production", "Accepted", "2 min ago"],
-  ["billing.invoice_sent", "Acme Cloud / Production", "Duplicate", "6 min ago"],
+  ["ticket.assigned", "Acme Support / Production", "Accepted", "6 min ago"],
   ["test.notification_sent", "Acme Labs / Development", "Test event", "14 min ago"],
 ] satisfies Array<
   readonly [event: string, environment: string, outcome: string, acceptedAt: string]
