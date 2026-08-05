@@ -20,7 +20,6 @@ import type { WorkspaceSectionId } from "@/lib/workspace-sections";
 import type { WorkspaceSecuritySearch } from "../workspace-security-page";
 import { WorkspaceSecurityPage } from "../workspace-security-page";
 import { ChecklistCard } from "./cards";
-import type { BadgeTone } from "./data";
 import {
   analyticsBreakdown,
   analyticsCards,

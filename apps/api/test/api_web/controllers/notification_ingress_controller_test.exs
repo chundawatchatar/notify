@@ -138,6 +138,26 @@ defmodule ApiWeb.NotificationIngressControllerTest do
     assert response["data"]["duplicate"] == false
   end
 
+  test "viewers cannot create dashboard test events", %{conn: conn} do
+    viewer = insert(:membership, role: "viewer")
+    owner = insert(:membership, workspace: viewer.workspace, role: "owner")
+    access_token = login(conn, viewer.user.email)
+
+    {:ok, app} = NotificationApps.create_notification_app(owner.workspace, %{name: "Payments"})
+    environment = Enum.find(app.environments, &(&1.environment_slug == "development"))
+
+    response =
+      authenticated_conn(access_token)
+      |> post("/api/apps/#{app.id}/environments/#{environment.id}/ingress/test-events", %{
+        event: "test.notification_sent",
+        recipient: %{id: "dashboard-test"},
+        payload: %{source: "notify-dashboard"}
+      })
+      |> json_response(403)
+
+    assert response["errors"]["code"] == "forbidden"
+  end
+
   defp authenticated_conn(access_token) do
     build_conn()
     |> put_req_header("authorization", "Bearer #{access_token}")

@@ -13,7 +13,8 @@ defmodule ApiWeb.NotificationIngressController do
   @max_payload_bytes 64_000
   @max_metadata_entries 20
 
-  plug RequirePermission, :view_events when action in [:show, :events, :test_event]
+  plug RequirePermission, :view_events when action in [:show, :events]
+  plug RequirePermission, :create_events when action == :test_event
 
   @dashboard_parameters [
     appId: [in: :path, schema: %OpenApiSpex.Schema{type: :string, format: :uuid}],
