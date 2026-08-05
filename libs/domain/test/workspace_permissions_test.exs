@@ -10,6 +10,8 @@ defmodule Domain.WorkspacePermissionsTest do
     assert WorkspacePermissions.allowed?("developer", :manage_apps)
     refute WorkspacePermissions.allowed?("developer", :view_billing)
     assert WorkspacePermissions.allowed?("viewer", :view_events)
+    assert WorkspacePermissions.allowed?("developer", :create_events)
+    refute WorkspacePermissions.allowed?("viewer", :create_events)
     refute WorkspacePermissions.allowed?("viewer", :create_apps)
   end
 

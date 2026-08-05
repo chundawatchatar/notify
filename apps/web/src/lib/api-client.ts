@@ -22,6 +22,10 @@ import type {
   ApiLoginRequest,
   ApiNotificationApp,
   ApiNotificationAppsResponse,
+  ApiNotificationIngestResponse,
+  ApiNotificationIngressDetailsResponse,
+  ApiNotificationIngressEventsResponse,
+  ApiNotificationRequest,
   ApiPasswordResetCompletionResponse,
   ApiPasswordResetRequest,
   ApiPasswordResetRequestResponse,
@@ -282,12 +286,43 @@ function removeEnvironmentTrustedOrigin(
   );
 }
 
+function getNotificationIngress(accessToken: string, appId: string, environmentId: string) {
+  return get<ApiNotificationIngressDetailsResponse>(
+    notificationIngressEnvironmentPath(appId, environmentId),
+    { accessToken },
+  );
+}
+
+function listNotificationIngressEvents(accessToken: string, appId: string, environmentId: string) {
+  return get<ApiNotificationIngressEventsResponse>(
+    `${notificationIngressEnvironmentPath(appId, environmentId)}/events`,
+    { accessToken },
+  );
+}
+
+function createNotificationIngressTestEvent(
+  accessToken: string,
+  appId: string,
+  environmentId: string,
+  body: ApiNotificationRequest,
+) {
+  return post<ApiNotificationIngestResponse, ApiNotificationRequest>(
+    `${notificationIngressEnvironmentPath(appId, environmentId)}/test-events`,
+    body,
+    { accessToken },
+  );
+}
+
 function environmentPath(appSlug: string, environmentSlug: string) {
   return `/api/apps/${appSlug}/environments/${environmentSlug}`;
 }
 
 function serverApiKeyEnvironmentPath(appId: string, environmentId: string) {
   return `/api/apps/${appId}/environments/${environmentId}/server-api-keys`;
+}
+
+function notificationIngressEnvironmentPath(appId: string, environmentId: string) {
+  return `/api/apps/${appId}/environments/${environmentId}/ingress`;
 }
 
 function switchWorkspace(accessToken: string, body: ApiSwitchWorkspaceRequest) {
@@ -386,15 +421,18 @@ export {
   createEnvironmentServerApiKey,
   createEnvironmentTrustedOrigin,
   createNotificationApp,
+  createNotificationIngressTestEvent,
   createWorkspaceInvitation,
   getApiReadiness,
   getApiVersion,
   getCurrentUser,
   getNotificationApp,
+  getNotificationIngress,
   listEnvironmentClientKeys,
   listEnvironmentServerApiKeys,
   listEnvironmentTrustedOrigins,
   listNotificationApps,
+  listNotificationIngressEvents,
   listWorkspaceInvitations,
   listWorkspaceMembers,
   listWorkspaces,

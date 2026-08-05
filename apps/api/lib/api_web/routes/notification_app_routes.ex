@@ -70,6 +70,10 @@ defmodule ApiWeb.Routes.NotificationAppRoutes do
       get "/apps/:appId/environments/:environmentId/ingress/events",
           NotificationIngressController,
           :events
+
+      post "/apps/:appId/environments/:environmentId/ingress/test-events",
+           NotificationIngressController,
+           :test_event
     end
   end
 end

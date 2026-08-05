@@ -3665,6 +3665,88 @@
         "tags": []
       }
     },
+    "/api/apps/{appId}/environments/{environmentId}/ingress/test-events": {
+      "post": {
+        "callbacks": {},
+        "operationId": "createNotificationIngressTestEvent",
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "appId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "",
+            "in": "path",
+            "name": "environmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationRequest"
+              }
+            }
+          },
+          "description": "Test notification event",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationIngestResponse"
+                }
+              }
+            },
+            "description": "Accepted test event"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Environment unavailable"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Accept a dashboard test event",
+        "tags": []
+      }
+    },
     "/api/auth/password-reset/confirm": {
       "post": {
         "callbacks": {},

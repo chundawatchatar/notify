@@ -427,6 +427,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/apps/{appId}/environments/{environmentId}/ingress/test-events": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Accept a dashboard test event */
+    post: operations["createNotificationIngressTestEvent"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/auth/password-reset/confirm": {
     parameters: {
       query?: never;
@@ -2651,6 +2668,52 @@ export interface operations {
       };
       /** @description Environment unavailable */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  createNotificationIngressTestEvent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        appId: string;
+        environmentId: string;
+      };
+      cookie?: never;
+    };
+    /** @description Test notification event */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["NotificationRequest"];
+      };
+    };
+    responses: {
+      /** @description Accepted test event */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["NotificationIngestResponse"];
+        };
+      };
+      /** @description Environment unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
         headers: {
           [name: string]: unknown;
         };

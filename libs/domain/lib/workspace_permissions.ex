@@ -19,7 +19,8 @@ defmodule Domain.WorkspacePermissions do
     :create_apps,
     :manage_apps,
     :manage_credentials,
-    :view_events
+    :view_events,
+    :create_events
   ]
 
   @permissions %{
@@ -33,7 +34,8 @@ defmodule Domain.WorkspacePermissions do
         :create_apps,
         :manage_apps,
         :manage_credentials,
-        :view_events
+        :view_events,
+        :create_events
       ]),
     "viewer" => MapSet.new([:view_workspace, :view_members, :view_apps, :view_events])
   }
