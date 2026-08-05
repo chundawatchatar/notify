@@ -5,12 +5,15 @@ defmodule ApiWeb.NotificationIngressController do
   alias Api.NotificationApps
   alias Api.NotificationIngress
   alias ApiWeb.AuthError
+  alias ApiWeb.Plugs.RequirePermission
   alias NotifyOpenApi.AuthSchemas.ErrorResponse
   alias NotifyOpenApi.NotificationAppSchemas
 
   @fingerprint_version "ingress-body-v1"
   @max_payload_bytes 64_000
   @max_metadata_entries 20
+
+  plug RequirePermission, :view_events when action in [:show, :events, :test_event]
 
   @dashboard_parameters [
     appId: [in: :path, schema: %OpenApiSpex.Schema{type: :string, format: :uuid}],
@@ -172,6 +175,83 @@ defmodule ApiWeb.NotificationIngressController do
       json(conn, %{events: Enum.map(events, &event_payload/1)})
     else
       _ -> dashboard_not_found(conn)
+    end
+  end
+
+  operation :test_event,
+    summary: "Accept a dashboard test event",
+    operation_id: "createNotificationIngressTestEvent",
+    security: [%{"bearerAuth" => []}],
+    parameters: @dashboard_parameters,
+    request_body:
+      {"Test notification event", "application/json", NotificationAppSchemas.NotificationRequest,
+       required: true},
+    responses: [
+      accepted:
+        {"Accepted test event", "application/json", NotificationAppSchemas.IngestResponse},
+      not_found: {"Environment unavailable", "application/json", ErrorResponse},
+      unprocessable_entity: {"Validation failed", "application/json", ErrorResponse}
+    ]
+
+  def test_event(conn, %{"appId" => app_id, "environmentId" => environment_id} = params) do
+    body_params = Map.drop(params, ["appId", "environmentId"])
+
+    with environment when not is_nil(environment) <-
+           NotificationApps.get_environment_by_ids(
+             conn.assigns.current_workspace,
+             app_id,
+             environment_id
+           ),
+         {:ok, attrs} <- validate_request(body_params),
+         {:ok, fingerprint} <- canonical_fingerprint(body_params) do
+      source = %{
+        workspace_id: conn.assigns.current_workspace.id,
+        notification_app_id: app_id,
+        app_environment_id: environment.id,
+        source_kind: "dashboard_test"
+      }
+
+      attrs =
+        Map.merge(attrs, %{
+          idempotency_key_digest: :crypto.strong_rand_bytes(32),
+          request_fingerprint: fingerprint,
+          fingerprint_version: @fingerprint_version
+        })
+
+      case NotificationIngress.accept_event(source, attrs) do
+        {:ok, result} ->
+          conn
+          |> put_status(:accepted)
+          |> json(%{data: ingest_payload(result)})
+
+        {:error, _reason} ->
+          AuthError.render(
+            conn,
+            :unprocessable_entity,
+            "invalid_request",
+            "Request validation failed."
+          )
+      end
+    else
+      nil ->
+        dashboard_not_found(conn)
+
+      {:error, {:validation, fields}} ->
+        AuthError.render(
+          conn,
+          :unprocessable_entity,
+          "invalid_request",
+          "Request validation failed.",
+          fields
+        )
+
+      {:error, :payload_too_large} ->
+        AuthError.render(
+          conn,
+          413,
+          "payload_too_large",
+          "Payload exceeds the maximum allowed size."
+        )
     end
   end
 

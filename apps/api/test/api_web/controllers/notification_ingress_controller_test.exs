@@ -117,6 +117,27 @@ defmodule ApiWeb.NotificationIngressControllerTest do
     assert response["errors"]["code"] == "environment_not_found"
   end
 
+  test "dashboard users can accept a test event without a server API key", %{conn: conn} do
+    membership = insert(:membership, role: "developer")
+    access_token = login(conn, membership.user.email)
+
+    {:ok, app} =
+      NotificationApps.create_notification_app(membership.workspace, %{name: "Payments"})
+
+    environment = Enum.find(app.environments, &(&1.environment_slug == "development"))
+
+    response =
+      authenticated_conn(access_token)
+      |> post("/api/apps/#{app.id}/environments/#{environment.id}/ingress/test-events", %{
+        event: "test.notification_sent",
+        recipient: %{id: "dashboard-test"},
+        payload: %{source: "notify-dashboard"}
+      })
+      |> json_response(202)
+
+    assert response["data"]["duplicate"] == false
+  end
+
   defp authenticated_conn(access_token) do
     build_conn()
     |> put_req_header("authorization", "Bearer #{access_token}")

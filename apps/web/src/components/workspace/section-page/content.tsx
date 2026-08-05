@@ -15,7 +15,7 @@ import {
   TableRow,
   UsageBar,
 } from "@notify/ui";
-import { ArrowUpRight, BellRing, Copy, Plus, SlidersHorizontal, Webhook } from "lucide-react";
+import { ArrowUpRight, BellRing, Copy, Plus, SlidersHorizontal } from "lucide-react";
 import type { WorkspaceSectionId } from "@/lib/workspace-sections";
 import type { WorkspaceSecuritySearch } from "../workspace-security-page";
 import { WorkspaceSecurityPage } from "../workspace-security-page";
@@ -26,11 +26,10 @@ import {
   analyticsCards,
   appRows,
   appSetup,
-  ingressRules,
   notificationPreferences,
-  recentIngressEvents,
   workspaceSettings,
 } from "./data";
+import { IngressContent } from "./ingress-content";
 
 function SectionActions({ section }: Readonly<{ section: WorkspaceSectionId }>) {
   if (section === "apps") {
@@ -48,22 +47,7 @@ function SectionActions({ section }: Readonly<{ section: WorkspaceSectionId }>) 
     );
   }
 
-  if (section === "ingress") {
-    return (
-      <>
-        <Button variant="outline">
-          <Copy />
-          Copy endpoint
-        </Button>
-        <Button>
-          <Webhook />
-          Test event
-        </Button>
-      </>
-    );
-  }
-
-  if (section === "security") {
+  if (section === "security" || section === "ingress") {
     return null;
   }
 
@@ -89,7 +73,7 @@ function SectionContent({
   }
 
   if (section === "ingress") {
-    return <IngressContent />;
+    return <IngressContent search={search} workspaceSlug={workspaceSlug} />;
   }
 
   if (section === "analytics") {
@@ -164,71 +148,6 @@ function AppsContent() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
-
-function IngressContent() {
-  return (
-    <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Production endpoint</CardTitle>
-            <CardDescription>
-              Primary notification intake contract for one environment.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="rounded-sm border bg-secondary/35 p-4">
-              <p className="text-muted-foreground text-xs">Endpoint</p>
-              <p className="mt-1 break-all font-mono text-sm">POST /api/v1/notifications</p>
-            </div>
-            <StatusLine label="Auth" value="Server API key required" />
-            <StatusLine label="Idempotency" value="24 hour replay window" />
-            <StatusLine label="Persistence" value="Accepted event plus outbox" />
-          </CardContent>
-        </Card>
-        <ChecklistCard
-          description="Request controls applied before an event is accepted."
-          icon={Webhook}
-          items={ingressRules}
-          title="Ingress rules"
-        />
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent accepted events</CardTitle>
-          <CardDescription>
-            Accepted summaries for the selected app and environment.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Event</TableHead>
-                <TableHead>Environment</TableHead>
-                <TableHead>Outcome</TableHead>
-                <TableHead className="text-right">Accepted</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentIngressEvents.map(([event, environment, outcome, acceptedAt]) => (
-                <TableRow key={`${event}-${environment}`}>
-                  <TableCell className="font-mono text-xs">{event}</TableCell>
-                  <TableCell>{environment}</TableCell>
-                  <TableCell>
-                    <Badge variant={eventTone(outcome)}>{outcome}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-xs">{acceptedAt}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -347,18 +266,6 @@ function SettingsContent() {
       />
     </div>
   );
-}
-
-function eventTone(status: string): BadgeTone {
-  if (status === "Accepted") {
-    return "success";
-  }
-
-  if (status === "Duplicate") {
-    return "warning";
-  }
-
-  return "info";
 }
 
 export { SectionActions, SectionContent };
