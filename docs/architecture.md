@@ -27,6 +27,10 @@ subdomain layout.
 - Tenant-scoped credential persistence, transaction handling, response-level
   secret disclosure, and append-only audit writes for server API key
   management.
+- The notification ingress MVP contract documented in
+  `docs/notification-ingress-mvp.md`, including environment-scoped server API
+  key authentication, idempotency, accepted-event persistence, and the
+  authenticated dashboard boundary.
 
 `libs/domain` is for framework-free business logic that can be tested without
 Phoenix, Ecto, or a database connection. Framework-free server API key
@@ -66,6 +70,12 @@ For server API key management, the web app owns slug-based navigation, route
 search state for the selected app and environment, one-time secret reveal UX,
 and safe post-create and post-rotate metadata display. It does not own
 credential persistence, audit writing, or ingress authentication.
+
+For notification ingress MVP behavior, the web app owns the workspace ingress
+page, selected app and environment slug state, recent accepted-event summaries,
+and the authenticated test-event workflow. It does not own the public
+`POST /api/v1/notifications` contract, raw server API key handling after the
+one-time reveal, accepted-event persistence, or future delivery fanout.
 
 ## Data Flow
 
@@ -179,6 +189,11 @@ feature needs both. Dashboard routes continue to use readable slugs, while API
 contracts may use UUIDs for direct resource identification. Future server API
 key authentication for ingress belongs to a later feature and should not be
 implied by the key-management contract alone.
+
+Ingress MVP follows the same split: the public ingest endpoint takes no route
+identifiers and derives workspace, app, and environment from the authenticated
+server API key, while dashboard ingress APIs use app and environment UUIDs
+behind slug-based browser navigation.
 
 ## Runtime Delivery
 

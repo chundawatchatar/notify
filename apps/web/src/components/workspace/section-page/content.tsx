@@ -175,20 +175,22 @@ function IngressContent() {
         <Card>
           <CardHeader>
             <CardTitle>Production endpoint</CardTitle>
-            <CardDescription>Primary notification intake contract.</CardDescription>
+            <CardDescription>
+              Primary notification intake contract for one environment.
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="rounded-sm border bg-secondary/35 p-4">
               <p className="text-muted-foreground text-xs">Endpoint</p>
               <p className="mt-1 break-all font-mono text-sm">POST /api/v1/notifications</p>
             </div>
-            <StatusLine label="Validation" value="Passing" />
-            <StatusLine label="Queue depth" value="824 events" />
-            <StatusLine label="P95 intake" value="42ms" />
+            <StatusLine label="Auth" value="Server API key required" />
+            <StatusLine label="Idempotency" value="24 hour replay window" />
+            <StatusLine label="Persistence" value="Accepted event plus outbox" />
           </CardContent>
         </Card>
         <ChecklistCard
-          description="Request controls applied before events enter the queue."
+          description="Request controls applied before an event is accepted."
           icon={Webhook}
           items={ingressRules}
           title="Ingress rules"
@@ -197,28 +199,30 @@ function IngressContent() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent received events</CardTitle>
-          <CardDescription>Last accepted topics across all notification apps.</CardDescription>
+          <CardTitle>Recent accepted events</CardTitle>
+          <CardDescription>
+            Accepted summaries for the selected app and environment.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Topic</TableHead>
-                <TableHead>App</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Latency</TableHead>
+                <TableHead>Event</TableHead>
+                <TableHead>Environment</TableHead>
+                <TableHead>Outcome</TableHead>
+                <TableHead className="text-right">Accepted</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentIngressEvents.map(([topic, app, status, latency]) => (
-                <TableRow key={`${topic}-${app}`}>
-                  <TableCell className="font-mono text-xs">{topic}</TableCell>
-                  <TableCell>{app}</TableCell>
+              {recentIngressEvents.map(([event, environment, outcome, acceptedAt]) => (
+                <TableRow key={`${event}-${environment}`}>
+                  <TableCell className="font-mono text-xs">{event}</TableCell>
+                  <TableCell>{environment}</TableCell>
                   <TableCell>
-                    <Badge variant={eventTone(status)}>{status}</Badge>
+                    <Badge variant={eventTone(outcome)}>{outcome}</Badge>
                   </TableCell>
-                  <TableCell className="text-right font-mono text-xs">{latency}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{acceptedAt}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -346,11 +350,11 @@ function SettingsContent() {
 }
 
 function eventTone(status: string): BadgeTone {
-  if (status === "Delivered") {
+  if (status === "Accepted") {
     return "success";
   }
 
-  if (status === "Retrying") {
+  if (status === "Duplicate") {
     return "warning";
   }
 

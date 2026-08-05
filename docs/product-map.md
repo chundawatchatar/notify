@@ -167,17 +167,26 @@ Legacy alias: `/ingress`
 Responsibilities:
 
 - show event ingestion endpoint
-- manage signed request rules
+- show environment-scoped server API key requirements
 - show idempotency and schema policy
-- test event publishing
-- monitor recent accepted events
+- publish an authenticated dashboard test event
+- monitor recent accepted events for the selected environment
 
 Expected future backend ownership:
 
-- `POST /api/v1/notifications` or equivalent ingest endpoint
-- request signature validation
-- idempotency key handling
-- event persistence and queue handoff
+- `POST /api/v1/notifications`
+- authenticated ingress dashboard APIs scoped by app and environment UUIDs
+- environment-scoped server API key authentication
+- idempotency key handling with 24-hour retention
+- accepted-event persistence and outbox handoff records
+
+Ingress MVP boundary:
+
+- the public ingest endpoint accepts one event per request and derives
+  workspace, app, and environment from the server API key
+- the request body owns the event name, recipient id, payload object, optional
+  occurred-at timestamp, and optional safe metadata
+- downstream fanout, retries, analytics, and billing remain deferred
 
 ## Analytics
 
@@ -260,10 +269,10 @@ UUID-based API. Owners, admins, and developers can create, rotate, and revoke
 keys. Viewers can inspect metadata but cannot mutate secrets.
 
 Server API keys support management only in this phase. The later ingress
-authentication epic is still deferred. This contract does not add ingestion,
-request authentication middleware, event storage, or delivery behavior.
-Existing environment client-key, trusted-origin, and readiness rules remain
-unchanged.
+authentication epic is now defined by `docs/notification-ingress-mvp.md`.
+Server API keys become the environment-scoped backend credential for
+`POST /api/v1/notifications`, while existing client-key, trusted-origin, and
+readiness rules remain unchanged.
 
 Expected future backend ownership:
 

@@ -15,7 +15,7 @@ const pageCopy: Record<WorkspaceSectionId, { badge: string; description: string;
       badge: "API intake",
       title: "Ingress endpoint",
       description:
-        "Manage the signed event endpoint, validation rules, idempotency windows, and intake health.",
+        "Manage the server-authenticated event endpoint, validation contract, idempotency window, and accepted-event visibility.",
     },
     analytics: {
       badge: "Delivery insight",
@@ -89,17 +89,19 @@ const appSetup = [
 ] satisfies LabelValueRow[];
 
 const ingressRules = [
-  ["Signature validation", "Required"],
-  ["Idempotency key", "24 hour window"],
-  ["Payload schema", "Strict mode"],
-  ["Rate limit", "318 requests/min"],
+  ["Server API key", "Environment scoped"],
+  ["Idempotency key", "24 hour replay window"],
+  ["Payload schema", "Strict top-level contract"],
+  ["Fanout", "Deferred from MVP"],
 ] satisfies LabelValueRow[];
 
 const recentIngressEvents = [
-  ["invoice.payment_failed", "Acme Cloud", "Delivered", "71ms"],
-  ["ticket.assigned", "Acme Support", "Queued", "118ms"],
-  ["trial.expiring", "Acme Labs", "Retrying", "204ms"],
-] satisfies Array<readonly [topic: string, app: string, status: string, latency: string]>;
+  ["invoice.payment_failed", "Acme Cloud / Production", "Accepted", "2 min ago"],
+  ["ticket.assigned", "Acme Support / Production", "Accepted", "6 min ago"],
+  ["test.notification_sent", "Acme Labs / Development", "Test event", "14 min ago"],
+] satisfies Array<
+  readonly [event: string, environment: string, outcome: string, acceptedAt: string]
+>;
 
 const analyticsCards = [
   { label: "Delivered", tone: "success", trend: "+12.4%", value: "48,214" },

@@ -91,14 +91,18 @@ tenant:t_123:recipient:user_456
 ## Publish Flow
 
 1. Customer backend calls Notify API.
-2. API authenticates the customer backend.
-3. API validates tenant, recipient, payload, and idempotency key.
-4. API stores the notification event in Postgres.
-5. API broadcasts the notification to the recipient topic.
+2. API authenticates the customer backend with an environment-scoped server API
+   key.
+3. API validates the event, recipient, payload, and idempotency key.
+4. API stores the accepted event and future outbox handoff record in Postgres.
+5. A later fanout worker or in-process publisher broadcasts the notification to
+   the recipient topic.
 6. Phoenix PubSub forwards the message to nodes with subscribers.
 7. Socket channel pushes the notification to connected clients.
 
 The API does not need to know which socket node owns the recipient connection.
+The ingress MVP contract that feeds this flow is defined in
+`docs/notification-ingress-mvp.md`.
 
 ## Why PubSub First
 

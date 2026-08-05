@@ -168,11 +168,29 @@ Implemented tables:
 - `environment_trusted_origins`: environment-scoped normalized exact HTTP(S)
   origins. A unique `(app_environment_id, origin)` constraint prevents the
   same normalized origin from being trusted twice in an environment.
+- `notification_events`: environment-scoped accepted ingress events. Each row
+  stores the owning workspace, app, and environment, source kind, optional
+  source key id, event name, recipient id, canonical payload JSON, optional
+  metadata JSON, occurred-at timestamp, payload size, and accepted-at time.
+- `notification_ingress_idempotency_keys`: environment-scoped retained
+  idempotency key digests with the canonical request fingerprint, accepted
+  event reference, and expiry time. The database must enforce
+  `UNIQUE (environment_id, idempotency_key_digest)`. The stored fingerprint
+  must use the `ingress-body-v1` algorithm version defined in
+  `docs/notification-ingress-mvp.md`, alongside its persisted version marker.
+- `notification_event_outbox`: append-only future handoff records created in
+  the same transaction as an accepted event. Each row stores the accepted event
+  reference, environment scope, recipient id, event name, pending dispatch
+  status, and availability timestamp.
+
+The idempotency record, accepted event, and outbox row are inserted in one
+transaction so a first `202 Accepted` response cannot be committed without its
+deduplication and handoff records.
 
 ## Future Product Tables
 
-- notification_events and delivery_attempts: future environment-scoped data,
-  introduced only with their owning product contracts
+- `delivery_attempts`: future worker-owned delivery execution data, introduced
+  only when realtime fanout and retry orchestration exist
 - subscription_plans or workspace_subscriptions
 
 Notification app and environment UUIDs are database identities. Readable app
@@ -205,6 +223,13 @@ valid UUID or slug cannot expose another tenant's records. Future server API
 key queries must follow the same tenant isolation path through workspace,
 notification app, and environment ownership, even when API endpoints identify
 the app and environment by UUID.
+
+Notification ingress follows the same ownership path. Public
+`POST /api/v1/notifications` derives workspace, app, and environment from the
+authenticated server API key and never trusts identifiers from the request
+body. Authenticated dashboard ingress APIs may identify the selected app and
+environment by UUID only after membership-scoped authorization resolves the
+workspace boundary.
 
 ## Ecto Guidance
 
