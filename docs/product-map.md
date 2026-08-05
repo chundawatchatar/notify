@@ -148,10 +148,9 @@ Responsibilities:
 
 Deferred from this module's initial app flow:
 
-- ingress and event delivery data
 - analytics, billing, and collaboration behavior
 
-Expected future backend ownership:
+Backend ownership:
 
 - notification app records and default-environment creation
 - environment records
@@ -172,13 +171,17 @@ Responsibilities:
 - publish an authenticated dashboard test event
 - monitor recent accepted events for the selected environment
 
-Expected future backend ownership:
+Current backend ownership:
 
 - `POST /api/v1/notifications`
 - authenticated ingress dashboard APIs scoped by app and environment UUIDs
 - environment-scoped server API key authentication
 - idempotency key handling with 24-hour retention
 - accepted-event persistence and outbox handoff records
+
+The ingress APIs are implemented in `apps/api`; their OpenAPI output and
+generated TypeScript client are checked in under `packages/openapi` and
+`packages/api-client`.
 
 Ingress MVP boundary:
 

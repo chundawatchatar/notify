@@ -57,8 +57,8 @@ identifiers. The API derives those from the authenticated key.
 
 ### Required fields
 
-- `event`: string event name in stable dot-case such as
-  `invoice.payment_failed`
+- `event`: lowercase event name made of dot-separated segments containing
+  letters, digits, and underscores, such as `invoice.payment_failed`
 - `recipient.id`: opaque customer-owned recipient identifier
 - `payload`: JSON object with the event-specific notification data
 
@@ -75,8 +75,10 @@ identifiers. The API derives those from the authenticated key.
 - `payload` must be a JSON object and must not exceed the configured payload
   size limit
 - `metadata`, when present, must be a JSON object with bounded scalar values
-- `occurredAt`, when present, must be a valid RFC 3339 timestamp and must not
-  be unreasonably far in the future
+- `occurredAt`, when present, must be a valid RFC 3339 UTC timestamp
+
+The current API enforces a 64 KiB JSON payload limit and accepts at most 20
+metadata entries. Metadata values must be scalar JSON values.
 
 The MVP does not accept tenant ids, app ids, delivery channels, templates,
 batch arrays, or arbitrary target topic names in the public request.
@@ -109,8 +111,16 @@ browser identifiers and must not authenticate `POST /api/v1/notifications`.
 - a replay with the same key but a different canonical request returns
   `409 idempotency_key_conflict`
 
-Canonical request fingerprinting uses serialization algorithm
-`ingress-body-v1`:
+The current implementation fingerprints the validated request body with
+algorithm version `ingress-body-v1`: it recursively sorts decoded object keys,
+preserves array order, encodes the result as compact JSON, and hashes the bytes
+with SHA-256. The fingerprint version is stored with the idempotency record.
+
+Earlier design notes described a stricter canonicalization algorithm. That
+algorithm is not part of the shipped MVP and must not be treated as an
+implemented compatibility guarantee.
+
+<!--
 
 - serialize only the validated JSON request body, not headers
 - reject duplicate object members before converting JSON objects into maps or
@@ -144,6 +154,7 @@ Canonical request fingerprinting uses serialization algorithm
 If a future version changes canonicalization, the stored fingerprint version
 must be persisted beside the fingerprint and comparisons must use matching
 versions only.
+-->
 
 The retention window is an MVP assumption, not a long-term guarantee.
 
@@ -219,7 +230,7 @@ One row per accepted event with:
 - source kind: `public_api` or `dashboard_test`
 - event name
 - recipient id
-- canonical payload JSON
+- validated payload JSON
 - optional metadata JSON
 - occurred-at timestamp
 - accepted-at timestamp
@@ -229,28 +240,14 @@ Persistence and privacy rules for `notification_events`:
 
 - workspace, app, and environment ownership remain the only access path for
   reading or deleting an event
-- caller-controlled payload JSON is retained for 30 days in MVP, after which
-  the ingress data-retention job owned by `apps/api` deletes or redacts the
-  persisted payload and metadata fields by event age
-- payload and metadata columns must use the repository's standard database
-  encryption-at-rest posture
-- the ingress API must reject requests before fingerprinting, canonical payload
-  generation, and persistence when payload or metadata contains caller-supplied
-  secrets, credentials, bearer tokens, API keys, passwords, cookies,
-  authorization headers, or other request-auth material
-- sensitive-field detection uses a deterministic, versioned detector applied to
-  arbitrary JSON values before fingerprinting, canonicalization, or
-  persistence; it recursively inspects nested objects, arrays, scalar values,
-  and otherwise unclassified content and fails closed when content cannot be
-  classified safely
-- the detector matches reserved or configured field names after Unicode NFC
-  normalization at any nesting depth, including generic containers such as
-  `data`, and may reject scalar or array content when their surrounding key
-  path or content classification is sensitive
-- the sanitization rule set version must be fixed for the request lifecycle so
-  the validated, fingerprinted, and persisted representations cannot diverge
-- later event-detail APIs must support field-level redaction before showing
-  caller-controlled payload content in the dashboard
+- the current API rejects a request before fingerprinting or persistence when a
+  nested object key is `authorization`, `api_key`, `apikey`, `cookie`,
+  `password`, `secret`, or `token`, or when a key contains `bearer` (case
+  insensitive after Unicode NFC normalization)
+- this key-based detector applies recursively through objects and arrays; the
+  current MVP does not claim content classification for arbitrary scalar values
+- retention jobs, field-level payload redaction, and database encryption policy
+  remain operational follow-on work and are not implemented by this slice
 - logs, audit events, and metrics may reference the stable event id and safe
   metadata only, not raw payload bodies by default
 
@@ -311,22 +308,22 @@ ingest contract.
 - show masked server API key metadata or setup state, never the raw secret
 - show the idempotency window and request validation rules
 - list recent accepted-event summaries for the selected environment
-- show the planned authenticated test-event action and its contract boundary
+- show the authenticated test-event action and its contract boundary
 
 ### Authenticated dashboard APIs
 
-The follow-on authenticated APIs should stay separate from
+The authenticated APIs stay separate from
 `POST /api/v1/notifications`:
 
 - `GET /api/apps/:appId/environments/:environmentId/ingress`
 - `GET /api/apps/:appId/environments/:environmentId/ingress/events`
 - `POST /api/apps/:appId/environments/:environmentId/ingress/test-events`
 
-The planned dashboard test-event action uses the authenticated workspace member
+The dashboard test-event action uses the authenticated workspace member
 and the selected app and environment UUIDs. It does not require the browser to
 know or send the environment's raw server API key.
 
-Its follow-on behavior is:
+Its current behavior is:
 
 - require normal authenticated dashboard authorization for the selected
   workspace, app, and environment
@@ -337,8 +334,8 @@ Its follow-on behavior is:
   `POST /api/v1/notifications`
 - return the same safe validation and authorization failure shapes used by
   other authenticated dashboard APIs
-- treat replay-conflict handling as planned work owned by the follow-on
-  implementation ticket, not as implicit browser behavior
+- generate a fresh server-side idempotency digest for each dashboard test event;
+  dashboard replays do not reuse the public `Idempotency-Key` contract
 
 ## Safe Data Rules
 
