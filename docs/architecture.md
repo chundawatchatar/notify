@@ -31,6 +31,10 @@ subdomain layout.
   `docs/notification-ingress-mvp.md`, including environment-scoped server API
   key authentication, idempotency, accepted-event persistence, and the
   authenticated dashboard boundary.
+- The notification delivery MVP contract documented in
+  `docs/notification-delivery-mvp.md`, including the accepted-event to outbox
+  handoff, best-effort realtime publish semantics, and the delivery lifecycle
+  boundary.
 
 `libs/domain` is for framework-free business logic that can be tested without
 Phoenix, Ecto, or a database connection. Framework-free server API key
@@ -75,7 +79,8 @@ For notification ingress MVP behavior, the web app owns the workspace ingress
 page, selected app and environment slug state, recent accepted-event summaries,
 and the authenticated test-event workflow. It does not own the public
 `POST /api/v1/notifications` contract, raw server API key handling after the
-one-time reveal, accepted-event persistence, or future delivery fanout.
+one-time reveal, accepted-event persistence, or delivery execution and
+realtime fanout.
 
 ## Data Flow
 

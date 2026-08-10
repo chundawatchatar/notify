@@ -1,8 +1,9 @@
 # Realtime Notification Architecture
 
-This document describes the realtime notification architecture we want to align
-the application toward. It focuses only on browser/client realtime delivery, not
-email, SMS, mobile push, billing, or long-term notification analytics.
+This document describes the realtime transport for the delivery MVP. The
+delivery contract, lifecycle states, payload boundary, and deferred guarantees
+are defined in `docs/notification-delivery-mvp.md`. This document focuses on
+browser/client delivery, not email, SMS, mobile push, billing, or analytics.
 
 ## Decision
 
@@ -48,24 +49,21 @@ application. We can split them later when operational pressure justifies it.
 
 ## Topic Model
 
-Use topics that include tenant/application scope and recipient identity.
+Use topics that include tenant/application/environment scope and recipient
+identity.
 
-Recommended shape:
-
-```text
-tenant:{tenant_id}:recipient:{recipient_id}
-```
-
-If we introduce multiple customer applications under a tenant, use:
+The v1 shape is:
 
 ```text
-tenant:{tenant_id}:app:{app_id}:recipient:{recipient_id}
+tenant:{workspace_id}:app:{notification_app_id}:environment:{app_environment_id}:recipient:{recipient_id}
 ```
 
 Rules:
 
-- Never let the client choose arbitrary tenant or recipient values.
-- Derive tenant and recipient from authenticated socket claims.
+- Never let the client choose arbitrary tenant, app, environment, or recipient
+  values.
+- Derive tenant, app, environment, and recipient from authenticated socket
+  claims.
 - Keep topic names stable and boring.
 - Do not put sensitive data in topic names.
 
@@ -75,17 +73,19 @@ Rules:
 2. Client presents an auth token or signed connection token.
 3. Socket authentication resolves:
    - tenant id
-   - optional app id
+   - app id
+   - environment id
    - recipient id
    - session/device id
-4. Socket joins the recipient notification channel.
-5. The channel process subscribes to the matching PubSub topic.
-6. The socket server keeps connection state in local memory only.
+4. The channel authorizes the app and environment scope for the recipient.
+5. Socket joins the environment-scoped recipient notification channel.
+6. The channel process subscribes to the matching PubSub topic.
+7. The socket server keeps connection state in local memory only.
 
 Example topic:
 
 ```text
-tenant:t_123:recipient:user_456
+tenant:t_123:app:app_789:environment:env_456:recipient:user_456
 ```
 
 ## Publish Flow
@@ -94,11 +94,12 @@ tenant:t_123:recipient:user_456
 2. API authenticates the customer backend with an environment-scoped server API
    key.
 3. API validates the event, recipient, payload, and idempotency key.
-4. API stores the accepted event and future outbox handoff record in Postgres.
-5. A later fanout worker or in-process publisher broadcasts the notification to
-   the recipient topic.
+4. API atomically stores the accepted event, idempotency record, and pending
+   outbox handoff in Postgres.
+5. A publisher claims the outbox row and broadcasts the `notification.created`
+   envelope to the derived recipient topic.
 6. Phoenix PubSub forwards the message to nodes with subscribers.
-7. Socket channel pushes the notification to connected clients.
+7. The socket channel pushes the envelope to authorized clients.
 
 The API does not need to know which socket node owns the recipient connection.
 The ingress MVP contract that feeds this flow is defined in
@@ -165,25 +166,12 @@ useful later for durable notification event streams, analytics, or replay.
 
 ## Delivery Semantics
 
-Realtime socket delivery is best-effort in v1.
-
-The durable record is the notification event stored in Postgres. If a recipient
-is offline, the event remains available for later API fetches or inbox views.
-
-V1 delivery expectations:
-
-- online clients receive notifications over WebSocket
-- offline clients do not require realtime delivery
-- clients should be able to fetch recent notifications after reconnect
-- notification events should include stable ids for de-duplication
-- publishing should use an idempotency key from customer backends
-
-Future delivery expectations:
-
-- per-recipient unread counters
-- replay cursor on reconnect
-- delivery receipts
-- per-device acknowledgement
+Realtime socket delivery is best-effort in v1. A `published` outbox state means
+that Phoenix PubSub accepted the broadcast request. It does not prove that a
+client was connected, received the message, or rendered it. The stable event id
+supports future de-duplication, but v1 does not provide replay, receipts,
+acknowledgements, or durable retries. See the delivery contract for the complete
+state model.
 
 ## Backpressure
 
@@ -326,15 +314,6 @@ Not recommended until the product has proven traffic patterns.
 Not recommended. It couples API ingress to connection ownership and creates
 fragile routing logic.
 
-## Open Questions
-
-- Should v1 support only WebSocket, or WebSocket plus SSE?
-- What is the initial socket authentication token format?
-- Where will tenant and recipient ids come from in the first API contract?
-- What is the first durable inbox/replay API shape?
-- Should unread counters be part of realtime v1 or a later iteration?
-- Which production platform will host Phoenix nodes and clustering?
-
 ## Recommendation
 
 Build realtime v1 as:
@@ -346,6 +325,7 @@ Phoenix PubSub recipient topics
 WebSocket clients
 ```
 
-Keep the connection ownership local to each socket node. Use PubSub topics to
-route messages across nodes. Add a connection registry only after PubSub
-broadcast traffic or per-node fanout becomes a measured scaling problem.
+Keep the connection ownership local to each socket node. Use the exact
+workspace/app/environment/recipient PubSub topic and the `notification.created` envelope
+from `docs/notification-delivery-mvp.md`. Add a connection registry only after
+PubSub broadcast traffic or per-node fanout becomes a measured scaling problem.

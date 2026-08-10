@@ -181,7 +181,9 @@ Implemented tables:
 - `notification_event_outbox`: append-only future handoff records created in
   the same transaction as an accepted event. Each row stores the accepted event
   reference, environment scope, recipient id, event name, pending dispatch
-  status, and availability timestamp.
+  status, and availability timestamp. Its v1 status values are `pending`,
+  `processing`, and `published`; `published` means PubSub accepted a broadcast,
+  not that a client received it. See `docs/notification-delivery-mvp.md`.
 
 The idempotency record, accepted event, and outbox row are inserted in one
 transaction so a first `202 Accepted` response cannot be committed without its
@@ -190,7 +192,7 @@ deduplication and handoff records.
 ## Future Product Tables
 
 - `delivery_attempts`: future worker-owned delivery execution data, introduced
-  only when realtime fanout and retry orchestration exist
+  only when retry, receipt, or per-device delivery semantics exist
 - subscription_plans or workspace_subscriptions
 
 Notification app and environment UUIDs are database identities. Readable app

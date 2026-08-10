@@ -191,6 +191,12 @@ Ingress MVP boundary:
   occurred-at timestamp, and optional safe metadata
 - downstream fanout, retries, analytics, and billing remain deferred
 
+Delivery MVP boundaries are defined in `docs/notification-delivery-mvp.md`.
+Ingress acceptance ends when the accepted event and pending outbox handoff are
+committed. Realtime publish is best-effort and `published` is not a client
+receipt. Offline recovery, retries, receipts, and non-realtime channels remain
+deferred.
+
 ## Analytics
 
 Canonical route:
