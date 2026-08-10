@@ -286,9 +286,11 @@ stored accepted response when they match, and returns
 `409 idempotency_key_conflict` when they differ. The API must not surface the
 raw database uniqueness error to clients.
 
-The outbox exists so later delivery work can consume a stable handoff record
-without redefining ingress persistence. The MVP does not yet perform retries,
-worker orchestration, receipts, or analytics rollups from this record.
+The outbox is the unambiguous handoff into delivery work. A `202 Accepted`
+response means that the event and pending handoff committed, not that a browser
+received it. Delivery execution and its minimum state model are defined in
+`docs/notification-delivery-mvp.md`; ingress persistence does not redefine that
+contract.
 
 ## Dashboard Boundary
 
@@ -361,6 +363,7 @@ display of caller-controlled payload content.
 - accepted-at timestamp
 - payload size
 - duplicate indicator when the API reports a replay
+- available delivery state, without treating `published` as client receipt
 - masked key metadata and setup state
 
 ### Never display or persist in browser storage
@@ -382,6 +385,7 @@ The ingress MVP does not include:
 - realtime fanout execution
 - retry orchestration or dead-letter handling
 - delivery attempts or receipts
+- offline recovery, replay, and reconnect synchronization
 - per-tenant analytics rollups
 - billing counters or plan enforcement
 - batch ingest
