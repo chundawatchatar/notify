@@ -3,6 +3,7 @@ defmodule ApiWeb.NotificationIngressController do
   use OpenApiSpex.ControllerSpecs
 
   alias Api.NotificationApps
+  alias Api.NotificationDelivery
   alias Api.NotificationIngress
   alias ApiWeb.AuthError
   alias ApiWeb.Plugs.RequirePermission
@@ -70,6 +71,8 @@ defmodule ApiWeb.NotificationIngressController do
 
       case NotificationIngress.accept_event(source, attrs) do
         {:ok, result} ->
+          unless result.duplicate, do: publish_best_effort(result.outbox.id)
+
           conn
           |> put_status(if(result.duplicate, do: :ok, else: :accepted))
           |> json(%{data: ingest_payload(result)})
@@ -221,6 +224,8 @@ defmodule ApiWeb.NotificationIngressController do
 
       case NotificationIngress.accept_event(source, attrs) do
         {:ok, result} ->
+          publish_best_effort(result.outbox.id)
+
           conn
           |> put_status(:accepted)
           |> json(%{data: ingest_payload(result)})
@@ -408,6 +413,17 @@ defmodule ApiWeb.NotificationIngressController do
       accepted_at: event.accepted_at,
       occurred_at: event.occurred_at
     }
+  end
+
+  defp publish_best_effort(outbox_id) do
+    case NotificationDelivery.publish(outbox_id) do
+      :ok ->
+        :ok
+
+      {:error, reason} ->
+        require Logger
+        Logger.warning("notification delivery publish failed: #{inspect(reason)}")
+    end
   end
 
   defp dashboard_not_found(conn),

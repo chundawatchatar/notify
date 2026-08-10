@@ -49,8 +49,9 @@ application. We can split them later when operational pressure justifies it.
 
 ## Topic Model
 
-Use topics that include tenant/application/environment scope and recipient
-identity.
+Use topics that include workspace, application, environment, and recipient
+identity. The publisher derives every segment from the persisted event and its
+trusted ownership scope.
 
 The v1 shape is:
 
@@ -60,10 +61,11 @@ tenant:{workspace_id}:app:{notification_app_id}:environment:{app_environment_id}
 
 Rules:
 
-- Never let the client choose arbitrary tenant, app, environment, or recipient
-  values.
-- Derive tenant, app, environment, and recipient from authenticated socket
-  claims.
+- Never let the client choose arbitrary tenant or recipient values.
+- Derive workspace, app, environment, and recipient from authenticated socket
+  claims or the persisted accepted event.
+- Never allow an environment to publish to another environment's recipient
+  topic.
 - Keep topic names stable and boring.
 - Do not put sensitive data in topic names.
 
