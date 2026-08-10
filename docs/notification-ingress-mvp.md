@@ -274,6 +274,7 @@ One row per accepted event for future fanout handoff with:
 - event name
 - next dispatch status, initially `pending`
 - available-at timestamp
+- optional processing-at and published-at timestamps
 - created-at timestamp
 
 The idempotency record, accepted event, and outbox row are inserted in one
