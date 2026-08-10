@@ -73,12 +73,14 @@ Rules:
 2. Client presents an auth token or signed connection token.
 3. Socket authentication resolves:
    - tenant id
-   - optional app id
+   - app id
+   - environment id
    - recipient id
    - session/device id
-4. Socket joins the recipient notification channel.
-5. The channel process subscribes to the matching PubSub topic.
-6. The socket server keeps connection state in local memory only.
+4. The channel authorizes the app and environment scope for the recipient.
+5. Socket joins the environment-scoped recipient notification channel.
+6. The channel process subscribes to the matching PubSub topic.
+7. The socket server keeps connection state in local memory only.
 
 Example topic:
 
