@@ -15,6 +15,8 @@ defmodule Api.NotificationIngress.EventOutbox do
     field :event_name, :string
     field :status, :string, default: "pending"
     field :available_at, :utc_datetime
+    field :processing_at, :utc_datetime
+    field :published_at, :utc_datetime
 
     timestamps(type: :utc_datetime, updated_at: false)
   end
@@ -28,7 +30,9 @@ defmodule Api.NotificationIngress.EventOutbox do
       :recipient_id,
       :event_name,
       :status,
-      :available_at
+      :available_at,
+      :processing_at,
+      :published_at
     ])
     |> validate_required([
       :notification_event_id,
