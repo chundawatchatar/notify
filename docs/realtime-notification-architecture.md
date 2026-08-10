@@ -49,18 +49,21 @@ application. We can split them later when operational pressure justifies it.
 
 ## Topic Model
 
-Use topics that include tenant/application scope and recipient identity.
+Use topics that include tenant/application/environment scope and recipient
+identity.
 
 The v1 shape is:
 
 ```text
-tenant:{workspace_id}:app:{notification_app_id}:recipient:{recipient_id}
+tenant:{workspace_id}:app:{notification_app_id}:environment:{app_environment_id}:recipient:{recipient_id}
 ```
 
 Rules:
 
-- Never let the client choose arbitrary tenant or recipient values.
-- Derive tenant and recipient from authenticated socket claims.
+- Never let the client choose arbitrary tenant, app, environment, or recipient
+  values.
+- Derive tenant, app, environment, and recipient from authenticated socket
+  claims.
 - Keep topic names stable and boring.
 - Do not put sensitive data in topic names.
 
@@ -80,7 +83,7 @@ Rules:
 Example topic:
 
 ```text
-tenant:t_123:app:app_789:recipient:user_456
+tenant:t_123:app:app_789:environment:env_456:recipient:user_456
 ```
 
 ## Publish Flow
@@ -321,6 +324,6 @@ WebSocket clients
 ```
 
 Keep the connection ownership local to each socket node. Use the exact
-workspace/app/recipient PubSub topic and the `notification.created` envelope
+workspace/app/environment/recipient PubSub topic and the `notification.created` envelope
 from `docs/notification-delivery-mvp.md`. Add a connection registry only after
 PubSub broadcast traffic or per-node fanout becomes a measured scaling problem.

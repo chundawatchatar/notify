@@ -57,11 +57,13 @@ environment before the event is stored.
 The exact v1 PubSub topic is:
 
 ```text
-tenant:{workspace_id}:app:{notification_app_id}:recipient:{recipient_id}
+tenant:{workspace_id}:app:{notification_app_id}:environment:{app_environment_id}:recipient:{recipient_id}
 ```
 
 The publisher derives every topic segment from the persisted event and its
 trusted ownership scope. A client cannot choose or alter any topic segment.
+Environment is mandatory so Development and Production notifications cannot
+share a PubSub subscription when they use the same recipient id.
 Topic names contain identifiers only and must not contain payload values,
 secrets, email addresses, or other sensitive data.
 
