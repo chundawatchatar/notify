@@ -83,5 +83,27 @@ defmodule Api.NotificationDeliveryTest do
     assert Repo.get!(EventOutbox, outbox.id).status == "processing"
   end
 
+  test "retries stale processing handoffs", %{source: source, attrs: attrs} do
+    accepted_at = DateTime.add(DateTime.utc_now(:second), -2, :second)
+
+    assert {:ok, %{outbox: outbox, event: event}} =
+             NotificationIngress.accept_event(source, attrs, accepted_at)
+
+    stale_at = DateTime.add(DateTime.utc_now(:second), -61, :second)
+
+    assert {:ok, _outbox} =
+             outbox
+             |> EventOutbox.changeset(%{status: "processing", processing_at: stale_at})
+             |> Repo.update()
+
+    topic = NotificationDelivery.topic(Map.put(source, :recipient_id, event.recipient_id))
+    Phoenix.PubSub.subscribe(Api.PubSub, topic)
+
+    assert :ok = NotificationDelivery.publish_next()
+    assert_receive %{event: "notification.created", data: %{eventId: event_id}}
+    assert event_id == event.id
+    assert Repo.get!(EventOutbox, outbox.id).status == "published"
+  end
+
   defp digest(value), do: :crypto.hash(:sha256, value)
 end

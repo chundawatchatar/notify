@@ -103,6 +103,11 @@ tenant:t_123:app:app_789:environment:env_456:recipient:user_456
 6. Phoenix PubSub forwards the message to nodes with subscribers.
 7. The socket channel pushes the envelope to authorized clients.
 
+If publishing fails after a claim, the handoff returns to `pending` for a later
+attempt. A publisher also requeues claims older than the processing timeout so
+process termination cannot leave an accepted notification stuck in
+`processing`.
+
 The API does not need to know which socket node owns the recipient connection.
 The ingress MVP contract that feeds this flow is defined in
 `docs/notification-ingress-mvp.md`.
