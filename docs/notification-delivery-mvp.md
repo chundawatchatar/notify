@@ -127,6 +127,12 @@ add `delivered`, `acknowledged`, `failed`, `retrying`, or `expired` states.
 Publish errors are operational failures to log and measure; they do not create
 a stronger delivery promise or a new client-visible state in this slice.
 
+Each processing claim has an owner token and renewable timestamp. The publisher
+renews that lease while database or PubSub work is active. Stale recovery may
+return only an expired lease to `pending`, and every completion or reset is
+conditional on the claim token so an earlier publisher cannot mutate a newer
+claim.
+
 Later analytics may count accepted events and published handoffs separately.
 It must not report `published` as delivered, successful, or acknowledged.
 

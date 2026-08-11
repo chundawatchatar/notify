@@ -3,6 +3,7 @@ defmodule Api.NotificationDeliveryTest do
 
   alias Api.NotificationApps
   alias Api.NotificationDelivery
+  alias Api.NotificationDelivery.ClaimLease
   alias Api.NotificationDelivery.Publisher
   alias Api.NotificationIngress
   alias Api.NotificationIngress.EventOutbox
@@ -84,6 +85,27 @@ defmodule Api.NotificationDeliveryTest do
     assert Repo.get!(EventOutbox, outbox.id).status == "processing"
   end
 
+  test "does not recover a claim whose active publisher renewed its lease", %{
+    source: source,
+    attrs: attrs
+  } do
+    assert {:ok, %{outbox: outbox}} = NotificationIngress.accept_event(source, attrs)
+    assert {:ok, claimed} = ClaimLease.claim(outbox.id)
+    assert {:ok, lease} = ClaimLease.start_link(claimed, heartbeat_interval: 60_000)
+
+    after_timeout = DateTime.add(claimed.processing_at, 61, :second)
+
+    assert :ok = ClaimLease.renew(lease, after_timeout)
+    assert :empty = NotificationDelivery.publish_next(after_timeout)
+
+    persisted = Repo.get!(EventOutbox, outbox.id)
+    assert persisted.status == "processing"
+    assert persisted.processing_at == after_timeout
+    assert persisted.processing_token == claimed.processing_token
+
+    assert {:error, :test_cleanup} = ClaimLease.release(lease, :test_cleanup)
+  end
+
   test "publisher retries stale processing handoffs", %{source: source, attrs: attrs} do
     accepted_at = DateTime.add(DateTime.utc_now(:second), -2, :second)
 
@@ -105,6 +127,7 @@ defmodule Api.NotificationDeliveryTest do
 
     assert_receive %{event: "notification.created", data: %{eventId: event_id}}
     assert event_id == event.id
+    :sys.get_state(publisher)
     assert Repo.get!(EventOutbox, outbox.id).status == "published"
   end
 
