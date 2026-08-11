@@ -3,6 +3,7 @@ defmodule Api.NotificationDeliveryTest do
 
   alias Api.NotificationApps
   alias Api.NotificationDelivery
+  alias Api.NotificationDelivery.Publisher
   alias Api.NotificationIngress
   alias Api.NotificationIngress.EventOutbox
 
@@ -83,7 +84,7 @@ defmodule Api.NotificationDeliveryTest do
     assert Repo.get!(EventOutbox, outbox.id).status == "processing"
   end
 
-  test "retries stale processing handoffs", %{source: source, attrs: attrs} do
+  test "publisher retries stale processing handoffs", %{source: source, attrs: attrs} do
     accepted_at = DateTime.add(DateTime.utc_now(:second), -2, :second)
 
     assert {:ok, %{outbox: outbox, event: event}} =
@@ -99,7 +100,9 @@ defmodule Api.NotificationDeliveryTest do
     topic = NotificationDelivery.topic(Map.put(source, :recipient_id, event.recipient_id))
     Phoenix.PubSub.subscribe(Api.PubSub, topic)
 
-    assert :ok = NotificationDelivery.publish_next()
+    publisher = start_supervised!({Publisher, interval: 60_000})
+    send(publisher, :publish)
+
     assert_receive %{event: "notification.created", data: %{eventId: event_id}}
     assert event_id == event.id
     assert Repo.get!(EventOutbox, outbox.id).status == "published"

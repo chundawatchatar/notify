@@ -64,6 +64,13 @@ Kubernetes uses it for startup and liveness probes.
 it to decide whether a pod should receive traffic. Dependency failure details
 are logged internally and are never returned to clients.
 
+## Delivery Publisher
+
+Every API instance runs a supervised delivery publisher. It polls the
+notification event outbox every five seconds, requeues stale processing claims,
+and publishes one available handoff. Concurrent instances are safe because the
+outbox claim is database-locked.
+
 ## Metrics
 
 The API exposes Prometheus text format at `GET /metrics` when

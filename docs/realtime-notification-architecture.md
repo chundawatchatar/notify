@@ -98,15 +98,16 @@ tenant:t_123:app:app_789:environment:env_456:recipient:user_456
 3. API validates the event, recipient, payload, and idempotency key.
 4. API atomically stores the accepted event, idempotency record, and pending
    outbox handoff in Postgres.
-5. A publisher claims the outbox row and broadcasts the `notification.created`
-   envelope to the derived recipient topic.
+5. The supervised delivery publisher polls pending handoffs, requeues stale
+   claims, then broadcasts the `notification.created` envelope to the derived
+   recipient topic.
 6. Phoenix PubSub forwards the message to nodes with subscribers.
 7. The socket channel pushes the envelope to authorized clients.
 
 If publishing fails after a claim, the handoff returns to `pending` for a later
-attempt. A publisher also requeues claims older than the processing timeout so
-process termination cannot leave an accepted notification stuck in
-`processing`.
+attempt. The supervised publisher runs every five seconds and requeues claims
+older than the processing timeout, so process termination cannot leave an
+accepted notification stuck in `processing`.
 
 The API does not need to know which socket node owns the recipient connection.
 The ingress MVP contract that feeds this flow is defined in
