@@ -47,7 +47,7 @@ defmodule Api.NotificationDelivery do
   def publish(outbox_id) when is_binary(outbox_id) do
     case ClaimLease.claim(outbox_id) do
       {:ok, outbox} ->
-        case ClaimLease.start_link(outbox) do
+        case ClaimLease.start(outbox) do
           {:ok, lease} -> publish_claimed(outbox, lease)
           {:error, reason} -> ClaimLease.reset(outbox, {:claim_lease_unavailable, reason})
         end

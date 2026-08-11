@@ -91,7 +91,7 @@ defmodule Api.NotificationDeliveryTest do
   } do
     assert {:ok, %{outbox: outbox}} = NotificationIngress.accept_event(source, attrs)
     assert {:ok, claimed} = ClaimLease.claim(outbox.id)
-    assert {:ok, lease} = ClaimLease.start_link(claimed, heartbeat_interval: 60_000)
+    assert {:ok, lease} = ClaimLease.start(claimed, heartbeat_interval: 60_000)
 
     after_timeout = DateTime.add(claimed.processing_at, 61, :second)
 
@@ -104,6 +104,35 @@ defmodule Api.NotificationDeliveryTest do
     assert persisted.processing_token == claimed.processing_token
 
     assert {:error, :test_cleanup} = ClaimLease.release(lease, :test_cleanup)
+  end
+
+  test "claim loss does not terminate the lease owner", %{source: source, attrs: attrs} do
+    assert {:ok, %{outbox: outbox}} = NotificationIngress.accept_event(source, attrs)
+    parent = self()
+
+    {owner, owner_ref} =
+      spawn_monitor(fn ->
+        {:ok, claimed} = ClaimLease.claim(outbox.id)
+        {:ok, lease} = ClaimLease.start(claimed, heartbeat_interval: 60_000)
+        send(parent, {:lease_ready, self(), claimed, lease})
+
+        receive do
+          {:renew, now} -> send(parent, {:renewed, self(), ClaimLease.renew(lease, now)})
+        end
+      end)
+
+    assert_receive {:lease_ready, ^owner, claimed, _lease}
+
+    assert {1, _} =
+             Repo.update_all(
+               from(current in EventOutbox, where: current.id == ^outbox.id),
+               set: [status: "pending", processing_at: nil, processing_token: nil]
+             )
+
+    send(owner, {:renew, DateTime.add(claimed.processing_at, 61, :second)})
+
+    assert_receive {:renewed, ^owner, {:error, :claim_lost}}
+    assert_receive {:DOWN, ^owner_ref, :process, ^owner, :normal}
   end
 
   test "publisher retries stale processing handoffs", %{source: source, attrs: attrs} do
