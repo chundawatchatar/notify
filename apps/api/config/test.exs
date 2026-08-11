@@ -1,6 +1,7 @@
 import Config
 
 config :api,
+  delivery_publisher_enabled: false,
   invitation_email_adapter: Api.Accounts.InvitationEmail.TestAdapter,
   password_reset_email_adapter: Api.Accounts.PasswordResetEmail.TestAdapter,
   verification_email_adapter: Api.Accounts.VerificationEmail.TestAdapter
