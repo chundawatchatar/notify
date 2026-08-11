@@ -131,7 +131,9 @@ Each processing claim has an owner token and renewable timestamp. The publisher
 renews that lease while database or PubSub work is active. Stale recovery may
 return only an expired lease to `pending`, and every completion or reset is
 conditional on the claim token so an earlier publisher cannot mutate a newer
-claim.
+claim. If a heartbeat cannot be persisted, the publisher cancels its in-flight
+PubSub attempt before the persisted lease can expire and returns a publish
+error without terminating the request or publisher process.
 
 Later analytics may count accepted events and published handoffs separately.
 It must not report `published` as delivered, successful, or acknowledged.

@@ -9,7 +9,6 @@ defmodule Api.NotificationDelivery.ClaimLease do
   alias Api.Repo
 
   @heartbeat_interval_ms 20_000
-  @heartbeat_retry_interval_ms 5_000
   @processing_timeout_seconds 60
 
   def claim(outbox_id) when is_binary(outbox_id) do
@@ -102,8 +101,7 @@ defmodule Api.NotificationDelivery.ClaimLease do
   def handle_call({:renew, now}, _from, %{claim_status: :active} = state) do
     case renew_claim(state.outbox_id, state.processing_token, now) do
       :ok -> {:reply, :ok, state}
-      {:error, :claim_lost} = error -> {:reply, error, mark_claim_lost(state)}
-      {:error, _reason} = error -> {:reply, error, state}
+      {:error, reason} = error -> {:reply, error, fail_claim(state, reason)}
     end
   end
 
@@ -141,12 +139,8 @@ defmodule Api.NotificationDelivery.ClaimLease do
         schedule_renewal(state.interval)
         {:noreply, state}
 
-      {:error, :claim_lost} ->
-        {:noreply, mark_claim_lost(state)}
-
-      {:error, _reason} ->
-        schedule_renewal(@heartbeat_retry_interval_ms)
-        {:noreply, state}
+      {:error, reason} ->
+        {:noreply, fail_claim(state, reason)}
     end
   end
 
@@ -226,7 +220,10 @@ defmodule Api.NotificationDelivery.ClaimLease do
     :exit, _reason -> {:error, :claim_lease_unavailable}
   end
 
-  defp mark_claim_lost(state), do: %{state | claim_status: :lost}
+  defp fail_claim(state, reason) do
+    send(state.owner, {__MODULE__, self(), {:error, reason}})
+    %{state | claim_status: :lost}
+  end
 
   defp schedule_renewal(interval), do: Process.send_after(self(), :renew, interval)
 end

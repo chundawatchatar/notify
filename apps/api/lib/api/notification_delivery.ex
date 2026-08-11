@@ -95,12 +95,16 @@ defmodule Api.NotificationDelivery do
   end
 
   defp publish_claimed(outbox, lease) do
-    with {:ok, event} <- load_event(outbox),
-         envelope = envelope(event),
-         :ok <- broadcast(event, envelope) do
-      ClaimLease.complete(lease, DateTime.utc_now(:second))
-    else
-      failure -> ClaimLease.release(lease, failure)
+    try do
+      with {:ok, event} <- load_event(outbox),
+           envelope = envelope(event),
+           :ok <- broadcast(event, envelope, lease) do
+        ClaimLease.complete(lease, DateTime.utc_now(:second))
+      else
+        failure -> ClaimLease.release(lease, failure)
+      end
+    after
+      discard_lease_failures(lease)
     end
   end
 
@@ -111,7 +115,30 @@ defmodule Api.NotificationDelivery do
     end
   end
 
-  defp broadcast(%NotificationEvent{} = event, envelope) do
+  defp broadcast(%NotificationEvent{} = event, envelope, lease) do
+    caller = self()
+    result_ref = make_ref()
+
+    {publisher, monitor_ref} =
+      spawn_monitor(fn -> send(caller, {result_ref, broadcast_now(event, envelope)}) end)
+
+    receive do
+      {^result_ref, result} ->
+        Process.demonitor(monitor_ref, [:flush])
+        result
+
+      {ClaimLease, ^lease, {:error, reason}} ->
+        Process.exit(publisher, :kill)
+        await_publisher_exit(monitor_ref, publisher)
+        discard_broadcast_result(result_ref)
+        {:error, {:claim_lease_failed, reason}}
+
+      {:DOWN, ^monitor_ref, :process, ^publisher, reason} ->
+        {:error, {:pubsub_unavailable, {:publisher_exit, normalize_exit(reason)}}}
+    end
+  end
+
+  defp broadcast_now(%NotificationEvent{} = event, envelope) do
     try do
       Phoenix.PubSub.broadcast(@pubsub_server, topic(scope(event)), envelope)
     rescue
@@ -120,6 +147,31 @@ defmodule Api.NotificationDelivery do
       kind, reason -> {:error, {:pubsub_unavailable, {kind, reason}}}
     end
   end
+
+  defp await_publisher_exit(monitor_ref, publisher) do
+    receive do
+      {:DOWN, ^monitor_ref, :process, ^publisher, _reason} -> :ok
+    end
+  end
+
+  defp discard_broadcast_result(result_ref) do
+    receive do
+      {^result_ref, _result} -> :ok
+    after
+      0 -> :ok
+    end
+  end
+
+  defp discard_lease_failures(lease) do
+    receive do
+      {ClaimLease, ^lease, {:error, _reason}} -> discard_lease_failures(lease)
+    after
+      0 -> :ok
+    end
+  end
+
+  defp normalize_exit(reason) when is_atom(reason), do: reason
+  defp normalize_exit(_reason), do: :unexpected_exit
 
   defp scope(%NotificationEvent{} = event) do
     %{
