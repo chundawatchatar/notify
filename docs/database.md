@@ -181,10 +181,7 @@ Implemented tables:
 - `notification_event_outbox`: append-only future handoff records created in
   the same transaction as an accepted event. Each row stores the accepted event
   reference, environment scope, recipient id, event name, pending dispatch
-  status, availability timestamp, and renewable processing-claim token. Its v1
-  status values are `pending`, `processing`, and `published`; `published` means
-  PubSub accepted a broadcast, not that a client received it. See
-  `docs/notification-delivery-mvp.md`.
+  The row stores the notification status, availability timestamp, renewable processing-claim token, and safe processing and published timestamps. Its v1 status values are `pending`, `processing`, and `published`; `published` means PubSub accepted a broadcast, not that a client received it. See `docs/notification-delivery-mvp.md`.
 
 The idempotency record, accepted event, and outbox row are inserted in one
 transaction so a first `202 Accepted` response cannot be committed without its
