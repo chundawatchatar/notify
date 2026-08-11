@@ -101,7 +101,8 @@ defmodule Api.NotificationDelivery.ClaimLease do
   def handle_call({:renew, now}, _from, %{claim_status: :active} = state) do
     case renew_claim(state.outbox_id, state.processing_token, now) do
       :ok -> {:reply, :ok, state}
-      {:error, reason} = error -> {:reply, error, fail_claim(state, reason)}
+      {:error, :claim_lost} = error -> {:reply, error, %{state | claim_status: :lost}}
+      {:error, _reason} = error -> {:reply, error, state}
     end
   end
 
@@ -109,13 +110,9 @@ defmodule Api.NotificationDelivery.ClaimLease do
     {:reply, {:error, :claim_lost}, state}
   end
 
-  def handle_call({:complete, published_at}, _from, %{claim_status: :active} = state) do
+  def handle_call({:complete, published_at}, _from, state) do
     result = mark_published(state.outbox_id, state.processing_token, published_at)
     {:stop, :normal, result, state}
-  end
-
-  def handle_call({:complete, _published_at}, _from, %{claim_status: :lost} = state) do
-    {:stop, :normal, {:error, :claim_lost}, state}
   end
 
   def handle_call({:release, reason}, _from, %{claim_status: :active} = state) do
@@ -139,8 +136,12 @@ defmodule Api.NotificationDelivery.ClaimLease do
         schedule_renewal(state.interval)
         {:noreply, state}
 
-      {:error, reason} ->
-        {:noreply, fail_claim(state, reason)}
+      {:error, :claim_lost} ->
+        {:noreply, %{state | claim_status: :lost}}
+
+      {:error, _reason} ->
+        schedule_renewal(state.interval)
+        {:noreply, state}
     end
   end
 
@@ -218,11 +219,6 @@ defmodule Api.NotificationDelivery.ClaimLease do
     GenServer.call(pid, request, timeout)
   catch
     :exit, _reason -> {:error, :claim_lease_unavailable}
-  end
-
-  defp fail_claim(state, reason) do
-    send(state.owner, {__MODULE__, self(), {:error, reason}})
-    %{state | claim_status: :lost}
   end
 
   defp schedule_renewal(interval), do: Process.send_after(self(), :renew, interval)

@@ -119,17 +119,11 @@ defmodule Api.NotificationDeliveryTest do
         receive do
           {:renew, now} ->
             result = ClaimLease.renew(lease, now)
-
-            lease_failure =
-              receive do
-                {ClaimLease, ^lease, {:error, _reason}} = failure -> failure
-              end
-
-            send(parent, {:renewed, self(), result, lease_failure})
+            send(parent, {:renewed, self(), result})
         end
       end)
 
-    assert_receive {:lease_ready, ^owner, claimed, lease}
+    assert_receive {:lease_ready, ^owner, claimed, _lease}
 
     assert {1, _} =
              Repo.update_all(
@@ -139,8 +133,7 @@ defmodule Api.NotificationDeliveryTest do
 
     send(owner, {:renew, DateTime.add(claimed.processing_at, 61, :second)})
 
-    assert_receive {:renewed, ^owner, {:error, :claim_lost}, lease_failure}
-    assert lease_failure == {ClaimLease, lease, {:error, :claim_lost}}
+    assert_receive {:renewed, ^owner, {:error, :claim_lost}}
     assert_receive {:DOWN, ^owner_ref, :process, ^owner, :normal}
   end
 
