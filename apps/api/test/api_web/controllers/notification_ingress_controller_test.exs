@@ -1,5 +1,5 @@
 defmodule ApiWeb.NotificationIngressControllerTest do
-  use ApiWeb.ConnCase, async: true
+  use ApiWeb.ConnCase, async: false
 
   alias Api.NotificationApps
   alias Api.NotificationIngress.EventOutbox
@@ -169,10 +169,9 @@ defmodule ApiWeb.NotificationIngressControllerTest do
 
     assert response["data"]["duplicate"] == false
 
-    EventOutbox
-    |> Repo.get_by!(notification_event_id: response["data"]["event_id"])
-    |> Ecto.Changeset.change(status: "published")
-    |> Repo.update!()
+    outbox = Repo.get_by!(EventOutbox, notification_event_id: response["data"]["event_id"])
+    assert outbox.status == "published"
+    assert outbox.published_at
 
     [event] =
       authenticated_conn(access_token)

@@ -70,7 +70,7 @@ Legacy alias: `/dashboard`
 Responsibilities:
 
 - workspace overview
-- delivery health summary
+- delivery handoff summary
 - ingress status
 - notification app setup readiness
 - recent accepted events and their best-effort realtime publish state
@@ -102,7 +102,8 @@ state, create an app, list the new app, then open it and select an environment.
 Client keys and trusted origins are scoped to the selected environment.
 Readiness is derived independently for Development and Production: an
 environment is ready when it has at least one active client key and one trusted
-origin. Notification events and delivery data remain deferred.
+origin. Notification event and delivery views remain outside the app-detail
+flow; the ingress page and workspace dashboard own their safe summaries.
 
 App and environment UUIDs remain database identities. Client URLs extend the
 workspace route with the app and environment slugs:
@@ -189,7 +190,9 @@ Ingress MVP boundary:
   workspace, app, and environment from the server API key
 - the request body owns the event name, recipient id, payload object, optional
   occurred-at timestamp, and optional safe metadata
-- downstream fanout, retries, analytics, and billing remain deferred
+- best-effort realtime publish is implemented through the durable outbox;
+  scheduled retry policy, delivery receipts, analytics, and billing remain
+  deferred
 
 Delivery MVP boundaries are defined in `docs/notification-delivery-mvp.md`.
 Ingress acceptance ends when the accepted event and pending outbox handoff are
@@ -277,10 +280,9 @@ selection in the route search state, and then loads or mutates keys through the
 UUID-based API. Owners, admins, and developers can create, rotate, and revoke
 keys. Viewers can inspect metadata but cannot mutate secrets.
 
-Server API keys support management only in this phase. The later ingress
-authentication epic is now defined by `docs/notification-ingress-mvp.md`.
-Server API keys become the environment-scoped backend credential for
-`POST /api/v1/notifications`, while existing client-key, trusted-origin, and
+Server API keys are the environment-scoped backend credential for
+`POST /api/v1/notifications`, as defined by
+`docs/notification-ingress-mvp.md`. Existing client-key, trusted-origin, and
 readiness rules remain unchanged.
 
 Expected future backend ownership:

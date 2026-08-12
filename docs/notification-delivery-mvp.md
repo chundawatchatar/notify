@@ -23,6 +23,7 @@ accepted request
   -> notification_events row
   -> notification_event_outbox row (pending)
   -> publisher claims the row (processing)
+     (the request path tries immediately; the supervised poller handles pending fallback)
   -> publisher broadcasts to Phoenix PubSub
   -> row becomes published
 ```
@@ -42,7 +43,9 @@ PubSub:
 - an offline client is not promised replay, recovery, or eventual delivery;
 - a notification event keeps a stable event id so future consumers can
   de-duplicate it;
-- durable retry and redelivery semantics are deferred.
+- a failed publish attempt returns the handoff to `pending` so the supervised
+  publisher can try it again, but v1 has no backoff, attempt history, retry
+  limit, dead-letter handling, or redelivery guarantee.
 
 There is no delivery SLA, exactly-once guarantee, client acknowledgement, or
 durable retry guarantee in v1.
@@ -124,8 +127,9 @@ The first iteration needs only these states and meanings:
 `accepted` is represented by the `notification_events` record and `pending`,
 `processing`, and `published` are represented by the outbox status. V1 does not
 add `delivered`, `acknowledged`, `failed`, `retrying`, or `expired` states.
-Publish errors are operational failures to log and measure; they do not create
-a stronger delivery promise or a new client-visible state in this slice.
+Publish errors are operational failures to log and measure. The current claim
+is returned to `pending` for a later best-effort attempt, without creating a
+stronger delivery promise or a new client-visible state in this slice.
 
 Each processing claim has an owner token and renewable timestamp. The publisher
 renews that lease while database or PubSub work is active. Stale recovery may
@@ -145,18 +149,21 @@ validated payload, safe metadata, event and recipient identifiers, ownership
 scope, timestamps, payload size, and outbox status. Logs and metrics should use
 event id, event name, ownership scope, and safe metadata, not raw payloads.
 
-The dashboard may show event id, event name, recipient id, source kind,
-accepted-at time, payload size, and the lifecycle state that is actually
-available. It must not show raw server API keys, authorization headers, raw
-idempotency keys, request fingerprints, or imply browser receipt from a
-`published` state. Full payload display and durable browser caching remain out
-of scope.
+The ingress page may show safe recent-event summaries for its selected
+environment. The workspace dashboard may aggregate the newest safe summaries
+across its apps and environments. These views may show event id, event name,
+recipient id, source kind, accepted-at time, and the lifecycle state that is
+actually available. They must not show raw server API keys, authorization
+headers, raw idempotency keys, request fingerprints, or imply browser receipt
+from a `published` state. Full payload display and durable browser caching
+remain out of scope.
 
 ## Deferred boundaries
 
 Explicitly deferred from delivery v1:
 
-- durable retries, backoff, dead-letter handling, and redelivery;
+- scheduled retry policy, backoff, attempt history, dead-letter handling, and
+  guaranteed redelivery;
 - offline recovery, replay cursors, inbox reads, and reconnect synchronization;
 - delivery receipts, client acknowledgements, unread counters, and per-device
   state;

@@ -67,10 +67,27 @@ defmodule Api.NotificationDeliveryTest do
     Phoenix.PubSub.subscribe(Api.PubSub, topic)
 
     assert :ok = NotificationDelivery.publish(outbox.id)
-    assert_receive %{event: "notification.created", data: %{eventId: event_id}}
-    assert event_id == event.id
 
-    assert Repo.get!(EventOutbox, outbox.id).status == "published"
+    assert_receive %{
+      event: "notification.created",
+      data: %{
+        eventId: event_id,
+        notification: "invoice.payment_failed",
+        recipientId: "user_123",
+        occurredAt: occurred_at,
+        payload: %{"invoiceId" => "inv_123"},
+        metadata: %{"source" => "billing"}
+      }
+    }
+
+    assert event_id == event.id
+    assert occurred_at == event.occurred_at
+
+    persisted = Repo.get!(EventOutbox, outbox.id)
+    assert persisted.status == "published"
+    assert persisted.published_at
+    assert is_nil(persisted.processing_at)
+    assert is_nil(persisted.processing_token)
   end
 
   test "does not publish an already claimed handoff", %{source: source, attrs: attrs} do

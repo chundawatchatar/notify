@@ -83,15 +83,16 @@ origins are environment-scoped. Each app response derives setup readiness
 independently for Development and Production from the presence of an active
 client key and a trusted origin. The environment detail shows the readiness
 status, links missing checklist items to their controls, and refreshes readiness
-after configuration mutations. Events, delivery data, analytics, billing, and
-collaboration controls remain deferred.
+after configuration mutations. App-detail event and delivery views, analytics,
+billing, and collaboration controls remain deferred; safe recent-event
+summaries belong to the ingress page and workspace dashboard.
 
 Server API key management follows the same route context but not the same
 resource identifiers. Browser navigation stays slug-based, while HTTP
 endpoints for server API keys use the owning notification app and environment
 UUIDs as `:appId` and `:environmentId`. Server API keys are private backend
-secrets for future ingress authentication, distinct from public browser
-client keys with the `nfy_pk_` prefix. Reads use the existing `view_apps`
+secrets used for ingress authentication, distinct from public browser client
+keys with the `nfy_pk_` prefix. Reads use the existing `view_apps`
 permission. Create, rotate, and revoke use the existing `manage_credentials`
 permission. The Security page keeps the selected app and environment slugs in
 route search state, while the key list and mutations stay scoped by the
@@ -134,9 +135,12 @@ The ingress page may:
 - list recent accepted-event summaries for the selected environment
 - submit an authenticated test-event request for the selected environment
 
-The dashboard exposes the delivery state available from the delivery MVP on
-safe recent-event summaries. It labels `published` as a PubSub handoff rather
-than delivered or acknowledged. It must not imply offline recovery, retries,
+The ingress page exposes the delivery state available from the delivery MVP on
+safe recent-event summaries for the selected environment. The workspace
+dashboard loads the same summaries across every app environment, combines the
+newest results, and provides loading, empty, success, and error states. Both
+views label `published` as a PubSub handoff rather than delivered or
+acknowledged. They must not imply offline recovery, scheduled retry guarantees,
 receipts, or analytics rollups. The delivery contract and socket envelope are
 defined in `docs/notification-delivery-mvp.md`.
 
@@ -146,8 +150,8 @@ The ingress page must not:
   headers in browser storage
 - persist full accepted-event payload JSON in local storage, session storage,
   IndexedDB, URL state, or durable query caches
-- imply that realtime fanout, retries, delivery receipts, or analytics rollups
-  are already part of the ingress MVP
+- imply realtime client receipt, scheduled retry guarantees, delivery receipts,
+  or analytics rollups
 
 Safe accepted-event summaries may stay in in-memory TanStack Query state.
 
