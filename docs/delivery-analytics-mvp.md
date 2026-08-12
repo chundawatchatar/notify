@@ -160,6 +160,12 @@ Aggregates may be computed from source rows or maintained in new persistence,
 but their observable results must match this contract. Implementations must not
 read payload or metadata values to calculate MVP metrics.
 
+The MVP implementation derives these aggregates from the indexed source rows.
+Its query boundary requires a workspace, accepts only the fixed window names,
+and resolves optional app and environment identifiers inside that workspace.
+An environment filter is invalid without its owning app filter. Unknown and
+cross-workspace identifiers share the same not-found result.
+
 ## Privacy And Authorization
 
 Analytics responses may contain aggregate counts, timestamps, app identity and

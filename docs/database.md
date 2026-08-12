@@ -190,6 +190,14 @@ The idempotency record, accepted event, and outbox row are inserted in one
 transaction so a first `202 Accepted` response cannot be committed without its
 deduplication and handoff records.
 
+Delivery analytics MVP aggregates are derived at query time from
+`notification_events` joined to its one-to-one `notification_event_outbox`
+row. No separate rollup table or backfill is required for the fixed 24-hour,
+7-day, and 30-day windows. Queries always start with the workspace and
+`accepted_at` boundary, then may narrow through an app and its owning
+environment. Existing workspace, app, and environment time indexes support
+these source queries. Archived apps remain in historical workspace results.
+
 ## Future Product Tables
 
 - `delivery_attempts`: future worker-owned delivery execution data, introduced
