@@ -65,6 +65,12 @@ window, and `as_of`. Callers cannot supply arbitrary dates or bucket sizes in
 the MVP. Retention policy is not yet implemented, so the API must not imply that
 older windows are permanently available.
 
+The server captures `as_of` from PostgreSQL inside a repeatable-read
+transaction. All aggregate statements use that transaction snapshot, and a
+handoff is counted as published only when `published_at <= as_of`. A handoff
+whose publication is later than the snapshot remains unpublished throughout
+that response.
+
 ## Metric Definitions
 
 Counts use distinct accepted event ids. The one-to-one outbox relation means an
@@ -159,6 +165,12 @@ empty app breakdown, and the full set of zero-valued time buckets.
 Aggregates may be computed from source rows or maintained in new persistence,
 but their observable results must match this contract. Implementations must not
 read payload or metadata values to calculate MVP metrics.
+
+The MVP implementation derives these aggregates from the indexed source rows.
+Its query boundary requires a workspace, accepts only the fixed window names,
+and resolves optional app and environment identifiers inside that workspace.
+An environment filter is invalid without its owning app filter. Unknown and
+cross-workspace identifiers share the same not-found result.
 
 ## Privacy And Authorization
 
