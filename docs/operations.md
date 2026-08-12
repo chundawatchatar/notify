@@ -66,10 +66,13 @@ are logged internally and are never returned to clients.
 
 ## Delivery Publisher
 
-Every API instance runs a supervised delivery publisher. It polls the
-notification event outbox every five seconds, requeues stale processing claims,
-and publishes one available handoff. Concurrent instances are safe because the
-outbox claim is database-locked.
+After an ingress transaction commits, its request handler attempts an immediate
+best-effort publish. Every API instance also runs a supervised delivery
+publisher that polls the notification event outbox every five seconds,
+requeues stale processing claims, and publishes one available handoff. Failed
+attempts return to `pending` without a scheduled backoff or delivery guarantee.
+Concurrent instances are safe because claiming locks the row and every renewal,
+completion, or reset is conditional on its processing token.
 
 ## Metrics
 

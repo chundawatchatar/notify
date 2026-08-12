@@ -178,10 +178,13 @@ Implemented tables:
   `UNIQUE (environment_id, idempotency_key_digest)`. The stored fingerprint
   must use the `ingress-body-v1` algorithm version defined in
   `docs/notification-ingress-mvp.md`, alongside its persisted version marker.
-- `notification_event_outbox`: append-only future handoff records created in
-  the same transaction as an accepted event. Each row stores the accepted event
-  reference, environment scope, recipient id, event name, pending dispatch
-  The row stores the notification status, availability timestamp, renewable processing-claim token, and safe processing and published timestamps. Its v1 status values are `pending`, `processing`, and `published`; `published` means PubSub accepted a broadcast, not that a client received it. See `docs/notification-delivery-mvp.md`.
+- `notification_event_outbox`: durable handoff records created in the same
+  transaction as an accepted event. Each row stores the accepted event
+  reference, environment scope, recipient id, event name, status, availability
+  timestamp, renewable processing-claim token, and safe processing and
+  published timestamps. Its v1 status values are `pending`, `processing`, and
+  `published`; `published` means PubSub accepted a broadcast, not that a client
+  received it. See `docs/notification-delivery-mvp.md`.
 
 The idempotency record, accepted event, and outbox row are inserted in one
 transaction so a first `202 Accepted` response cannot be committed without its

@@ -50,6 +50,24 @@ describe("dashboard page", () => {
               recipient_id: "user_123",
               source: "public_api",
             },
+            {
+              accepted_at: "2026-08-11T09:29:00Z",
+              delivery_status: "processing",
+              event: "invoice.payment_processing",
+              event_id: "9162fa75-7ca7-4d50-b550-4d79a5994947",
+              occurred_at: null,
+              recipient_id: "user_456",
+              source: "dashboard_test",
+            },
+            {
+              accepted_at: "2026-08-11T09:28:00Z",
+              delivery_status: "pending",
+              event: "invoice.payment_pending",
+              event_id: "10f477ee-23d0-42b6-9e93-c9b4766328e3",
+              occurred_at: null,
+              recipient_id: "user_789",
+              source: "public_api",
+            },
           ],
         });
       }),
@@ -61,6 +79,9 @@ describe("dashboard page", () => {
     releaseEvents();
     await waitForText(container, "invoice.payment_failed");
     expect(container.textContent).toContain("PubSub handoff complete");
+    expect(container.textContent).toContain("Publishing");
+    expect(container.textContent).toContain("Awaiting publish");
+    expect(container.textContent).toContain("Dashboard test");
     expect(container.textContent).toContain(
       "It does not confirm that a client received or rendered the notification.",
     );
