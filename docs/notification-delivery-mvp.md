@@ -139,8 +139,9 @@ claim. A transient heartbeat persistence failure does not discard a completed
 PubSub result. The publisher still attempts the token-guarded completion and
 returns a publish error only when that completion cannot establish ownership.
 
-Later analytics may count accepted events and published handoffs separately.
-It must not report `published` as delivered, successful, or acknowledged.
+Delivery analytics counts accepted events and published handoffs separately.
+It must not report `published` as delivered, successful, or acknowledged. See
+`docs/delivery-analytics-mvp.md` for the metric and time-window contract.
 
 ## Safe persistence and dashboard exposure
 
