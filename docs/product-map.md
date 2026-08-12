@@ -197,8 +197,8 @@ Ingress MVP boundary:
 Delivery MVP boundaries are defined in `docs/notification-delivery-mvp.md`.
 Ingress acceptance ends when the accepted event and pending outbox handoff are
 committed. Realtime publish is best-effort and `published` is not a client
-receipt. Offline recovery, retries, receipts, and non-realtime channels remain
-deferred.
+receipt. Offline recovery, scheduled retry guarantees, receipts, and
+non-realtime channels remain deferred.
 
 ## Analytics
 
