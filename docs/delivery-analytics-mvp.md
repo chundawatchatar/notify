@@ -65,6 +65,12 @@ window, and `as_of`. Callers cannot supply arbitrary dates or bucket sizes in
 the MVP. Retention policy is not yet implemented, so the API must not imply that
 older windows are permanently available.
 
+The server captures `as_of` from PostgreSQL inside a repeatable-read
+transaction. All aggregate statements use that transaction snapshot, and a
+handoff is counted as published only when `published_at <= as_of`. A handoff
+whose publication is later than the snapshot remains unpublished throughout
+that response.
+
 ## Metric Definitions
 
 Counts use distinct accepted event ids. The one-to-one outbox relation means an

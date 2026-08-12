@@ -32,12 +32,23 @@ defmodule Api.DeliveryAnalytics do
   An environment filter requires its owning app filter. Unknown identifiers and
   identifiers from another workspace both return `:not_found`.
   """
+  @spec query(Workspace.t(), AnalyticsContract.window_name(), filters()) ::
+          {:ok, map()} | {:error, :invalid_scope | :invalid_window | :not_found}
+  def query(workspace, window_name, filters \\ %{}) do
+    with_snapshot(fn -> do_query(workspace, window_name, filters, database_now()) end)
+  end
+
+  @doc false
   @spec query(Workspace.t(), AnalyticsContract.window_name(), filters(), DateTime.t()) ::
           {:ok, map()} | {:error, :invalid_scope | :invalid_window | :not_found}
-  def query(workspace, window_name, filters \\ %{}, as_of \\ DateTime.utc_now(:second))
+  def query(workspace, window_name, filters, %DateTime{} = as_of) do
+    with_snapshot(fn -> do_query(workspace, window_name, filters, as_of) end)
+  end
 
-  def query(%Workspace{id: workspace_id}, window_name, filters, %DateTime{} = as_of)
-      when is_map(filters) do
+  def query(_workspace, _window_name, _filters, _as_of), do: {:error, :invalid_scope}
+
+  defp do_query(%Workspace{id: workspace_id}, window_name, filters, %DateTime{} = as_of)
+       when is_map(filters) do
     with {:ok, window} <- AnalyticsContract.window(window_name, as_of),
          {:ok, scope} <- resolve_scope(workspace_id, filters) do
       source_query = source_query(workspace_id, scope, window)
@@ -46,14 +57,36 @@ defmodule Api.DeliveryAnalytics do
        %{
          window: window,
          filters: scope,
-         totals: source_query |> select_metrics() |> Repo.one!() |> normalize_metrics(),
+         totals:
+           source_query |> select_metrics(window.as_of) |> Repo.one!() |> normalize_metrics(),
          trend: trend(source_query, window),
-         apps: app_breakdown(source_query)
+         apps: app_breakdown(source_query, window.as_of)
        }}
     end
   end
 
-  def query(_workspace, _window_name, _filters, _as_of), do: {:error, :invalid_scope}
+  defp do_query(_workspace, _window_name, _filters, _as_of), do: {:error, :invalid_scope}
+
+  defp with_snapshot(callback) do
+    if Repo.in_transaction?() or Repo.config()[:pool] == Ecto.Adapters.SQL.Sandbox do
+      callback.()
+    else
+      case Repo.transaction(fn ->
+             Repo.query!("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+             callback.()
+           end) do
+        {:ok, result} -> result
+        {:error, reason} -> {:error, reason}
+      end
+    end
+  end
+
+  defp database_now do
+    %{rows: [[as_of]]} =
+      Repo.query!("SELECT date_trunc('second', clock_timestamp())")
+
+    as_of
+  end
 
   defp resolve_scope(workspace_id, filters) do
     if Enum.all?(Map.keys(filters), &valid_filter_key?/1) do
@@ -142,39 +175,55 @@ defmodule Api.DeliveryAnalytics do
     |> maybe_filter(:app_environment_id, scope.app_environment_id)
   end
 
-  defp select_counts(query) do
+  defp select_counts(query, as_of) do
     select(query, [event: event, outbox: outbox], %{
       accepted: count(event.id, :distinct),
       pending: filter(count(event.id, :distinct), outbox.status == "pending"),
-      processing: filter(count(event.id, :distinct), outbox.status == "processing"),
-      published: filter(count(event.id, :distinct), outbox.status == "published")
+      processing:
+        filter(
+          count(event.id, :distinct),
+          outbox.status == "processing" or
+            (outbox.status == "published" and
+               (is_nil(outbox.published_at) or outbox.published_at > ^as_of))
+        ),
+      published:
+        filter(
+          count(event.id, :distinct),
+          outbox.status == "published" and not is_nil(outbox.published_at) and
+            outbox.published_at <= ^as_of
+        )
     })
   end
 
-  defp select_metrics(query) do
+  defp select_metrics(query, as_of) do
     query
-    |> select_counts()
+    |> select_counts(as_of)
     |> select_merge([event: event, outbox: outbox], %{
       published_sample_count:
         filter(
           count(event.id, :distinct),
-          outbox.status == "published" and not is_nil(outbox.published_at)
+          outbox.status == "published" and not is_nil(outbox.published_at) and
+            outbox.published_at <= ^as_of
         ),
       publication_latency_p50_ms:
         fragment(
-          "percentile_disc(0.5) WITHIN GROUP (ORDER BY CAST(EXTRACT(EPOCH FROM (? - ?)) * 1000 AS bigint)) FILTER (WHERE ? = 'published' AND ? IS NOT NULL)",
+          "percentile_disc(0.5) WITHIN GROUP (ORDER BY CAST(EXTRACT(EPOCH FROM (? - ?)) * 1000 AS bigint)) FILTER (WHERE ? = 'published' AND ? IS NOT NULL AND ? <= ?)",
           outbox.published_at,
           event.accepted_at,
           outbox.status,
-          outbox.published_at
+          outbox.published_at,
+          outbox.published_at,
+          ^as_of
         ),
       publication_latency_p95_ms:
         fragment(
-          "percentile_disc(0.95) WITHIN GROUP (ORDER BY CAST(EXTRACT(EPOCH FROM (? - ?)) * 1000 AS bigint)) FILTER (WHERE ? = 'published' AND ? IS NOT NULL)",
+          "percentile_disc(0.95) WITHIN GROUP (ORDER BY CAST(EXTRACT(EPOCH FROM (? - ?)) * 1000 AS bigint)) FILTER (WHERE ? = 'published' AND ? IS NOT NULL AND ? <= ?)",
           outbox.published_at,
           event.accepted_at,
           outbox.status,
-          outbox.published_at
+          outbox.published_at,
+          outbox.published_at,
+          ^as_of
         )
     })
   end
@@ -184,6 +233,7 @@ defmodule Api.DeliveryAnalytics do
       select(source_query, [event: event, outbox: outbox], %{
         event_id: event.id,
         status: outbox.status,
+        published_at: outbox.published_at,
         bucket_index:
           fragment(
             "floor(EXTRACT(EPOCH FROM (? - ?)) / ?)::integer",
@@ -200,8 +250,19 @@ defmodule Api.DeliveryAnalytics do
           bucket_index: bucket.bucket_index,
           accepted: count(bucket.event_id, :distinct),
           pending: filter(count(bucket.event_id, :distinct), bucket.status == "pending"),
-          processing: filter(count(bucket.event_id, :distinct), bucket.status == "processing"),
-          published: filter(count(bucket.event_id, :distinct), bucket.status == "published")
+          processing:
+            filter(
+              count(bucket.event_id, :distinct),
+              bucket.status == "processing" or
+                (bucket.status == "published" and
+                   (is_nil(bucket.published_at) or bucket.published_at > ^window.as_of))
+            ),
+          published:
+            filter(
+              count(bucket.event_id, :distinct),
+              bucket.status == "published" and not is_nil(bucket.published_at) and
+                bucket.published_at <= ^window.as_of
+            )
         }
       )
       |> Repo.all()
@@ -215,13 +276,13 @@ defmodule Api.DeliveryAnalytics do
     end)
   end
 
-  defp app_breakdown(source_query) do
+  defp app_breakdown(source_query, as_of) do
     source_query
     |> group_by(
       [notification_app: notification_app],
       [notification_app.id, notification_app.name, notification_app.archived_at]
     )
-    |> select_metrics()
+    |> select_metrics(as_of)
     |> select_merge([notification_app: notification_app], %{
       app_id: notification_app.id,
       name: notification_app.name,

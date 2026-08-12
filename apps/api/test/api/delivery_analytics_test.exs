@@ -33,17 +33,22 @@ defmodule Api.DeliveryAnalyticsTest do
       status: "processing"
     )
 
+    accept_event!(workspace, messaging, messaging_environment, DateTime.add(as_of, -900),
+      status: "published",
+      published_at: DateTime.add(as_of, 1, :second)
+    )
+
     assert :ok = NotificationApps.archive_notification_app(workspace, messaging.app_slug)
     assert {:ok, analytics} = DeliveryAnalytics.query(workspace, "24h", %{}, as_of)
 
     assert analytics.totals == %{
              counts: %{
-               accepted: 4,
+               accepted: 5,
                pending: 1,
-               processing: 1,
+               processing: 2,
                published: 2,
-               unpublished: 2,
-               publication_rate: %{numerator: 2, denominator: 4, value: 0.5}
+               unpublished: 3,
+               publication_rate: %{numerator: 2, denominator: 5, value: 0.4}
              },
              publication_latency: %{sample_count: 2, p50_ms: 1_000, p95_ms: 5_000}
            }
@@ -53,11 +58,12 @@ defmodule Api.DeliveryAnalyticsTest do
     assert payments_row.metrics.counts.accepted == 3
     refute payments_row.archived
     assert messaging_row.app_id == messaging.id
-    assert messaging_row.metrics.counts.accepted == 1
+    assert messaging_row.metrics.counts.accepted == 2
+    assert messaging_row.metrics.counts.published == 0
     assert messaging_row.archived
 
     assert length(analytics.trend) == 24
-    assert Enum.sum(Enum.map(analytics.trend, & &1.counts.accepted)) == 4
+    assert Enum.sum(Enum.map(analytics.trend, & &1.counts.accepted)) == 5
     assert Enum.count(analytics.trend, &(&1.counts.accepted == 0)) == 21
   end
 
@@ -188,11 +194,18 @@ defmodule Api.DeliveryAnalyticsTest do
     outbox_attrs =
       case status do
         "published" ->
-          latency_seconds = Keyword.fetch!(options, :publication_latency_seconds)
+          published_at =
+            Keyword.get_lazy(options, :published_at, fn ->
+              DateTime.add(
+                accepted_at,
+                Keyword.fetch!(options, :publication_latency_seconds),
+                :second
+              )
+            end)
 
           %{
             status: status,
-            published_at: DateTime.add(accepted_at, latency_seconds, :second)
+            published_at: published_at
           }
 
         "processing" ->
