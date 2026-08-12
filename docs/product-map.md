@@ -72,8 +72,8 @@ Responsibilities:
 - workspace overview
 - delivery health summary
 - ingress status
-- subscription usage summary
-- recent events and operational activity
+- notification app setup readiness
+- recent accepted events and their best-effort realtime publish state
 
 ## Notification Apps
 

@@ -22,6 +22,7 @@ defmodule Api.NotificationIngress.NotificationEvent do
     field :occurred_at, :utc_datetime
     field :accepted_at, :utc_datetime
     field :payload_size, :integer
+    field :delivery_status, :string, virtual: true
 
     timestamps(type: :utc_datetime, updated_at: false)
   end

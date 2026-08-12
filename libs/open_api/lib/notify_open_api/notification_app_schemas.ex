@@ -98,10 +98,19 @@ defmodule NotifyOpenApi.NotificationAppSchemas do
         event: %Schema{type: :string},
         recipient_id: %Schema{type: :string},
         source: %Schema{type: :string, enum: ["public_api", "dashboard_test"]},
+        delivery_status: %Schema{type: :string, enum: ["pending", "processing", "published"]},
         accepted_at: %Schema{type: :string, format: "date-time"},
         occurred_at: %Schema{type: :string, format: "date-time", nullable: true}
       },
-      required: [:event_id, :event, :recipient_id, :source, :accepted_at, :occurred_at]
+      required: [
+        :event_id,
+        :event,
+        :recipient_id,
+        :source,
+        :delivery_status,
+        :accepted_at,
+        :occurred_at
+      ]
     })
   end
 

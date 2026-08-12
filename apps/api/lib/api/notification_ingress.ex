@@ -60,11 +60,14 @@ defmodule Api.NotificationIngress do
       when is_binary(workspace_id) and is_binary(app_environment_id) and is_integer(limit) do
     Repo.all(
       from event in NotificationEvent,
+        join: outbox in EventOutbox,
+        on: outbox.notification_event_id == event.id,
         where:
           event.workspace_id == ^workspace_id and
             event.app_environment_id == ^app_environment_id,
         order_by: [desc: event.accepted_at, desc: event.id],
-        limit: ^max(limit, 0)
+        limit: ^max(limit, 0),
+        select_merge: %{delivery_status: outbox.status}
     )
   end
 

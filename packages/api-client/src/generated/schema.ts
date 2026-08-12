@@ -1183,6 +1183,8 @@ export interface components {
     NotificationIngressEvent: {
       /** Format: date-time */
       accepted_at: string;
+      /** @enum {string} */
+      delivery_status: "pending" | "processing" | "published";
       event: string;
       /** Format: uuid */
       event_id: string;
