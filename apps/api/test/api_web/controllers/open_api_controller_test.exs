@@ -28,6 +28,7 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert Map.has_key?(response["paths"], "/api/auth/workspace/switch")
     assert Map.has_key?(response["paths"], "/api/apps")
     assert Map.has_key?(response["paths"], "/api/apps/{appSlug}")
+    assert Map.has_key?(response["paths"], "/api/analytics")
 
     assert Map.has_key?(
              response["paths"],
@@ -78,6 +79,13 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert response["paths"]["/api/apps"]["get"]["operationId"] == "listNotificationApps"
     assert response["paths"]["/api/apps"]["post"]["operationId"] == "createNotificationApp"
 
+    assert response["paths"]["/api/analytics"]["get"]["operationId"] ==
+             "getDeliveryAnalytics"
+
+    assert response["paths"]["/api/analytics"]["get"]["security"] == [
+             %{"bearerAuth" => []}
+           ]
+
     assert response["paths"]["/api/apps/{appSlug}"]["get"]["operationId"] ==
              "getNotificationApp"
 
@@ -110,6 +118,24 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert response["paths"]["/api/apps"]["post"]["responses"]["201"]["content"][
              "application/json"
            ]["schema"]["$ref"] == "#/components/schemas/NotificationApp"
+
+    assert response["paths"]["/api/analytics"]["get"]["responses"]["200"]["content"][
+             "application/json"
+           ]["schema"]["$ref"] == "#/components/schemas/DeliveryAnalyticsResponse"
+
+    assert Enum.find(
+             response["paths"]["/api/analytics"]["get"]["parameters"],
+             &(&1["name"] == "window")
+           )["schema"]["enum"] == ["24h", "7d", "30d"]
+
+    assert response["components"]["schemas"]["DeliveryAnalyticsCounts"]["required"] == [
+             "accepted",
+             "pending",
+             "processing",
+             "published",
+             "unpublished",
+             "publication_rate"
+           ]
 
     assert response["paths"]["/api/apps/{appSlug}"]["get"]["responses"]["200"]["content"][
              "application/json"

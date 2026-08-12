@@ -164,6 +164,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/analytics": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get delivery analytics for the active workspace */
+    get: operations["getDeliveryAnalytics"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/auth/signup": {
     parameters: {
       query?: never;
@@ -809,6 +826,14 @@ export interface components {
       user: components["schemas"]["AuthUser"];
       workspace: components["schemas"]["AuthWorkspace"];
     };
+    /** DeliveryAnalyticsAppRow */
+    DeliveryAnalyticsAppRow: {
+      /** Format: uuid */
+      app_id: string;
+      archived: boolean;
+      metrics: components["schemas"]["DeliveryAnalyticsMetrics"];
+      name: string;
+    };
     /** WorkspaceInvitation */
     WorkspaceInvitation: {
       /**
@@ -867,6 +892,13 @@ export interface components {
       /** @description One-time credential for completing the verified signup. */
       signup_token: string;
     };
+    /** DeliveryAnalyticsFilters */
+    DeliveryAnalyticsFilters: {
+      /** Format: uuid */
+      app_id: string | null;
+      /** Format: uuid */
+      environment_id: string | null;
+    };
     /**
      * EnvironmentServerApiKeyStatus
      * @example active
@@ -897,6 +929,12 @@ export interface components {
       token: string;
       /** @example Acme Cloud */
       workspace_name: string;
+    };
+    /** DeliveryAnalyticsPublicationLatency */
+    DeliveryAnalyticsPublicationLatency: {
+      p50_ms: number | null;
+      p95_ms: number | null;
+      sample_count: number;
     };
     /**
      * ServiceInfo
@@ -937,6 +975,20 @@ export interface components {
     AcceptInvitationRequest: {
       /** @example invitation-token */
       token: string;
+    };
+    /** DeliveryAnalyticsWindow */
+    DeliveryAnalyticsWindow: {
+      /** Format: date-time */
+      as_of: string;
+      /** @enum {string} */
+      name: "24h" | "7d" | "30d";
+      /** Format: date-time */
+      start_at: string;
+    };
+    /** DeliveryAnalyticsMetrics */
+    DeliveryAnalyticsMetrics: {
+      counts: components["schemas"]["DeliveryAnalyticsCounts"];
+      publication_latency: components["schemas"]["DeliveryAnalyticsPublicationLatency"];
     };
     /** NotificationAppsResponse */
     NotificationAppsResponse: {
@@ -1025,6 +1077,13 @@ export interface components {
         event_id: string;
       };
     };
+    /** DeliveryAnalyticsPublicationRate */
+    DeliveryAnalyticsPublicationRate: {
+      denominator: number;
+      numerator: number;
+      /** Format: float */
+      value: number | null;
+    };
     /** PasswordResetCompletionResponse */
     PasswordResetCompletionResponse: {
       /**
@@ -1059,6 +1118,15 @@ export interface components {
      */
     ReadinessChecks: {
       database: components["schemas"]["DatabaseCheck"];
+    };
+    /** DeliveryAnalyticsCounts */
+    DeliveryAnalyticsCounts: {
+      accepted: number;
+      pending: number;
+      processing: number;
+      publication_rate: components["schemas"]["DeliveryAnalyticsPublicationRate"];
+      published: number;
+      unpublished: number;
     };
     /** EnvironmentSetupReadiness */
     EnvironmentSetupReadiness: {
@@ -1115,6 +1183,14 @@ export interface components {
        * @example owner@example.com
        */
       email: string;
+    };
+    /** DeliveryAnalyticsTrendBucket */
+    DeliveryAnalyticsTrendBucket: {
+      counts: components["schemas"]["DeliveryAnalyticsCounts"];
+      /** Format: date-time */
+      end_at: string;
+      /** Format: date-time */
+      start_at: string;
     };
     /** ValidationErrorDetails */
     ValidationErrorDetails: {
@@ -1197,6 +1273,14 @@ export interface components {
     /** EnvironmentServerApiKeysResponse */
     EnvironmentServerApiKeysResponse: {
       api_keys: components["schemas"]["EnvironmentServerApiKey"][];
+    };
+    /** DeliveryAnalyticsResponse */
+    DeliveryAnalyticsResponse: {
+      apps: components["schemas"]["DeliveryAnalyticsAppRow"][];
+      filters: components["schemas"]["DeliveryAnalyticsFilters"];
+      totals: components["schemas"]["DeliveryAnalyticsMetrics"];
+      trend: components["schemas"]["DeliveryAnalyticsTrendBucket"][];
+      window: components["schemas"]["DeliveryAnalyticsWindow"];
     };
     /** PasswordResetRequest */
     PasswordResetRequest: {
@@ -1661,6 +1745,78 @@ export interface operations {
       };
       /** @description Access token invalid */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  getDeliveryAnalytics: {
+    parameters: {
+      query: {
+        /** @description Fixed analytics window */
+        window: "24h" | "7d" | "30d";
+        /** @description Notification app ID resolved inside the active workspace */
+        appId?: string;
+        /** @description Environment ID owned by the selected notification app */
+        environmentId?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Delivery analytics */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeliveryAnalyticsResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Analytics scope unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Invalid analytics query */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Analytics unavailable */
+      500: {
         headers: {
           [name: string]: unknown;
         };
