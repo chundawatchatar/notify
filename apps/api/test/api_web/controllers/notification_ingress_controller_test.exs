@@ -2,6 +2,8 @@ defmodule ApiWeb.NotificationIngressControllerTest do
   use ApiWeb.ConnCase, async: true
 
   alias Api.NotificationApps
+  alias Api.NotificationIngress.EventOutbox
+  alias Api.Repo
 
   @origin "http://localhost:3100"
   @password "correct-password"
@@ -166,6 +168,20 @@ defmodule ApiWeb.NotificationIngressControllerTest do
       |> json_response(202)
 
     assert response["data"]["duplicate"] == false
+
+    EventOutbox
+    |> Repo.get_by!(notification_event_id: response["data"]["event_id"])
+    |> Ecto.Changeset.change(status: "published")
+    |> Repo.update!()
+
+    [event] =
+      authenticated_conn(access_token)
+      |> get("/api/apps/#{app.id}/environments/#{environment.id}/ingress/events")
+      |> json_response(200)
+      |> Map.fetch!("events")
+
+    assert event["event_id"] == response["data"]["event_id"]
+    assert event["delivery_status"] == "published"
   end
 
   test "viewers cannot create dashboard test events", %{conn: conn} do

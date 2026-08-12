@@ -1,6 +1,7 @@
 import type {
   ApiNotificationApp,
   ApiNotificationAppEnvironment,
+  ApiNotificationIngressEvent,
   ApiNotificationRequest,
 } from "@notify/api-client";
 import {
@@ -240,13 +241,7 @@ function RecentEvents({
 }: Readonly<{
   environment: ApiNotificationAppEnvironment;
   error: unknown;
-  events: ReadonlyArray<{
-    event_id: string;
-    event: string;
-    recipient_id: string;
-    source: string;
-    accepted_at: string;
-  }>;
+  events: readonly ApiNotificationIngressEvent[];
   isError: boolean;
   isLoading: boolean;
   onRetry: () => void;
@@ -274,6 +269,7 @@ function RecentEvents({
                 <TableHead>Event</TableHead>
                 <TableHead>Recipient</TableHead>
                 <TableHead>Source</TableHead>
+                <TableHead>Publish state</TableHead>
                 <TableHead className="text-right">Accepted</TableHead>
               </TableRow>
             </TableHeader>
@@ -285,6 +281,15 @@ function RecentEvents({
                   <TableCell>
                     <Badge variant={event.source === "dashboard_test" ? "info" : "success"}>
                       {event.source === "dashboard_test" ? "Test event" : "Public API"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={event.delivery_status === "published" ? "success" : "info"}>
+                      {event.delivery_status === "published"
+                        ? "PubSub handoff complete"
+                        : event.delivery_status === "processing"
+                          ? "Publishing"
+                          : "Awaiting publish"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right font-mono text-xs">

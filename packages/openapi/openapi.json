@@ -1512,6 +1512,12 @@
             "x-struct": null,
             "x-validate": null
           },
+          "delivery_status": {
+            "enum": ["pending", "processing", "published"],
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
           "event": {
             "type": "string",
             "x-struct": null,
@@ -1542,7 +1548,15 @@
             "x-validate": null
           }
         },
-        "required": ["event_id", "event", "recipient_id", "source", "accepted_at", "occurred_at"],
+        "required": [
+          "event_id",
+          "event",
+          "recipient_id",
+          "source",
+          "delivery_status",
+          "accepted_at",
+          "occurred_at"
+        ],
         "title": "NotificationIngressEvent",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.IngressEvent",

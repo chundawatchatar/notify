@@ -53,6 +53,7 @@ describe("ingress content", () => {
           events: [
             {
               accepted_at: "2026-08-05T10:00:00Z",
+              delivery_status: "published",
               event: "invoice.payment_failed",
               event_id: "3dc20706-9944-4743-8121-c0429c622c0b",
               occurred_at: null,
@@ -80,6 +81,7 @@ describe("ingress content", () => {
     const { container } = await renderIngressContent();
 
     await waitForText(container, "invoice.payment_failed");
+    expect(container.textContent).toContain("PubSub handoff complete");
     click(buttonByText(container, "Send test event"));
     await waitForText(container, "Test event accepted");
     expect(testEventCalls).toBe(1);

@@ -134,11 +134,11 @@ The ingress page may:
 - list recent accepted-event summaries for the selected environment
 - submit an authenticated test-event request for the selected environment
 
-The dashboard may expose the delivery state available from the delivery MVP,
-but must label `published` as a publish handoff rather than delivered or
-acknowledged. It must not imply offline recovery, retries, receipts, or
-analytics rollups. The delivery contract and socket envelope are defined in
-`docs/notification-delivery-mvp.md`.
+The dashboard exposes the delivery state available from the delivery MVP on
+safe recent-event summaries. It labels `published` as a PubSub handoff rather
+than delivered or acknowledged. It must not imply offline recovery, retries,
+receipts, or analytics rollups. The delivery contract and socket envelope are
+defined in `docs/notification-delivery-mvp.md`.
 
 The ingress page must not:
 

@@ -410,6 +410,7 @@ defmodule ApiWeb.NotificationIngressController do
       event: event.event_name,
       recipient_id: event.recipient_id,
       source: event.source_kind,
+      delivery_status: event.delivery_status,
       accepted_at: event.accepted_at,
       occurred_at: event.occurred_at
     }
