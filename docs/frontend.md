@@ -155,6 +155,25 @@ The ingress page must not:
 
 Safe accepted-event summaries may stay in in-memory TanStack Query state.
 
+### Analytics Dashboard Behavior
+
+The analytics page stays at `/w/:workspaceSlug/analytics`. It loads analytics
+through the authenticated workspace session and may narrow the view to an app
+and environment resolved inside that workspace.
+
+The MVP UI may show accepted, pending, processing, published, and unpublished
+handoff counts, publication rate, p50 and p95 publication latency, time buckets,
+and an app breakdown for the selected fixed window. It must label `published`
+as a PubSub handoff, not delivered or successful. Empty count populations show
+zero; an unavailable rate or latency percentile shows no data rather than a
+fabricated zero.
+
+The page must not show placeholder delivered, failed, retried, engagement, or
+SLA metrics after real analytics data is connected. Those meanings require
+delivery attempts, terminal outcomes, client receipts, or an explicit service
+objective that the MVP does not have. The authoritative formulas, windows, and
+scope are defined in `docs/delivery-analytics-mvp.md`.
+
 Shared dashboard layout lives in:
 
 ```text

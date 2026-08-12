@@ -210,16 +210,22 @@ Legacy alias: `/analytics`
 
 Responsibilities:
 
-- delivery counts
-- queued/retried/failed events
-- app-level success rates
-- latency and SLA views
+- accepted, pending, processing, published, and unpublished handoff counts
+- publication rates and publication-latency percentiles
+- workspace totals, app breakdowns, and optional app/environment filtering
+- fixed 24-hour, 7-day, and 30-day UTC views
 
 Expected future backend ownership:
 
 - event aggregation
-- delivery state transitions
 - app and workspace analytics queries
+
+The MVP measures accepted events and best-effort PubSub handoff from the real
+ingress and delivery records. It does not report client delivery, terminal
+failures, retries, engagement, or SLA compliance because those concepts are not
+persisted by the current delivery model. Billing counters and broader reporting
+remain separate future contracts. See `docs/delivery-analytics-mvp.md` for the
+metric formulas, time windows, scoping rules, and deferred ownership.
 
 ## Subscription
 

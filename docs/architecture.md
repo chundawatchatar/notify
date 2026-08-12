@@ -35,6 +35,10 @@ subdomain layout.
   `docs/notification-delivery-mvp.md`, including the accepted-event to outbox
   handoff, best-effort realtime publish semantics, and the delivery lifecycle
   boundary.
+- The delivery analytics MVP contract documented in
+  `docs/delivery-analytics-mvp.md`, including tenant-scoped aggregation,
+  publication metrics, time windows, and the boundary with billing and
+  reporting.
 
 `libs/domain` is for framework-free business logic that can be tested without
 Phoenix, Ecto, or a database connection. Framework-free server API key
