@@ -94,6 +94,8 @@ defmodule Api.DeliveryAnalyticsTest do
     notification_app = create_app!(workspace, "Scoped")
     development = environment(notification_app, "development")
     production = environment(notification_app, "production")
+    sibling_app = create_app!(workspace, "Sibling")
+    sibling_environment = environment(sibling_app, "development")
     other_membership = insert(:membership)
     other_app = create_app!(other_membership.workspace, "Other tenant")
     other_environment = environment(other_app, "development")
@@ -153,6 +155,17 @@ defmodule Api.DeliveryAnalyticsTest do
                workspace,
                "24h",
                %{notification_app_id: other_app.id},
+               as_of
+             )
+
+    assert {:error, :not_found} =
+             DeliveryAnalytics.query(
+               workspace,
+               "24h",
+               %{
+                 notification_app_id: notification_app.id,
+                 app_environment_id: sibling_environment.id
+               },
                as_of
              )
   end

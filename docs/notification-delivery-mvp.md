@@ -2,7 +2,7 @@
 
 This document defines the first delivery slice after an ingress request has
 been accepted. It is the contract between notification ingress persistence,
-realtime fanout, and later delivery analytics.
+realtime fanout, and delivery analytics.
 
 ## Contract boundary
 

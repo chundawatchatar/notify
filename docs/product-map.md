@@ -215,10 +215,12 @@ Responsibilities:
 - workspace totals, app breakdowns, and optional app/environment filtering
 - fixed 24-hour, 7-day, and 30-day UTC views
 
-Expected future backend ownership:
+Current backend ownership:
 
-- event aggregation
-- app and workspace analytics queries
+- `GET /api/analytics` with membership-scoped `view_events` authorization
+- query-time aggregation from accepted events and their outbox handoffs
+- workspace totals, app breakdowns, and tenant-safe app/environment filters
+- typed OpenAPI and generated TypeScript response contracts
 
 The MVP measures accepted events and best-effort PubSub handoff from the real
 ingress and delivery records. It does not report client delivery, terminal

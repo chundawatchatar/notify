@@ -157,9 +157,11 @@ Safe accepted-event summaries may stay in in-memory TanStack Query state.
 
 ### Analytics Dashboard Behavior
 
-The analytics page stays at `/w/:workspaceSlug/analytics`. It loads analytics
-through the authenticated workspace session and may narrow the view to an app
-and environment resolved inside that workspace.
+The analytics page stays at `/w/:workspaceSlug/analytics`. It loads
+workspace-wide analytics through the authenticated workspace session and lets
+the user select the fixed 24-hour, 7-day, or 30-day UTC window. The API supports
+optional app and environment filters resolved inside that workspace, but the
+current dashboard does not expose those narrower controls.
 
 The MVP UI may show accepted, pending, processing, published, and unpublished
 handoff counts, publication rate, p50 and p95 publication latency, time buckets,
