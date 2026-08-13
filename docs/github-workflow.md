@@ -67,6 +67,10 @@ commands when repository size makes the full suite too slow in CI.
 Required PR rules:
 
 - PR targets `develop`.
+- Ticket delivery publishes a non-draft PR that is immediately ready for
+  review.
+- The PR description stays concise and includes the Linear link, change
+  summary, and final verification results.
 - CodeRabbit uses the request-changes workflow and automatically approves when
   its comments are resolved and its pre-merge checks pass.
 - Solo-maintainer repositories may keep GitHub's required approval count at

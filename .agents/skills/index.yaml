@@ -13,7 +13,10 @@ selection_rules:
   - For assigned Linear implementation tickets, load notify-ticket-delivery before task-specific playbooks.
   - Load every skill needed for a cross-boundary change in recipe order.
   - Do not load all skills by default.
-  - Use notify-verify-change before reporting completion or committing.
+  - For an assigned implementation ticket, keep tests in one final phase after implementation.
+  - Use notify-verify-change before staging, committing, publishing, or reporting completion.
+  - Deliver a started implementation ticket through a non-draft pull request when final verification passes.
+  - Resume a ticket from its first incomplete delivery step without duplicating existing Git, GitHub, or Linear state.
   - If native skill discovery is unavailable, open each selected SKILL.md directly.
 
 skills:
