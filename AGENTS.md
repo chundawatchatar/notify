@@ -13,12 +13,15 @@ architecture, product modules, migrations, or frontend conventions change.
 - Do not use em dashes in prose. Use a hyphen instead.
 - Do not use emojis in commits, issues, pull requests, comments, or code.
 - Always use a single-line commit message.
-- Do not run tests during implementation unless the user explicitly asks. A
-  request to commit and push authorizes running the smallest test suites that
-  cover the affected code before pushing.
+- Do not run tests during implementation. For an assigned implementation
+  ticket, run the smallest relevant test suites once implementation is complete
+  and before staging, committing, or pushing.
 - Do not start or run an application unless the user explicitly asks.
 - Do not inspect or test a live application in a browser unless the user explicitly asks.
-- Do not commit changes unless the user explicitly asks.
+- Starting or resuming a named implementation ticket authorizes its final
+  tests, staging ticket files, one commit, push, review-ready pull request,
+  Linear link, and In Review transition. Outside that workflow, do not commit,
+  push, open a pull request, or mutate Linear unless the user explicitly asks.
 
 ## Project Overview
 
@@ -169,6 +172,9 @@ For product features, prefer this order:
 ## Git And Generated Files
 
 - Never revert user changes unless explicitly asked.
+- Before starting a new assigned ticket, fast-forward local `develop` from
+  `origin/develop`, then create a new dedicated ticket branch and worktree from
+  that refreshed base. Resume only the same ticket's existing worktree.
 - Only stage and commit files changed in the current task. Stage explicit paths.
 - Check `git status --short` before staging or committing.
 - Use Angular Conventional Commit subjects: `<type>(<scope>): <imperative summary>`.
