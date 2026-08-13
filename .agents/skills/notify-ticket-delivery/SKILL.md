@@ -14,15 +14,17 @@ authorization gates here.
 1. Read the issue, its relations, and required repository documents.
 2. Confirm blocking issues are complete before implementation.
 3. For a new ticket, refresh `develop` and create a new dedicated branch and
-   worktree. Reuse a worktree only when resuming that same ticket.
+   worktree. When resuming, inspect and reuse that ticket's branch, worktree,
+   commits, pull request, Linear link, and status.
 4. Load the smallest task-specific playbooks from `.agents/skills/index.yaml`.
 5. Implement only the ticket scope, preserve unrelated changes, and do not run
    tests during implementation.
 6. After implementation is complete, load `notify-verify-change` and run the
    smallest required tests and checks in one final pre-commit phase.
-7. When final verification passes, stage only ticket files, create one commit,
-   push the branch, open a non-draft pull request targeting `develop`, link it
-   in Linear, and move the issue to In Review under the start authorization.
+7. When final verification passes, continue from the first incomplete delivery
+   step. Create a commit only for new changes, push only unpushed commits, open
+   a pull request only when none exists, and add the Linear link or In Review
+   transition only when absent.
 8. Keep application, container, browser, merge, and post-merge actions behind
    their explicit authorization gates.
 9. After an authorized merge, confirm it completed, move the Linear issue to

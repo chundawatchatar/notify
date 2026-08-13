@@ -16,6 +16,7 @@ selection_rules:
   - For an assigned implementation ticket, keep tests in one final phase after implementation.
   - Use notify-verify-change before staging, committing, publishing, or reporting completion.
   - Deliver a started implementation ticket through a non-draft pull request when final verification passes.
+  - Resume a ticket from its first incomplete delivery step without duplicating existing Git, GitHub, or Linear state.
   - If native skill discovery is unavailable, open each selected SKILL.md directly.
 
 skills:

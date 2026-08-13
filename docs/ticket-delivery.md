@@ -15,9 +15,11 @@ release promotion are documented in `docs/github-workflow.md`.
    by the smallest applicable implementation playbooks.
 4. Inspect the current repository patterns and relevant documentation before
    editing. Keep the ticket scope separate from unrelated cleanup.
-5. When readiness checks pass, a request to start or resume the named
-   implementation ticket authorizes moving it to In Progress and delivering it
-   through a review-ready pull request under the gates below.
+5. When readiness checks pass, a request to start the named implementation
+   ticket authorizes moving it to In Progress and delivering it through a
+   review-ready pull request under the gates below. A resume request preserves
+   the ticket's current state and continues only from its first incomplete
+   delivery step.
 
 ## 2. Worktree And Branch
 
@@ -33,10 +35,13 @@ release promotion are documented in `docs/github-workflow.md`.
 4. Resume a ticket only in its existing dedicated branch and worktree. Keep one
    ticket per branch, worktree, commit set, and pull request unless the
    requester explicitly groups tickets.
-5. Do not start containers from a worktree because they duplicate the shared
+5. Before changing a resumed ticket, inspect its worktree and branch, local and
+   remote commits, pull request for the head branch, and Linear status and
+   links. Reuse every existing artifact and do not regress its delivery state.
+6. Do not start containers from a worktree because they duplicate the shared
    local service containers. Install dependencies only when the worktree does
    not already have them.
-6. Preserve unrelated changes and never reuse or delete another ticket's
+7. Preserve unrelated changes and never reuse or delete another ticket's
    worktree.
 
 ## 3. Implementation
@@ -64,10 +69,13 @@ The following actions require explicit requester authorization:
 
 Milestone requests carry the following scoped authorization:
 
-- asking to start or resume a named implementation ticket authorizes moving it
-  to In Progress, running the smallest relevant tests after implementation,
-  staging only ticket files, creating one commit, pushing its branch, opening a
-  non-draft pull request, linking it in Linear, and moving it to In Review;
+- asking to start a named implementation ticket authorizes moving it to In
+  Progress, running the smallest relevant tests after implementation, staging
+  only ticket files, creating task-scoped commits, pushing its branch, opening
+  a non-draft pull request, linking it in Linear, and moving it to In Review;
+- asking to resume that ticket grants the same scoped authority only for
+  incomplete or newly necessary steps and preserves all completed publication
+  state;
 - authorizing a merge also authorizes the required post-merge Linear Done
   transition and safe removal of the clean ticket worktree.
 
@@ -75,6 +83,14 @@ The implementation-ticket authorization does not permit applications,
 containers, browser checks, merging, or post-merge cleanup. If final
 verification fails, stop before staging, committing, pushing, or opening the
 pull request. Fix the scoped issue and rerun only the affected final checks.
+
+Authorization is stage-aware and does not make resume steps unconditional.
+After inspecting current state, perform only incomplete or newly necessary
+steps. Do not create an empty or redundant commit, push an unchanged branch,
+open a duplicate pull request, add a duplicate Linear link, move an In Review
+ticket back to In Progress, or repeat an already-completed status transition.
+Review feedback on an open pull request normally requires only the affected
+verification, a corrective commit, and a push to the existing branch.
 
 Read-only inspection, implementation edits, contract generation, formatting,
 linting, and typechecking remain allowed when they are normal in-scope work and
@@ -96,21 +112,26 @@ do not start an application or test suite.
 
 After final verification passes:
 
-1. Stage only ticket-related files.
-2. Create a single-line Angular Conventional Commit message without a trailing
-   period.
-3. Push the ticket branch and open a non-draft pull request targeting `develop`
-   so it is immediately ready for review.
-4. Title each pull request as `[NFY-123] Exact Linear issue title`. Do not use
+1. Inspect the current publication state and run only the steps not already
+   complete or made necessary by new changes.
+2. When uncommitted ticket changes exist, stage only those files and create a
+   single-line Angular Conventional Commit message without a trailing period.
+3. When local ticket commits are not on the remote, push the existing ticket
+   branch.
+4. When the ticket branch has no pull request, open a non-draft pull request
+   targeting `develop` so it is immediately ready for review. Otherwise update
+   and reuse the existing pull request.
+5. Title each pull request as `[NFY-123] Exact Linear issue title`. Do not use
    a commit-style title. Keep its description short: link the Linear issue,
    summarize the change, and list final verification performed or not
    applicable.
-5. Write multiline pull request descriptions through a body file or standard
+6. Write multiline pull request descriptions through a body file or standard
    input with real line breaks. Read the saved body back after every create or
    edit and reject literal `\n` sequences or truncated content.
-6. Read the pull request back to confirm it is open, non-draft, targets
+7. Read the pull request back to confirm it is open, non-draft, targets
    `develop`, and contains the complete description.
-7. Add the pull request URL to Linear and move the issue to In Review.
+8. Add the pull request URL to Linear only when it is not already linked. Move
+   the issue to In Review only when it has not already reached that state.
 
 ## 7. Review, Merge, And Cleanup
 

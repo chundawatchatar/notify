@@ -19,9 +19,13 @@ architecture, product modules, migrations, or frontend conventions change.
 - Do not start or run an application unless the user explicitly asks.
 - Do not inspect or test a live application in a browser unless the user explicitly asks.
 - Starting or resuming a named implementation ticket authorizes its final
-  tests, staging ticket files, one commit, push, review-ready pull request,
-  Linear link, and In Review transition. Outside that workflow, do not commit,
-  push, open a pull request, or mutate Linear unless the user explicitly asks.
+  tests, staging ticket files, task-scoped commits, push, review-ready pull
+  request, Linear link, and In Review transition. Outside that workflow, do not
+  commit, push, open a pull request, or mutate Linear unless the user explicitly
+  asks.
+- On resume, inspect the ticket's Git, GitHub, and Linear state and continue
+  only from the first incomplete step. Do not repeat an existing commit, push,
+  pull request, Linear link, or status transition.
 
 ## Project Overview
 
