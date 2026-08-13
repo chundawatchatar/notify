@@ -18,10 +18,10 @@ const pageCopy: Record<WorkspaceSectionId, { badge: string; description: string;
         "Manage the server-authenticated event endpoint, validation contract, idempotency window, and accepted-event visibility.",
     },
     analytics: {
-      badge: "Delivery insight",
+      badge: "PubSub handoff metrics",
       title: "Analytics",
       description:
-        "Track delivery rates, fanout latency, retries, and client engagement across every notification app.",
+        "Track accepted notification events and best-effort PubSub handoffs across the workspace.",
     },
     subscription: {
       badge: "Plan control",
@@ -103,19 +103,6 @@ const recentIngressEvents = [
   readonly [event: string, environment: string, outcome: string, acceptedAt: string]
 >;
 
-const analyticsCards = [
-  { label: "Delivered", tone: "success", trend: "+12.4%", value: "48,214" },
-  { label: "Queued", tone: "info", trend: "-3.1%", value: "824" },
-  { label: "Retried", tone: "warning", trend: "+0.6%", value: "119" },
-  { label: "Failed", tone: "warning", trend: "-0.8%", value: "37" },
-] satisfies Array<{ label: string; tone: BadgeTone; trend: string; value: string }>;
-
-const analyticsBreakdown = [
-  ["Acme Cloud", "99.8%", "44ms", "31.8k"],
-  ["Acme Support", "99.5%", "62ms", "9.4k"],
-  ["Acme Labs", "98.1%", "91ms", "1.2k"],
-] satisfies Array<readonly [app: string, success: string, latency: string, events: string]>;
-
 const workspaceSettings = [
   ["Workspace name", "Acme workspace"],
   ["Default environment", "Production"],
@@ -132,8 +119,6 @@ const notificationPreferences = [
 
 export type { BadgeTone, LabelValueRow };
 export {
-  analyticsBreakdown,
-  analyticsCards,
   appRows,
   appSetup,
   ingressRules,

@@ -19,15 +19,9 @@ import { ArrowUpRight, BellRing, Copy, Plus, SlidersHorizontal } from "lucide-re
 import type { WorkspaceSectionId } from "@/lib/workspace-sections";
 import type { WorkspaceSecuritySearch } from "../workspace-security-page";
 import { WorkspaceSecurityPage } from "../workspace-security-page";
+import { AnalyticsContent } from "./analytics-content";
 import { ChecklistCard } from "./cards";
-import {
-  analyticsBreakdown,
-  analyticsCards,
-  appRows,
-  appSetup,
-  notificationPreferences,
-  workspaceSettings,
-} from "./data";
+import { appRows, appSetup, notificationPreferences, workspaceSettings } from "./data";
 import { IngressContent } from "./ingress-content";
 
 function SectionActions({ section }: Readonly<{ section: WorkspaceSectionId }>) {
@@ -46,7 +40,7 @@ function SectionActions({ section }: Readonly<{ section: WorkspaceSectionId }>) 
     );
   }
 
-  if (section === "security" || section === "ingress") {
+  if (section === "security" || section === "ingress" || section === "analytics") {
     return null;
   }
 
@@ -76,7 +70,7 @@ function SectionContent({
   }
 
   if (section === "analytics") {
-    return <AnalyticsContent />;
+    return <AnalyticsContent workspaceSlug={workspaceSlug} />;
   }
 
   if (section === "subscription") {
@@ -144,68 +138,6 @@ function AppsContent() {
           <CardContent className="grid gap-5">
             <UsageBar label="Apps" value={45} detail="9 of 20 notification apps" />
             <UsageBar label="Client origins" value={60} detail="12 of 20 trusted origins" />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function AnalyticsContent() {
-  return (
-    <div className="grid gap-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {analyticsCards.map(({ label, tone, trend, value }) => (
-          <Card key={label}>
-            <CardHeader className="pb-2">
-              <CardDescription>{label}</CardDescription>
-              <CardTitle className="text-2xl">{value}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Badge variant={tone}>{trend}</Badge>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>App delivery breakdown</CardTitle>
-            <CardDescription>Success and latency by notification app.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>App</TableHead>
-                  <TableHead>Success</TableHead>
-                  <TableHead>P95 latency</TableHead>
-                  <TableHead className="text-right">Events</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {analyticsBreakdown.map(([app, success, latency, events]) => (
-                  <TableRow key={app}>
-                    <TableCell className="font-medium">{app}</TableCell>
-                    <TableCell>{success}</TableCell>
-                    <TableCell>{latency}</TableCell>
-                    <TableCell className="text-right">{events}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Delivery health</CardTitle>
-            <CardDescription>Current operating window.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-5">
-            <UsageBar label="Delivery SLA" value={99} detail="99.7% delivered under SLA" />
-            <UsageBar label="Retry budget" value={18} detail="119 retries this cycle" />
-            <UsageBar label="Failure rate" value={8} detail="0.08% failed events" />
           </CardContent>
         </Card>
       </div>
