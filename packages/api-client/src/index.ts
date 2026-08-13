@@ -73,6 +73,7 @@ type ApiNotificationIngestResponse = JsonResponse<"createNotification", 202>;
 type ApiNotificationIngressDetailsResponse = JsonResponse<"getNotificationIngress", 200>;
 type ApiNotificationIngressEventsResponse = JsonResponse<"listNotificationIngressEvents", 200>;
 type ApiNotificationIngressEvent = ApiNotificationIngressEventsResponse["events"][number];
+type ApiDeliveryAnalyticsResponse = JsonResponse<"getDeliveryAnalytics", 200>;
 type ApiErrorResponse = JsonResponse<"login", 401>;
 type ApiValidationErrorResponse = JsonResponse<"login", 422>;
 
@@ -89,6 +90,7 @@ export type {
   ApiCreateNotificationAppRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
+  ApiDeliveryAnalyticsResponse,
   ApiEnvironmentClientKey,
   ApiEnvironmentClientKeysResponse,
   ApiEnvironmentServerApiKey,

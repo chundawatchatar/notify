@@ -2,6 +2,7 @@ defmodule ApiWeb.Router do
   use ApiWeb, :router
 
   import ApiWeb.Routes.AuthRoutes
+  import ApiWeb.Routes.DeliveryAnalyticsRoutes
   import ApiWeb.Routes.NotificationAppRoutes
   import ApiWeb.Routes.WorkspaceRoutes
 
@@ -29,6 +30,7 @@ defmodule ApiWeb.Router do
     pipe_through [:api, :authenticated_api]
 
     authenticated_auth_routes()
+    delivery_analytics_routes()
     notification_app_routes()
     environment_configuration_routes()
     notification_dashboard_ingress_routes()

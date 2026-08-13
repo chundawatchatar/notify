@@ -468,6 +468,34 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.AuthResponse",
         "x-validate": null
       },
+      "DeliveryAnalyticsAppRow": {
+        "properties": {
+          "app_id": {
+            "format": "uuid",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "archived": {
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/DeliveryAnalyticsMetrics"
+          },
+          "name": {
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["app_id", "name", "archived", "metrics"],
+        "title": "DeliveryAnalyticsAppRow",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.AppRow",
+        "x-validate": null
+      },
       "WorkspaceInvitation": {
         "properties": {
           "email": {
@@ -657,6 +685,29 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupTokenResponse",
         "x-validate": null
       },
+      "DeliveryAnalyticsFilters": {
+        "properties": {
+          "app_id": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "environment_id": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["app_id", "environment_id"],
+        "title": "DeliveryAnalyticsFilters",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.Filters",
+        "x-validate": null
+      },
       "EnvironmentServerApiKeyStatus": {
         "enum": ["active", "revoked"],
         "example": "active",
@@ -750,6 +801,35 @@
         "title": "CompleteInvitationSignupRequest",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.CompleteInvitationSignupRequest",
+        "x-validate": null
+      },
+      "DeliveryAnalyticsPublicationLatency": {
+        "properties": {
+          "p50_ms": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "p95_ms": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "sample_count": {
+            "minimum": 0,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["sample_count", "p50_ms", "p95_ms"],
+        "title": "DeliveryAnalyticsPublicationLatency",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.PublicationLatency",
         "x-validate": null
       },
       "ServiceInfo": {
@@ -866,6 +946,48 @@
         "title": "AcceptInvitationRequest",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.AcceptInvitationRequest",
+        "x-validate": null
+      },
+      "DeliveryAnalyticsWindow": {
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "enum": ["24h", "7d", "30d"],
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "start_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["name", "start_at", "as_of"],
+        "title": "DeliveryAnalyticsWindow",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.Window",
+        "x-validate": null
+      },
+      "DeliveryAnalyticsMetrics": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/DeliveryAnalyticsCounts"
+          },
+          "publication_latency": {
+            "$ref": "#/components/schemas/DeliveryAnalyticsPublicationLatency"
+          }
+        },
+        "required": ["counts", "publication_latency"],
+        "title": "DeliveryAnalyticsMetrics",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.Metrics",
         "x-validate": null
       },
       "NotificationAppsResponse": {
@@ -1106,6 +1228,34 @@
         "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.IngestResponse",
         "x-validate": null
       },
+      "DeliveryAnalyticsPublicationRate": {
+        "properties": {
+          "denominator": {
+            "minimum": 0,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "numerator": {
+            "minimum": 0,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "value": {
+            "format": "float",
+            "nullable": true,
+            "type": "number",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["numerator", "denominator", "value"],
+        "title": "DeliveryAnalyticsPublicationRate",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.PublicationRate",
+        "x-validate": null
+      },
       "PasswordResetCompletionResponse": {
         "properties": {
           "status": {
@@ -1190,6 +1340,55 @@
         "title": "ReadinessChecks",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessChecks",
+        "x-validate": null
+      },
+      "DeliveryAnalyticsCounts": {
+        "properties": {
+          "accepted": {
+            "minimum": 0,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "pending": {
+            "minimum": 0,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "processing": {
+            "minimum": 0,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "publication_rate": {
+            "$ref": "#/components/schemas/DeliveryAnalyticsPublicationRate"
+          },
+          "published": {
+            "minimum": 0,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "unpublished": {
+            "minimum": 0,
+            "type": "integer",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": [
+          "accepted",
+          "pending",
+          "processing",
+          "published",
+          "unpublished",
+          "publication_rate"
+        ],
+        "title": "DeliveryAnalyticsCounts",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.Counts",
         "x-validate": null
       },
       "EnvironmentSetupReadiness": {
@@ -1366,6 +1565,30 @@
         "title": "ResendVerificationRequest",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.ResendVerificationRequest",
+        "x-validate": null
+      },
+      "DeliveryAnalyticsTrendBucket": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/DeliveryAnalyticsCounts"
+          },
+          "end_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "start_at": {
+            "format": "date-time",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["start_at", "end_at", "counts"],
+        "title": "DeliveryAnalyticsTrendBucket",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.TrendBucket",
         "x-validate": null
       },
       "ValidationErrorDetails": {
@@ -1577,6 +1800,40 @@
         "title": "EnvironmentServerApiKeysResponse",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.NotificationAppSchemas.ServerApiKeysResponse",
+        "x-validate": null
+      },
+      "DeliveryAnalyticsResponse": {
+        "properties": {
+          "apps": {
+            "items": {
+              "$ref": "#/components/schemas/DeliveryAnalyticsAppRow"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "filters": {
+            "$ref": "#/components/schemas/DeliveryAnalyticsFilters"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/DeliveryAnalyticsMetrics"
+          },
+          "trend": {
+            "items": {
+              "$ref": "#/components/schemas/DeliveryAnalyticsTrendBucket"
+            },
+            "type": "array",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "window": {
+            "$ref": "#/components/schemas/DeliveryAnalyticsWindow"
+          }
+        },
+        "required": ["window", "filters", "totals", "trend", "apps"],
+        "title": "DeliveryAnalyticsResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.Response",
         "x-validate": null
       },
       "PasswordResetRequest": {
@@ -2245,6 +2502,119 @@
         ],
         "summary": "Read the authenticated account and workspace",
         "tags": ["authentication"]
+      }
+    },
+    "/api/analytics": {
+      "get": {
+        "callbacks": {},
+        "operationId": "getDeliveryAnalytics",
+        "parameters": [
+          {
+            "description": "Fixed analytics window",
+            "in": "query",
+            "name": "window",
+            "required": true,
+            "schema": {
+              "enum": ["24h", "7d", "30d"],
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Notification app ID resolved inside the active workspace",
+            "in": "query",
+            "name": "appId",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          },
+          {
+            "description": "Environment ID owned by the selected notification app",
+            "in": "query",
+            "name": "environmentId",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryAnalyticsResponse"
+                }
+              }
+            },
+            "description": "Delivery analytics"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Analytics scope unavailable"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid analytics query"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Analytics unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get delivery analytics for the active workspace",
+        "tags": ["delivery analytics"]
       }
     },
     "/api/auth/signup": {

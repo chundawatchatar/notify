@@ -172,6 +172,30 @@ and resolves optional app and environment identifiers inside that workspace.
 An environment filter is invalid without its owning app filter. Unknown and
 cross-workspace identifiers share the same not-found result.
 
+## HTTP API
+
+The authenticated dashboard reads the complete MVP analytics view from:
+
+```text
+GET /api/analytics?window=24h&appId=<uuid>&environmentId=<uuid>
+```
+
+The `window` query parameter is required and accepts `24h`, `7d`, or `30d`.
+`appId` and `environmentId` are optional UUID filters, but `environmentId`
+requires its owning `appId`. The active membership supplies the workspace and
+must have the `view_events` permission.
+
+The response contains `window`, `filters`, `totals`, `trend`, and `apps`.
+`window` exposes the selected name, start boundary, and server `as_of` time.
+`filters` returns the applied app and environment IDs, including `null` for an
+unapplied filter. Totals and app rows expose counts, publication-rate inputs,
+and publication latency. Trend buckets expose ordered boundaries and counts.
+
+An unsupported or incomplete scope returns `422`. Unknown and cross-workspace
+app or environment identifiers return the same `404` response. The endpoint
+does not expose failure or retry fields because the current durable model does
+not support those metrics.
+
 ## Privacy And Authorization
 
 Analytics responses may contain aggregate counts, timestamps, app identity and
