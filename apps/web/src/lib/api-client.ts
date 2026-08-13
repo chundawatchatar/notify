@@ -11,6 +11,7 @@ import type {
   ApiCreateNotificationAppRequest,
   ApiCreateWorkspaceInvitationRequest,
   ApiCurrentUserResponse,
+  ApiDeliveryAnalyticsResponse,
   ApiEnvironmentClientKey,
   ApiEnvironmentClientKeysResponse,
   ApiEnvironmentServerApiKeySecret,
@@ -313,6 +314,13 @@ function createNotificationIngressTestEvent(
   );
 }
 
+function getDeliveryAnalytics(
+  accessToken: string,
+  window: ApiDeliveryAnalyticsResponse["window"]["name"],
+) {
+  return get<ApiDeliveryAnalyticsResponse>(`/api/analytics?window=${window}`, { accessToken });
+}
+
 function environmentPath(appSlug: string, environmentSlug: string) {
   return `/api/apps/${appSlug}/environments/${environmentSlug}`;
 }
@@ -426,6 +434,7 @@ export {
   getApiReadiness,
   getApiVersion,
   getCurrentUser,
+  getDeliveryAnalytics,
   getNotificationApp,
   getNotificationIngress,
   listEnvironmentClientKeys,
