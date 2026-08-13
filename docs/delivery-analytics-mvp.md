@@ -1,8 +1,8 @@
 # Delivery Analytics MVP
 
 This document defines the metric and query contract for the first delivery
-analytics dashboard. It is the source of truth for the aggregation, API, and
-dashboard work that follows. The underlying ingress and delivery meanings stay
+analytics dashboard. It is the source of truth for the implemented aggregation,
+API, and dashboard flow. The underlying ingress and delivery meanings stay
 defined in `docs/notification-ingress-mvp.md` and
 `docs/notification-delivery-mvp.md`.
 
@@ -147,8 +147,7 @@ attempt or terminal-outcome model.
 
 ## Response Shape Requirements
 
-The later HTTP contract may choose endpoint names, but one analytics response
-must provide enough typed data for:
+The HTTP contract returns one analytics response with enough typed data for:
 
 - the selected window and server `as_of` timestamp;
 - workspace totals for every MVP count and publication latency value;
@@ -195,6 +194,12 @@ An unsupported or incomplete scope returns `422`. Unknown and cross-workspace
 app or environment identifiers return the same `404` response. The endpoint
 does not expose failure or retry fields because the current durable model does
 not support those metrics.
+
+The dashboard currently requests workspace-wide results without app or
+environment filters. It lets the user select each fixed window and renders the
+returned totals, handoff states, publication latency, trend buckets, and app
+breakdown. The API retains its optional app and environment filters for narrower
+views when matching dashboard controls are introduced.
 
 ## Privacy And Authorization
 

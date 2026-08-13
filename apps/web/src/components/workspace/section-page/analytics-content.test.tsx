@@ -4,10 +4,13 @@ import { afterEach, describe, expect, it } from "vitest";
 import { AuthProvider, createAuthClient } from "@/lib/auth";
 import {
   authResponse,
+  buttonByText,
   cleanup,
+  click,
   installBrowserCoordination,
   render,
   restoreBrowserCoordination,
+  waitFor,
   waitForText,
 } from "@/test/render";
 import { server } from "@/test/server";
@@ -21,8 +24,9 @@ afterEach(() => {
 });
 
 describe("analytics content", () => {
-  it("shows loading before rendering the real analytics response", async () => {
+  it("renders real analytics and requests the selected fixed window", async () => {
     installBrowserCoordination();
+    const requestedWindows: string[] = [];
     let releaseAnalytics = () => {};
     const analyticsGate = new Promise<void>((resolve) => {
       releaseAnalytics = resolve;
@@ -31,8 +35,13 @@ describe("analytics content", () => {
     server.use(
       ...authHandlers(),
       http.get(analyticsPath(), async ({ request }) => {
-        expect(new URL(request.url).searchParams.get("window")).toBe("24h");
-        await analyticsGate;
+        const window = new URL(request.url).searchParams.get("window");
+        requestedWindows.push(window ?? "");
+
+        if (window === "24h") {
+          await analyticsGate;
+        }
+
         return HttpResponse.json(analyticsResponse());
       }),
     );
@@ -48,6 +57,17 @@ describe("analytics content", () => {
     expect(container.textContent).not.toContain("Delivered");
     expect(container.textContent).not.toContain("Retries");
     expect(container.textContent).not.toContain("Failure rate");
+
+    click(buttonByText(container, "7 days"));
+    await waitFor(
+      () => requestedWindows.join(",") === "24h,7d",
+      "analytics request for the selected 7-day window",
+    );
+    await waitFor(
+      () =>
+        container.querySelector('button[aria-pressed="true"]')?.textContent?.trim() === "7 days",
+      "selected analytics window",
+    );
   });
 
   it("shows zero counts and unavailable derived metrics for an empty window", async () => {
