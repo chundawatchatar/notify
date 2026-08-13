@@ -176,6 +176,28 @@ delivery attempts, terminal outcomes, client receipts, or an explicit service
 objective that the MVP does not have. The authoritative formulas, windows, and
 scope are defined in `docs/delivery-analytics-mvp.md`.
 
+### Workspace Settings Behavior
+
+The settings page stays at `/w/:workspaceSlug/settings`. The browser loads
+settings for that route slug, but the API resolves it only inside the active
+membership-scoped session. A mismatched slug does not switch workspaces.
+
+The MVP exposes workspace name and timezone as editable state for memberships
+with `manage_workspace`. Workspace slug and the system-owned Development
+default are informational. Developers and viewers may load the page through
+`view_workspace`, but the page renders read-only values and no save action.
+
+Use TanStack Query for the settings read and update mutation, and TanStack Form
+with Zod for the owner and admin form. A successful update refreshes settings
+and authenticated workspace summaries so the shell and workspace switcher do
+not retain a stale name. Renaming never changes the route slug.
+
+Remove the placeholder delivery alerts, usage threshold, weekly report,
+incident contacts, and data residency rows when the real settings flow is
+implemented. Those fields have no current backend contract and must not appear
+as disabled or simulated controls. The complete API and deferred-scope rules
+are defined in `docs/workspace-settings-mvp.md`.
+
 Shared dashboard layout lives in:
 
 ```text

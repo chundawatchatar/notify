@@ -308,15 +308,24 @@ Legacy alias: `/settings`
 
 Responsibilities:
 
-- workspace name
-- default environment
-- timezone
-- data residency display
-- alert preferences
-- incident contacts
+- edit the active workspace name without changing its stable slug
+- edit the workspace timezone used as a dashboard presentation default
+- show the stable workspace slug and system-owned Development default as
+  informational state
+- keep developer and viewer access read-only
 
-Expected future backend ownership:
+MVP backend ownership:
 
-- workspace settings
-- notification preferences
-- team defaults
+- `GET /api/workspaces/:workspaceSlug/settings` with `view_workspace`
+  authorization
+- `PATCH /api/workspaces/:workspaceSlug/settings` with `manage_workspace`
+  authorization
+- membership-scoped resolution of the route slug
+- workspace-owned name and timezone persistence
+
+The default environment remains the existing fixed Development routing
+behavior and is not persisted or editable. Delivery alerts, usage thresholds,
+weekly reports, incident contacts, data residency, team defaults, billing,
+audit-log retrieval, and advanced policy controls are deferred. See
+`docs/workspace-settings-mvp.md` for the field, authorization, API, browser,
+and deferred-scope contract.
