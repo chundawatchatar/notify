@@ -11,6 +11,49 @@ defmodule Api.Workspaces do
   alias Domain.WorkspacePermissions
   alias Ecto.Multi
 
+  @doc """
+  Resolves settings only through an active database-backed membership and workspace slug.
+  """
+  def get_workspace_settings(%Membership{id: membership_id}, workspace_slug)
+      when is_binary(workspace_slug) do
+    case Repo.one(workspace_settings_scope(membership_id, workspace_slug)) do
+      %{membership: membership, workspace: workspace} ->
+        if WorkspacePermissions.allowed?(membership.role, :view_workspace),
+          do: {:ok, workspace},
+          else: {:error, :forbidden}
+
+      nil ->
+        {:error, :not_found}
+    end
+  end
+
+  def get_workspace_settings(_, _), do: {:error, :not_found}
+
+  @doc """
+  Atomically updates editable settings after tenant-safe resolution and permission checks.
+  """
+  def update_workspace_settings(%Membership{id: membership_id}, workspace_slug, attrs)
+      when is_binary(workspace_slug) and is_map(attrs) do
+    Repo.transaction(fn ->
+      case Repo.one(workspace_settings_scope(membership_id, workspace_slug, lock: true)) do
+        %{membership: membership, workspace: workspace} ->
+          if WorkspacePermissions.allowed?(membership.role, :manage_workspace) do
+            case Repo.update(Workspace.settings_changeset(workspace, attrs)) do
+              {:ok, updated_workspace} -> updated_workspace
+              {:error, changeset} -> Repo.rollback(changeset)
+            end
+          else
+            Repo.rollback(:forbidden)
+          end
+
+        nil ->
+          Repo.rollback(:not_found)
+      end
+    end)
+  end
+
+  def update_workspace_settings(_, _, _), do: {:error, :not_found}
+
   def list_members(workspace_id) do
     Repo.all(
       from membership in Membership,
@@ -478,6 +521,18 @@ defmodule Api.Workspaces do
          where: membership.user_id == ^user_id and membership.workspace_id == ^workspace_id,
          lock: "FOR UPDATE"
      )}
+  end
+
+  defp workspace_settings_scope(membership_id, workspace_slug, options \\ []) do
+    query =
+      from membership in Membership,
+        join: workspace in assoc(membership, :workspace),
+        where:
+          membership.id == ^membership_id and membership.status == "active" and
+            workspace.slug == ^workspace_slug,
+        select: %{membership: membership, workspace: workspace}
+
+    if Keyword.get(options, :lock, false), do: lock(query, "FOR UPDATE"), else: query
   end
 
   defp lock_active_membership(repo, membership_id, workspace_id, not_found_reason) do

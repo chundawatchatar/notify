@@ -6,12 +6,15 @@ defmodule Api.Workspaces.Workspace do
 
   alias Domain.WorkspaceSlug
 
+  @settings_fields ~w(name timezone)
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
   schema "workspaces" do
     field :name, :string
     field :slug, :string
+    field :timezone, :string, default: "UTC"
 
     has_many :memberships, Api.Workspaces.Membership
     has_many :notification_apps, Api.NotificationApps.NotificationApp
@@ -32,6 +35,24 @@ defmodule Api.Workspaces.Workspace do
     |> unique_constraint(:slug, name: :workspaces_slug_lower_index)
     |> check_constraint(:name, name: :workspaces_name_length)
     |> check_constraint(:slug, name: :workspaces_slug_format)
+  end
+
+  def settings_changeset(workspace, attrs) when is_map(attrs) do
+    attrs = Map.new(attrs, fn {key, value} -> {to_string(key), value} end)
+
+    workspace
+    |> cast(attrs, [:name, :timezone])
+    |> update_change(:name, &String.trim/1)
+    |> validate_required([:name, :timezone])
+    |> validate_length(:name, min: 2, max: 100)
+    |> validate_change(:timezone, fn :timezone, timezone ->
+      if timezone == "UTC" or timezone in TzExtra.time_zone_ids(),
+        do: [],
+        else: [timezone: "must be a canonical IANA timezone identifier"]
+    end)
+    |> validate_settings_fields(attrs)
+    |> check_constraint(:name, name: :workspaces_name_length)
+    |> check_constraint(:timezone, name: :workspaces_timezone_length)
   end
 
   @doc """
@@ -60,5 +81,17 @@ defmodule Api.Workspaces.Workspace do
       from workspace in __MODULE__,
         where: fragment("lower(?) = ?", workspace.slug, ^slug)
     )
+  end
+
+  defp validate_settings_fields(changeset, attrs) do
+    case Map.keys(attrs) do
+      [] ->
+        add_error(changeset, :base, "must include at least one editable setting")
+
+      keys ->
+        if Enum.all?(keys, &(&1 in @settings_fields)),
+          do: changeset,
+          else: add_error(changeset, :base, "contains unsupported settings fields")
+    end
   end
 end

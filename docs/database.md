@@ -96,7 +96,9 @@ code.
   subject.
 - `users`: normalized unique login identity, Argon2 password hash, email
   confirmation, terms acceptance, and latest successful login time.
-- `workspaces`: tenant boundary created during signup.
+- `workspaces`: tenant boundary created during signup. It stores the editable
+  workspace name and canonical IANA timezone used as a dashboard presentation
+  default; existing and new rows default to `UTC`.
 - `workspace_memberships`: user-to-workspace role and session boundary. Rows
   are retained across removal, with `active` or `removed` status plus join and
   removal timestamps. Initial roles are `owner`, `admin`, `developer`, and
