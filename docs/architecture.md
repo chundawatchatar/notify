@@ -39,6 +39,10 @@ subdomain layout.
   `docs/delivery-analytics-mvp.md`, including tenant-scoped aggregation,
   publication metrics, time windows, and the boundary with billing and
   reporting.
+- The workspace settings MVP contract documented in
+  `docs/workspace-settings-mvp.md`, including workspace-owned editable state,
+  membership-scoped authorization, and the boundary with deferred operational
+  preferences.
 
 `libs/domain` is for framework-free business logic that can be tested without
 Phoenix, Ecto, or a database connection. Framework-free server API key
@@ -85,6 +89,11 @@ and the authenticated test-event workflow. It does not own the public
 `POST /api/v1/notifications` contract, raw server API key handling after the
 one-time reveal, accepted-event persistence, or delivery execution and
 realtime fanout.
+
+For workspace settings MVP behavior, the web app owns the slug-based settings
+route, the name and timezone form, informational workspace state, and cache
+refresh after updates. It does not own settings persistence, permission
+decisions, environment defaults, or operational notification delivery.
 
 ## Data Flow
 
