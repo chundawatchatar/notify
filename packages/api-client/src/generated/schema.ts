@@ -75,6 +75,24 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/workspaces/{workspaceSlug}/settings": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get settings for the active workspace */
+    get: operations["getWorkspaceSettings"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Update settings for the active workspace */
+    patch: operations["updateWorkspaceSettings"];
+    trace?: never;
+  };
   "/api/v1/notifications": {
     parameters: {
       query?: never;
@@ -721,6 +739,17 @@ export interface components {
        */
       status: "verification_sent";
     };
+    /** WorkspaceSettings */
+    WorkspaceSettings: {
+      /** @enum {string} */
+      default_environment: "development";
+      /** @example Acme Cloud */
+      name: string;
+      /** @example acme-cloud */
+      slug: string;
+      /** @example UTC */
+      timezone: string;
+    };
     /** CompleteSignupRequest */
     CompleteSignupRequest: {
       /**
@@ -769,6 +798,10 @@ export interface components {
       /** Format: date-time */
       joined_at: string;
       role: components["schemas"]["AuthWorkspaceRole"];
+    };
+    /** WorkspaceSettingsResponse */
+    WorkspaceSettingsResponse: {
+      settings: components["schemas"]["WorkspaceSettings"];
     };
     /** ResolveInvitationRequest */
     ResolveInvitationRequest: {
@@ -1018,6 +1051,13 @@ export interface components {
        * @example owner@example.com
        */
       email: string;
+    };
+    /** UpdateWorkspaceSettingsRequest */
+    UpdateWorkspaceSettingsRequest: {
+      /** @example Acme Platform */
+      name?: string;
+      /** @example Asia/Kolkata */
+      timezone?: string;
     };
     /**
      * AuthWorkspaceRole
@@ -1454,6 +1494,120 @@ export interface operations {
       };
       /** @description Email not verified or origin rejected */
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+    };
+  };
+  getWorkspaceSettings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Workspace settings */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceSettingsResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Workspace unavailable */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  updateWorkspaceSettings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workspace slug */
+        workspaceSlug: string;
+      };
+      cookie?: never;
+    };
+    /** @description Editable workspace settings */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateWorkspaceSettingsRequest"];
+      };
+    };
+    responses: {
+      /** @description Updated workspace settings */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceSettingsResponse"];
+        };
+      };
+      /** @description Access token invalid */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Permission denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Workspace unavailable */
+      404: {
         headers: {
           [name: string]: unknown;
         };

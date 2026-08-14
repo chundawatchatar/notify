@@ -2,6 +2,59 @@ defmodule NotifyOpenApi.WorkspaceSchemas do
   alias OpenApiSpex.Schema
   alias NotifyOpenApi.AuthSchemas.{ErrorResponse, ValidationErrorResponse, WorkspaceRole}
 
+  defmodule WorkspaceSettings do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "WorkspaceSettings",
+      type: :object,
+      properties: %{
+        name: %Schema{type: :string, minLength: 2, maxLength: 100, example: "Acme Cloud"},
+        slug: %Schema{
+          type: :string,
+          minLength: 1,
+          maxLength: 50,
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          example: "acme-cloud"
+        },
+        timezone: %Schema{type: :string, minLength: 1, maxLength: 255, example: "UTC"},
+        default_environment: %Schema{type: :string, enum: ["development"]}
+      },
+      required: [:name, :slug, :timezone, :default_environment]
+    })
+  end
+
+  defmodule WorkspaceSettingsResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "WorkspaceSettingsResponse",
+      type: :object,
+      properties: %{settings: WorkspaceSettings},
+      required: [:settings]
+    })
+  end
+
+  defmodule UpdateWorkspaceSettingsRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "UpdateWorkspaceSettingsRequest",
+      type: :object,
+      additionalProperties: false,
+      minProperties: 1,
+      properties: %{
+        name: %Schema{type: :string, minLength: 2, maxLength: 100, example: "Acme Platform"},
+        timezone: %Schema{
+          type: :string,
+          minLength: 1,
+          maxLength: 255,
+          example: "Asia/Kolkata"
+        }
+      }
+    })
+  end
+
   defmodule Member do
     require OpenApiSpex
 

@@ -172,6 +172,46 @@
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.StatusResponse",
         "x-validate": null
       },
+      "WorkspaceSettings": {
+        "properties": {
+          "default_environment": {
+            "enum": ["development"],
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "name": {
+            "example": "Acme Cloud",
+            "maxLength": 100,
+            "minLength": 2,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "slug": {
+            "example": "acme-cloud",
+            "maxLength": 50,
+            "minLength": 1,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "timezone": {
+            "example": "UTC",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["name", "slug", "timezone", "default_environment"],
+        "title": "WorkspaceSettings",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.WorkspaceSettings",
+        "x-validate": null
+      },
       "CompleteSignupRequest": {
         "additionalProperties": false,
         "properties": {
@@ -311,6 +351,18 @@
         "title": "WorkspaceMember",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.Member",
+        "x-validate": null
+      },
+      "WorkspaceSettingsResponse": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/WorkspaceSettings"
+          }
+        },
+        "required": ["settings"],
+        "title": "WorkspaceSettingsResponse",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.WorkspaceSettingsResponse",
         "x-validate": null
       },
       "ResolveInvitationRequest": {
@@ -1077,6 +1129,32 @@
         "title": "SignupRequest",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.AuthSchemas.SignupRequest",
+        "x-validate": null
+      },
+      "UpdateWorkspaceSettingsRequest": {
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "name": {
+            "example": "Acme Platform",
+            "maxLength": 100,
+            "minLength": 2,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          },
+          "timezone": {
+            "example": "Asia/Kolkata",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "title": "UpdateWorkspaceSettingsRequest",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.WorkspaceSchemas.UpdateWorkspaceSettingsRequest",
         "x-validate": null
       },
       "AuthWorkspaceRole": {
@@ -2120,6 +2198,167 @@
         },
         "summary": "Sign in with email and password",
         "tags": ["authentication"]
+      }
+    },
+    "/api/workspaces/{workspaceSlug}/settings": {
+      "get": {
+        "callbacks": {},
+        "operationId": "getWorkspaceSettings",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSettingsResponse"
+                }
+              }
+            },
+            "description": "Workspace settings"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get settings for the active workspace",
+        "tags": ["workspace settings"]
+      },
+      "patch": {
+        "callbacks": {},
+        "operationId": "updateWorkspaceSettings",
+        "parameters": [
+          {
+            "description": "Workspace slug",
+            "in": "path",
+            "name": "workspaceSlug",
+            "required": true,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string",
+              "x-struct": null,
+              "x-validate": null
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceSettingsRequest"
+              }
+            }
+          },
+          "description": "Editable workspace settings",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSettingsResponse"
+                }
+              }
+            },
+            "description": "Updated workspace settings"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Access token invalid"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission denied"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Workspace unavailable"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update settings for the active workspace",
+        "tags": ["workspace settings"]
       }
     },
     "/api/v1/notifications": {
