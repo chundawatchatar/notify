@@ -15,14 +15,15 @@ import {
   TableRow,
   UsageBar,
 } from "@notify/ui";
-import { ArrowUpRight, BellRing, Copy, Plus, SlidersHorizontal } from "lucide-react";
+import { ArrowUpRight, BellRing, Copy, Plus } from "lucide-react";
 import type { WorkspaceSectionId } from "@/lib/workspace-sections";
 import type { WorkspaceSecuritySearch } from "../workspace-security-page";
 import { WorkspaceSecurityPage } from "../workspace-security-page";
 import { AnalyticsContent } from "./analytics-content";
 import { ChecklistCard } from "./cards";
-import { appRows, appSetup, notificationPreferences, workspaceSettings } from "./data";
+import { appRows, appSetup } from "./data";
 import { IngressContent } from "./ingress-content";
+import { SettingsContent } from "./settings-content";
 
 function SectionActions({ section }: Readonly<{ section: WorkspaceSectionId }>) {
   if (section === "apps") {
@@ -40,7 +41,12 @@ function SectionActions({ section }: Readonly<{ section: WorkspaceSectionId }>) 
     );
   }
 
-  if (section === "security" || section === "ingress" || section === "analytics") {
+  if (
+    section === "security" ||
+    section === "ingress" ||
+    section === "analytics" ||
+    section === "settings"
+  ) {
     return null;
   }
 
@@ -81,7 +87,7 @@ function SectionContent({
     return <WorkspaceSecurityPage search={search ?? {}} workspaceSlug={workspaceSlug} />;
   }
 
-  return <SettingsContent />;
+  return <SettingsContent workspaceSlug={workspaceSlug} />;
 }
 
 function AppsContent() {
@@ -176,25 +182,6 @@ function SubscriptionContent() {
           <UsageBar label="Seats" value={80} detail="16 of 20 team seats" />
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function SettingsContent() {
-  return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-      <ChecklistCard
-        description="Core workspace defaults applied across every app."
-        icon={SlidersHorizontal}
-        items={workspaceSettings}
-        title="Workspace settings"
-      />
-      <ChecklistCard
-        description="Operational alerts for delivery and usage thresholds."
-        icon={BellRing}
-        items={notificationPreferences}
-        title="Notification preferences"
-      />
     </div>
   );
 }

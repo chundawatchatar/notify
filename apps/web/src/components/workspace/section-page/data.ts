@@ -38,8 +38,7 @@ const pageCopy: Record<WorkspaceSectionId, { badge: string; description: string;
     settings: {
       badge: "Workspace admin",
       title: "Settings",
-      description:
-        "Configure workspace identity, team defaults, environment behavior, and notification platform preferences.",
+      description: "Manage the active workspace identity and dashboard presentation defaults.",
     },
   };
 
@@ -103,27 +102,5 @@ const recentIngressEvents = [
   readonly [event: string, environment: string, outcome: string, acceptedAt: string]
 >;
 
-const workspaceSettings = [
-  ["Workspace name", "Acme workspace"],
-  ["Default environment", "Production"],
-  ["Notification timezone", "Asia/Kolkata"],
-  ["Data residency", "US region"],
-] satisfies LabelValueRow[];
-
-const notificationPreferences = [
-  ["Delivery alerts", "Enabled"],
-  ["Usage alerts", "80% threshold"],
-  ["Weekly report", "Monday morning"],
-  ["Incident contacts", "3 recipients"],
-] satisfies LabelValueRow[];
-
 export type { BadgeTone, LabelValueRow };
-export {
-  appRows,
-  appSetup,
-  ingressRules,
-  notificationPreferences,
-  pageCopy,
-  recentIngressEvents,
-  workspaceSettings,
-};
+export { appRows, appSetup, ingressRules, pageCopy, recentIngressEvents };

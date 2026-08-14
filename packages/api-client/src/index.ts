@@ -48,6 +48,9 @@ type ApiAuthResponse = JsonResponse<"login", 200>;
 type ApiCurrentUserResponse = JsonResponse<"getCurrentUser", 200>;
 type ApiWorkspaceListResponse = JsonResponse<"listWorkspaces", 200>;
 type ApiSwitchWorkspaceRequest = JsonRequestBody<"switchWorkspace">;
+type ApiWorkspaceSettingsResponse = JsonResponse<"getWorkspaceSettings", 200>;
+type ApiWorkspaceSettings = ApiWorkspaceSettingsResponse["settings"];
+type ApiUpdateWorkspaceSettingsRequest = JsonRequestBody<"updateWorkspaceSettings">;
 type ApiWorkspaceMembersResponse = JsonResponse<"listWorkspaceMembers", 200>;
 type ApiWorkspaceMember = JsonResponse<"updateWorkspaceMemberRole", 200>;
 type ApiUpdateWorkspaceMemberRoleRequest = JsonRequestBody<"updateWorkspaceMemberRole">;
@@ -130,6 +133,7 @@ export type {
   ApiSwitchWorkspaceRequest,
   ApiUpdateNotificationAppRequest,
   ApiUpdateWorkspaceMemberRoleRequest,
+  ApiUpdateWorkspaceSettingsRequest,
   ApiValidationErrorResponse,
   ApiVersionResponse,
   ApiWorkspaceInvitation,
@@ -137,6 +141,8 @@ export type {
   ApiWorkspaceListResponse,
   ApiWorkspaceMember,
   ApiWorkspaceMembersResponse,
+  ApiWorkspaceSettings,
+  ApiWorkspaceSettingsResponse,
   JsonRequestBody,
   JsonResponse,
 };

@@ -41,12 +41,14 @@ import type {
   ApiSwitchWorkspaceRequest,
   ApiUpdateNotificationAppRequest,
   ApiUpdateWorkspaceMemberRoleRequest,
+  ApiUpdateWorkspaceSettingsRequest,
   ApiVersionResponse,
   ApiWorkspaceInvitation,
   ApiWorkspaceInvitationsResponse,
   ApiWorkspaceListResponse,
   ApiWorkspaceMember,
   ApiWorkspaceMembersResponse,
+  ApiWorkspaceSettingsResponse,
 } from "@notify/api-client";
 import { ApiRequestError, deleteRequest, get, patch, post } from "./http-client";
 
@@ -136,6 +138,24 @@ function getCurrentUser(accessToken: string) {
 
 function listWorkspaces(accessToken: string) {
   return get<ApiWorkspaceListResponse>("/api/workspaces", { accessToken });
+}
+
+function getWorkspaceSettings(accessToken: string, workspaceSlug: string) {
+  return get<ApiWorkspaceSettingsResponse>(`/api/workspaces/${workspaceSlug}/settings`, {
+    accessToken,
+  });
+}
+
+function updateWorkspaceSettings(
+  accessToken: string,
+  workspaceSlug: string,
+  body: ApiUpdateWorkspaceSettingsRequest,
+) {
+  return patch<ApiWorkspaceSettingsResponse, ApiUpdateWorkspaceSettingsRequest>(
+    `/api/workspaces/${workspaceSlug}/settings`,
+    body,
+    { accessToken },
+  );
 }
 
 function listNotificationApps(accessToken: string) {
@@ -437,6 +457,7 @@ export {
   getDeliveryAnalytics,
   getNotificationApp,
   getNotificationIngress,
+  getWorkspaceSettings,
   listEnvironmentClientKeys,
   listEnvironmentServerApiKeys,
   listEnvironmentTrustedOrigins,
@@ -461,4 +482,5 @@ export {
   switchWorkspace,
   updateNotificationApp,
   updateWorkspaceMemberRole,
+  updateWorkspaceSettings,
 };
