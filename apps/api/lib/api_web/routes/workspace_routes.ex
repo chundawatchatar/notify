@@ -3,6 +3,9 @@ defmodule ApiWeb.Routes.WorkspaceRoutes do
 
   defmacro workspace_member_routes do
     quote do
+      get "/workspaces/:workspaceSlug/settings", WorkspaceSettingsController, :show
+      patch "/workspaces/:workspaceSlug/settings", WorkspaceSettingsController, :update
+
       get "/workspaces/:workspaceSlug/members", WorkspaceMemberController, :index
       patch "/workspaces/:workspaceSlug/members/:membershipId", WorkspaceMemberController, :update
 

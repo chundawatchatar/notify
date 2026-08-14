@@ -29,6 +29,7 @@ defmodule ApiWeb.OpenApiControllerTest do
     assert Map.has_key?(response["paths"], "/api/apps")
     assert Map.has_key?(response["paths"], "/api/apps/{appSlug}")
     assert Map.has_key?(response["paths"], "/api/analytics")
+    assert Map.has_key?(response["paths"], "/api/workspaces/{workspaceSlug}/settings")
 
     assert Map.has_key?(
              response["paths"],
@@ -84,6 +85,31 @@ defmodule ApiWeb.OpenApiControllerTest do
 
     assert response["paths"]["/api/analytics"]["get"]["security"] == [
              %{"bearerAuth" => []}
+           ]
+
+    assert response["paths"]["/api/workspaces/{workspaceSlug}/settings"]["get"][
+             "operationId"
+           ] == "getWorkspaceSettings"
+
+    assert response["paths"]["/api/workspaces/{workspaceSlug}/settings"]["patch"][
+             "operationId"
+           ] == "updateWorkspaceSettings"
+
+    assert response["paths"]["/api/workspaces/{workspaceSlug}/settings"]["get"]["responses"][
+             "200"
+           ]["content"]["application/json"]["schema"]["$ref"] ==
+             "#/components/schemas/WorkspaceSettingsResponse"
+
+    assert response["paths"]["/api/workspaces/{workspaceSlug}/settings"]["patch"][
+             "requestBody"
+           ]["content"]["application/json"]["schema"]["$ref"] ==
+             "#/components/schemas/UpdateWorkspaceSettingsRequest"
+
+    assert response["components"]["schemas"]["WorkspaceSettings"]["required"] == [
+             "name",
+             "slug",
+             "timezone",
+             "default_environment"
            ]
 
     assert response["paths"]["/api/apps/{appSlug}"]["get"]["operationId"] ==
