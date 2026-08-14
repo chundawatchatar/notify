@@ -187,16 +187,18 @@ with `manage_workspace`. Workspace slug and the system-owned Development
 default are informational. Developers and viewers may load the page through
 `view_workspace`, but the page renders read-only values and no save action.
 
-Use TanStack Query for the settings read and update mutation, and TanStack Form
-with Zod for the owner and admin form. A successful update refreshes settings
-and authenticated workspace summaries so the shell and workspace switcher do
-not retain a stale name. Renaming never changes the route slug.
+The implemented page uses TanStack Query for the settings read and update
+mutation, and TanStack Form with Zod for the owner and admin form. Read failures
+offer a retry, and mutation failures preserve entered values for correction. A
+successful update refreshes settings and authenticated workspace summaries so
+the shell and workspace switcher do not retain a stale name. Renaming never
+changes the route slug.
 
-Remove the placeholder delivery alerts, usage threshold, weekly report,
-incident contacts, and data residency rows when the real settings flow is
-implemented. Those fields have no current backend contract and must not appear
-as disabled or simulated controls. The complete API and deferred-scope rules
-are defined in `docs/workspace-settings-mvp.md`.
+The implemented page omits the former placeholder delivery alerts, usage
+threshold, weekly report, incident contacts, and data residency rows. Those
+fields have no current backend contract and must not appear as disabled or
+simulated controls. The complete API and deferred-scope rules are defined in
+`docs/workspace-settings-mvp.md`.
 
 Shared dashboard layout lives in:
 

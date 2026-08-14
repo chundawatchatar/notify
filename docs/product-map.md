@@ -314,7 +314,7 @@ Responsibilities:
   informational state
 - keep developer and viewer access read-only
 
-MVP backend ownership:
+Current backend ownership:
 
 - `GET /api/workspaces/:workspaceSlug/settings` with `view_workspace`
   authorization
@@ -322,6 +322,7 @@ MVP backend ownership:
   authorization
 - membership-scoped resolution of the route slug
 - workspace-owned name and timezone persistence
+- typed OpenAPI and generated TypeScript settings contracts
 
 The default environment remains the existing fixed Development routing
 behavior and is not persisted or editable. Delivery alerts, usage thresholds,
