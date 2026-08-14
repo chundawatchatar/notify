@@ -62,7 +62,7 @@ defmodule Api.Workspaces.SettingsTest do
     assert "must include at least one editable setting" in errors_on(empty_changeset).base
   end
 
-  test "uses the persisted membership role and never updates another workspace" do
+  test "uses only an active persisted membership and never updates another workspace" do
     developer = insert(:membership, role: "developer")
     other_workspace = insert(:workspace)
     forged_owner = %{developer | role: "owner"}
@@ -87,5 +87,17 @@ defmodule Api.Workspaces.SettingsTest do
 
     assert Repo.get!(Workspace, developer.workspace.id).name == developer.workspace.name
     assert Repo.get!(Workspace, other_workspace.id).name == other_workspace.name
+
+    developer
+    |> change(status: "removed", removed_at: DateTime.utc_now(:second))
+    |> Repo.update!()
+
+    assert {:error, :not_found} =
+             Workspaces.get_workspace_settings(developer, developer.workspace.slug)
+
+    assert {:error, :not_found} =
+             Workspaces.update_workspace_settings(developer, developer.workspace.slug, %{
+               name: "Removed Member Rename"
+             })
   end
 end

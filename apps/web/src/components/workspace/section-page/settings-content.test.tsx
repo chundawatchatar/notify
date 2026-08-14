@@ -89,6 +89,37 @@ describe("settings content", () => {
     expect(updateCalls).toBe(0);
   });
 
+  it("keeps entered values available after server-side validation fails", async () => {
+    installBrowserCoordination();
+    server.use(
+      ...authHandlers("owner"),
+      http.get(settingsPath(), () => HttpResponse.json(settingsResponse(false))),
+      http.patch(settingsPath(), () =>
+        HttpResponse.json(
+          {
+            errors: {
+              code: "validation_failed",
+              detail: "Workspace settings are invalid.",
+              fields: { name: ["has already been taken"] },
+            },
+          },
+          { status: 422 },
+        ),
+      ),
+    );
+
+    const container = await renderSettings();
+    await waitForText(container, "Workspace details");
+
+    const nameInput = inputByName(container, "name");
+    change(nameInput, "Acme Platform");
+    click(buttonByText(container, "Save settings"));
+
+    await waitForText(container, "has already been taken");
+    expect(container.textContent).toContain("Settings could not be saved");
+    expect(nameInput.value).toBe("Acme Platform");
+  });
+
   it("shows developer and viewer settings as read-only", async () => {
     installBrowserCoordination();
     server.use(

@@ -1,8 +1,8 @@
 # Workspace Settings MVP
 
-This document defines the first real workspace settings surface. It replaces
-the dashboard placeholder contract and is authoritative for the persistence,
-API, and web tickets that follow.
+This document defines the implemented workspace settings MVP across
+persistence, API contracts, and the dashboard. It replaces the former static
+placeholder contract and remains authoritative for the settings flow.
 
 ## Goals
 
@@ -75,6 +75,9 @@ unknown slug or a slug that does not match the session workspace returns the
 same not-found response and must not reveal another workspace. Switching
 workspaces remains a separate authenticated session operation.
 
+The OpenAPI source and generated TypeScript contracts expose these operations
+as `getWorkspaceSettings` and `updateWorkspaceSettings`.
+
 The read and successful update response uses this shape:
 
 ```json
@@ -114,11 +117,13 @@ The canonical page remains `/w/:workspaceSlug/settings`. The legacy
 `/settings` alias resolves the active membership and redirects to the canonical
 route. It does not render a second settings page or accept edits directly.
 
-The page loads the settings representation with TanStack Query. Owner and admin
-forms use TanStack Form and Zod for workspace name and timezone. After a
-successful mutation, the browser refreshes settings plus any authenticated
-workspace summaries that display the workspace name. Developer and viewer
-sessions show the same values without enabled form controls.
+The page loads the settings representation with TanStack Query and offers a
+retry when that read fails. Owner and admin forms use TanStack Form and Zod for
+workspace name and timezone. After a successful mutation, the browser refreshes
+settings plus any authenticated workspace summaries that display the workspace
+name. A failed mutation keeps the entered values available for correction.
+Developer and viewer sessions show the same values without enabled form
+controls.
 
 The page labels Workspace slug and Default environment as informational. It
 must not present those values as disabled controls that imply a future update
