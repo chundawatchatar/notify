@@ -57,6 +57,8 @@ domain library.
 - `docs/architecture.md`: service boundaries and repo architecture.
 - `docs/authentication.md`: access tokens, refresh rotation, browser security,
   and session revocation.
+- `docs/authentication-production-readiness.md`: rate limiting, production auth
+  email, and public-exposure gates.
 - `docs/frontend.md`: dashboard, marketing, shared UI, and frontend rules.
 - `docs/product-map.md`: product modules and intended flows.
 - `docs/database.md`: database ownership, migrations, and safety rules.

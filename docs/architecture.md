@@ -139,7 +139,10 @@ Password recovery stores hashed, expiring, one-time credentials and returns the
 same request response whether or not an account exists. Completing a reset
 updates the Argon2 password hash and revokes all existing sessions for the user.
 
-Google OAuth and authentication rate limiting remain deferred.
+Authentication rate limiting and production transactional email are required
+before public exposure. Their fixed scope and implementation sequence are in
+`docs/authentication-production-readiness.md`. Google OAuth and broader
+authentication work remain deferred.
 
 ## Workspace Collaboration And Access
 
