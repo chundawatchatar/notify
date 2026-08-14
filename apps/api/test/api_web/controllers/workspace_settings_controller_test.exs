@@ -59,7 +59,7 @@ defmodule ApiWeb.WorkspaceSettingsControllerTest do
     assert Api.Repo.reload!(membership.workspace).timezone == "UTC"
   end
 
-  test "invalid, unsupported, and empty updates return validation errors atomically", %{
+  test "invalid, null, unsupported, and empty updates return validation errors atomically", %{
     conn: conn
   } do
     membership = insert(:membership, role: "owner")
@@ -88,6 +88,15 @@ defmodule ApiWeb.WorkspaceSettingsControllerTest do
     assert empty_response["errors"]["fields"]["base"] == [
              "must include at least one editable setting"
            ]
+
+    null_response =
+      build_conn()
+      |> authorize(access_token)
+      |> patch(~p"/api/workspaces/#{membership.workspace.slug}/settings", %{name: nil})
+      |> json_response(422)
+
+    assert null_response["errors"]["code"] == "validation_failed"
+    assert null_response["errors"]["fields"]["name"] == ["can't be blank"]
 
     workspace = Api.Repo.reload!(membership.workspace)
     assert workspace.name == membership.workspace.name

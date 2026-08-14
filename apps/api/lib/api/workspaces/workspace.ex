@@ -42,7 +42,7 @@ defmodule Api.Workspaces.Workspace do
 
     workspace
     |> cast(attrs, [:name, :timezone])
-    |> update_change(:name, &String.trim/1)
+    |> update_change(:name, fn name -> if is_binary(name), do: String.trim(name), else: name end)
     |> validate_required([:name, :timezone])
     |> validate_length(:name, min: 2, max: 100)
     |> validate_change(:timezone, fn :timezone, timezone ->
