@@ -5,6 +5,22 @@ defmodule ApiWeb.AuthRateLimitTest do
 
   @origin "http://localhost:3100"
 
+  test "origin-rejected requests do not consume rate-limit budgets", %{conn: conn} do
+    for _request <- 1..3 do
+      response =
+        conn
+        |> post(~p"/api/auth/password-reset", %{email: "missing@example.com"})
+        |> json_response(403)
+
+      assert response["errors"]["code"] == "origin_not_allowed"
+    end
+
+    conn
+    |> with_origin()
+    |> post(~p"/api/auth/password-reset", %{email: "missing@example.com"})
+    |> json_response(202)
+  end
+
   test "email action budget allows the boundary, rejects excess, and resets", %{conn: conn} do
     for _request <- 1..3 do
       response =

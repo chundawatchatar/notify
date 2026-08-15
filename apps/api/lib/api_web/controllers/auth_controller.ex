@@ -48,6 +48,19 @@ defmodule ApiWeb.AuthController do
   @rate_limiter_unavailable_response {"Rate limiter unavailable", "application/json",
                                       ErrorResponse}
 
+  plug ApiWeb.Plugs.RequireAllowedOrigin
+       when action in [
+              :login,
+              :request_password_reset,
+              :confirm_password_reset,
+              :complete_password_reset,
+              :accept_invitation,
+              :complete_invitation_signup,
+              :refresh,
+              :delete_session,
+              :switch_workspace
+            ]
+
   plug ApiWeb.Plugs.AuthRateLimit
        when action in [
               :signup,
@@ -61,19 +74,6 @@ defmodule ApiWeb.AuthController do
               :complete_password_reset,
               :login,
               :refresh
-            ]
-
-  plug ApiWeb.Plugs.RequireAllowedOrigin
-       when action in [
-              :login,
-              :request_password_reset,
-              :confirm_password_reset,
-              :complete_password_reset,
-              :accept_invitation,
-              :complete_invitation_signup,
-              :refresh,
-              :delete_session,
-              :switch_workspace
             ]
 
   plug ApiWeb.Plugs.Authenticate, [required: false] when action == :delete_session
