@@ -1,6 +1,9 @@
 import Config
 
 config :api,
+  auth_rate_limit_namespace: "notify:test",
+  auth_rate_limit_store: Api.AuthRateLimiter.TestStore,
+  auth_rate_limit_trusted_proxies: ["10.0.0.0/8"],
   delivery_publisher_enabled: false,
   invitation_email_adapter: Api.Accounts.InvitationEmail.TestAdapter,
   password_reset_email_adapter: Api.Accounts.PasswordResetEmail.TestAdapter,

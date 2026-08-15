@@ -11,6 +11,12 @@ config :swoosh, :api_client, false
 
 config :api,
   auth_jwt_secret: "notify-local-jwt-secret-change-before-production",
+  auth_rate_limiter_enabled: true,
+  auth_rate_limit_namespace: "notify:dev",
+  auth_rate_limit_store: Api.AuthRateLimiter.RedisStore,
+  auth_rate_limit_trusted_proxies: [],
+  auth_rate_limit_redis_name: Api.AuthRateLimiter.Redis,
+  redis_url: "redis://localhost:16379",
   cors_origins: ["http://localhost:3100"],
   environment: config_env(),
   ecto_repos: [Api.Repo],

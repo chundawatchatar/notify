@@ -33,6 +33,7 @@ defmodule ApiWeb.ConnCase do
   end
 
   setup tags do
+    :ok = Api.AuthRateLimiter.TestStore.reset()
     Api.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end

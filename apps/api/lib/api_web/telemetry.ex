@@ -36,6 +36,10 @@ defmodule ApiWeb.Telemetry do
         event_name: [:phoenix, :router_dispatch, :exception],
         tags: [:route]
       ),
+      counter("api.auth_rate_limit.count",
+        event_name: [:api, :auth_rate_limit],
+        tags: [:action, :outcome]
+      ),
       distribution("api.repo.query.total_time.seconds",
         event_name: [:api, :repo, :query],
         measurement: :total_time,

@@ -9,6 +9,13 @@ The authentication public-exposure gates, initial endpoint rate limits, and
 production email provider contract are defined in
 `docs/authentication-production-readiness.md`.
 
+The initial public authentication endpoints are protected by shared Redis
+budgets before account lookup, password hashing, token consumption, or email
+delivery. Exhausted budgets return `429 rate_limited` with `Retry-After`.
+Limiter or Redis failures return `503 rate_limiter_unavailable` without running
+the authentication action. Raw email addresses, one-time credentials, and
+refresh secrets do not appear in Redis keys or logs.
+
 ## Credential Model
 
 - The access token is a signed JWT with a 15-minute lifetime. It contains only

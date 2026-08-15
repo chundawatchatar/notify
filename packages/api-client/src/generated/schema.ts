@@ -1018,6 +1018,17 @@ export interface components {
       /** Format: date-time */
       start_at: string;
     };
+    /**
+     * RedisCheck
+     * @description Redis readiness check result for shared authentication rate limiting.
+     * @example {
+     *       "ready": true
+     *     }
+     */
+    RedisCheck: {
+      /** @example true */
+      ready: boolean;
+    };
     /** DeliveryAnalyticsMetrics */
     DeliveryAnalyticsMetrics: {
       counts: components["schemas"]["DeliveryAnalyticsCounts"];
@@ -1153,11 +1164,15 @@ export interface components {
      * @example {
      *       "database": {
      *         "ready": true
+     *       },
+     *       "redis": {
+     *         "ready": true
      *       }
      *     }
      */
     ReadinessChecks: {
       database: components["schemas"]["DatabaseCheck"];
+      redis: components["schemas"]["RedisCheck"];
     };
     /** DeliveryAnalyticsCounts */
     DeliveryAnalyticsCounts: {
@@ -1275,6 +1290,9 @@ export interface components {
      * @example {
      *       "checks": {
      *         "database": {
+     *           "ready": true
+     *         },
+     *         "redis": {
      *           "ready": true
      *         }
      *       },
@@ -1427,7 +1445,18 @@ export interface operations {
           "application/json": components["schemas"]["ValidationErrorResponse"];
         };
       };
-      /** @description Verification delivery failed */
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter or verification delivery unavailable */
       503: {
         headers: {
           [name: string]: unknown;
@@ -1508,6 +1537,26 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
         };
       };
     };
@@ -2012,7 +2061,18 @@ export interface operations {
           "application/json": components["schemas"]["ValidationErrorResponse"];
         };
       };
-      /** @description Verification delivery failed */
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter or verification delivery unavailable */
       503: {
         headers: {
           [name: string]: unknown;
@@ -2232,6 +2292,26 @@ export interface operations {
           "application/json": components["schemas"]["ValidationErrorResponse"];
         };
       };
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
     };
   };
   completeInvitationSignup: {
@@ -2293,6 +2373,26 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
         };
       };
     };
@@ -2656,6 +2756,26 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
     };
   };
   listWorkspaceInvitations: {
@@ -2820,6 +2940,26 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ValidationErrorResponse"];
+        };
+      };
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
         };
       };
     };
@@ -3069,6 +3209,26 @@ export interface operations {
       };
       /** @description Origin rejected */
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter unavailable */
+      503: {
         headers: {
           [name: string]: unknown;
         };
@@ -3335,6 +3495,26 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
     };
   };
   rotateEnvironmentServerApiKey: {
@@ -3473,6 +3653,26 @@ export interface operations {
           "application/json": components["schemas"]["ValidationErrorResponse"];
         };
       };
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
     };
   };
   resolveInvitation: {
@@ -3500,6 +3700,26 @@ export interface operations {
       };
       /** @description Invitation invalid or expired */
       400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limit exceeded */
+      429: {
+        headers: {
+          /** @description Seconds until the exhausted budget resets */
+          "Retry-After"?: number;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Rate limiter unavailable */
+      503: {
         headers: {
           [name: string]: unknown;
         };

@@ -66,9 +66,19 @@ change.
   request ID and action, but not raw limiter keys or credential material.
 
 Production requires `REDIS_URL` and a deployment-specific
-`AUTH_RATE_LIMIT_NAMESPACE`. Once the limiter is enabled, API readiness must
-include Redis connectivity because public authentication is unsafe without the
-shared limiter.
+`AUTH_RATE_LIMIT_NAMESPACE`. It also requires
+`AUTH_RATE_LIMIT_TRUSTED_PROXIES`, a comma-separated list of the ingress proxy
+IP addresses or CIDR ranges allowed to supply `X-Forwarded-For`. The API ignores
+forwarded IP headers from every other peer. API readiness includes Redis
+connectivity because public authentication is unsafe without the shared
+limiter.
+
+The implementation uses fixed-window counters. One atomic Redis script
+increments every budget that applies to a request, assigns expiration to new
+or damaged counters, and returns the longest exhausted-budget retry interval.
+Changing a budget resets behavior only after existing namespaced counters
+expire. A deployment namespace must therefore remain stable across ordinary
+rollouts and must differ between deployments.
 
 ## Production Email Contract
 

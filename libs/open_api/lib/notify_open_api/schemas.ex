@@ -39,6 +39,23 @@ defmodule NotifyOpenApi.Schemas do
     })
   end
 
+  defmodule RedisCheck do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "RedisCheck",
+      description: "Redis readiness check result for shared authentication rate limiting.",
+      type: :object,
+      properties: %{
+        ready: %Schema{type: :boolean, example: true}
+      },
+      required: [:ready],
+      example: %{
+        "ready" => true
+      }
+    })
+  end
+
   defmodule ReadinessChecks do
     require OpenApiSpex
 
@@ -47,11 +64,15 @@ defmodule NotifyOpenApi.Schemas do
       description: "API dependency readiness checks.",
       type: :object,
       properties: %{
-        database: DatabaseCheck
+        database: DatabaseCheck,
+        redis: RedisCheck
       },
-      required: [:database],
+      required: [:database, :redis],
       example: %{
         "database" => %{
+          "ready" => true
+        },
+        "redis" => %{
           "ready" => true
         }
       }
@@ -103,6 +124,9 @@ defmodule NotifyOpenApi.Schemas do
         },
         "checks" => %{
           "database" => %{
+            "ready" => true
+          },
+          "redis" => %{
             "ready" => true
           }
         }
