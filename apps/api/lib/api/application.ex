@@ -14,6 +14,7 @@ defmodule Api.Application do
         {DNSCluster, query: Application.get_env(:api, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: Api.PubSub}
       ] ++
+        auth_rate_limiter_child() ++
         delivery_publisher_child() ++
         [
           # Start to serve requests, typically the last entry
@@ -29,6 +30,19 @@ defmodule Api.Application do
   defp delivery_publisher_child do
     if Application.get_env(:api, :delivery_publisher_enabled, true) do
       [Api.NotificationDelivery.Publisher]
+    else
+      []
+    end
+  end
+
+  defp auth_rate_limiter_child do
+    if Application.get_env(:api, :auth_rate_limiter_enabled, false) and
+         Application.fetch_env!(:api, :auth_rate_limit_store) ==
+           Api.AuthRateLimiter.RedisStore do
+      redis_url = Application.fetch_env!(:api, :redis_url)
+      redis_name = Application.fetch_env!(:api, :auth_rate_limit_redis_name)
+
+      [{Redix, {redis_url, [name: redis_name]}}]
     else
       []
     end

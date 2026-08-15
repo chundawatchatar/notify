@@ -55,6 +55,8 @@ defmodule Api.MixProject do
       {:plug, "~> 1.20.3"},
       {:argon2_elixir, "~> 4.1"},
       {:joken, "~> 2.6"},
+      {:redix, "~> 1.6"},
+      {:inet_cidr, "~> 1.0.9"},
       {:tz_extra, "~> 0.45"},
       {:swoosh, "~> 1.19"},
       {:gen_smtp, "~> 1.3"},

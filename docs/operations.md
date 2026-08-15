@@ -43,6 +43,19 @@ Redis and Postmark settings defined in
 `docs/authentication-production-readiness.md`. The Kubernetes templates do not
 enable public authentication by themselves.
 
+For authentication rate limiting, provide:
+
+- `REDIS_URL`, pointing every API replica at the same production Redis service;
+- `AUTH_RATE_LIMIT_NAMESPACE`, unique to this deployment but stable across its
+  normal rollouts;
+- `AUTH_RATE_LIMIT_TRUSTED_PROXIES`, containing the exact comma-separated IP or
+  CIDR ranges of ingress peers allowed to set `X-Forwarded-For`.
+
+The ingress must replace client-supplied `X-Forwarded-For` values with its
+managed forwarding chain. Network policy must prevent public clients from
+connecting directly to API pods. Requests from peers outside the configured
+trusted ranges use the socket peer address and ignore forwarding headers.
+
 `CORS_ORIGINS` must contain exact comma-separated origins and must include
 `WEB_APP_URL`. Cookie-mutating authentication requests are rejected unless
 their `Origin` header matches one of these configured origins.
@@ -109,9 +122,12 @@ not be publicly exposed.
 
 `docs/authentication-production-readiness.md` is the authoritative contract for
 the protected endpoint set, Redis failure behavior, Postmark runtime variables,
-implementation order, and concrete public-exposure checklist. Once the limiter
-is installed, Redis is a required readiness dependency for API pods serving
-public authentication.
+implementation order, and concrete public-exposure checklist. Redis is a
+required readiness dependency for API pods serving public authentication. A
+Redis outage makes `/api/health/ready` return `503`, and protected authentication
+requests fail closed with `503 rate_limiter_unavailable` until the shared store
+recovers. Exhausted fixed-window budgets return `429 rate_limited` and an
+integer `Retry-After` response header.
 
 In development, verification, password-reset, and invitation messages are
 delivered to the local Mailpit SMTP service and can be inspected at

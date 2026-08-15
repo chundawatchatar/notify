@@ -68,6 +68,32 @@ defmodule ApiWeb.OpenApiControllerTest do
              "Set-Cookie"
            ]["description"] == "Rotating HttpOnly refresh-token cookie"
 
+    rate_limited_paths = [
+      "/api/auth/signup",
+      "/api/auth/signup/complete",
+      "/api/auth/invitations/resolve",
+      "/api/auth/invitations/signup",
+      "/api/auth/email-verification/resend",
+      "/api/auth/email-verification/confirm",
+      "/api/auth/password-reset",
+      "/api/auth/password-reset/confirm",
+      "/api/auth/password-reset/complete",
+      "/api/auth/login",
+      "/api/auth/refresh"
+    ]
+
+    Enum.each(rate_limited_paths, fn path ->
+      operation = response["paths"][path]["post"]
+
+      assert operation["responses"]["429"]["content"]["application/json"]["schema"]["$ref"] ==
+               "#/components/schemas/ErrorResponse"
+
+      assert operation["responses"]["429"]["headers"]["Retry-After"]
+
+      assert operation["responses"]["503"]["content"]["application/json"]["schema"]["$ref"] ==
+               "#/components/schemas/ErrorResponse"
+    end)
+
     assert response["paths"]["/api/auth/me"]["get"]["security"] == [
              %{"bearerAuth" => []}
            ]

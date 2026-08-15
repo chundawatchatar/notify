@@ -29,7 +29,25 @@ defmodule ApiWeb.HealthControllerTest do
     assert response["checks"] == %{
              "database" => %{
                "ready" => true
+             },
+             "redis" => %{
+               "ready" => true
              }
            }
+  end
+
+  test "GET /api/health/ready fails when the required limiter store is unavailable", %{
+    conn: conn
+  } do
+    :ok = Api.AuthRateLimiter.TestStore.set_available(false)
+
+    response =
+      conn
+      |> get(~p"/api/health/ready")
+      |> json_response(503)
+
+    assert response["status"] == "degraded"
+    assert response["checks"]["database"]["ready"]
+    refute response["checks"]["redis"]["ready"]
   end
 end

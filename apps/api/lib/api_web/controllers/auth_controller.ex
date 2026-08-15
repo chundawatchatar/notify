@@ -38,6 +38,15 @@ defmodule ApiWeb.AuthController do
 
   @refresh_cookie "_notify_refresh"
   @refresh_cookie_path "/api/auth"
+  @rate_limited_response {"Rate limit exceeded", "application/json", ErrorResponse,
+                          headers: %{
+                            "Retry-After" => %Header{
+                              description: "Seconds until the exhausted budget resets",
+                              schema: %Schema{type: :integer, minimum: 1}
+                            }
+                          }}
+  @rate_limiter_unavailable_response {"Rate limiter unavailable", "application/json",
+                                      ErrorResponse}
 
   plug ApiWeb.Plugs.RequireAllowedOrigin
        when action in [
@@ -52,6 +61,21 @@ defmodule ApiWeb.AuthController do
               :switch_workspace
             ]
 
+  plug ApiWeb.Plugs.AuthRateLimit
+       when action in [
+              :signup,
+              :complete_signup,
+              :resolve_invitation,
+              :complete_invitation_signup,
+              :resend_verification,
+              :confirm_email,
+              :request_password_reset,
+              :confirm_password_reset,
+              :complete_password_reset,
+              :login,
+              :refresh
+            ]
+
   plug ApiWeb.Plugs.Authenticate, [required: false] when action == :delete_session
 
   tags ["authentication"]
@@ -62,8 +86,10 @@ defmodule ApiWeb.AuthController do
     request_body: {"Signup email", "application/json", SignupRequest, required: true},
     responses: [
       accepted: {"Verification request accepted", "application/json", StatusResponse},
+      too_many_requests: @rate_limited_response,
       unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse},
-      service_unavailable: {"Verification delivery failed", "application/json", ErrorResponse}
+      service_unavailable:
+        {"Rate limiter or verification delivery unavailable", "application/json", ErrorResponse}
     ]
 
   def signup(conn, %{"email" => email}) do
@@ -159,7 +185,9 @@ defmodule ApiWeb.AuthController do
       {"Invitation token", "application/json", ResolveInvitationRequest, required: true},
     responses: [
       ok: {"Invitation details", "application/json", InvitationPreviewResponse},
-      bad_request: {"Invitation invalid or expired", "application/json", ErrorResponse}
+      bad_request: {"Invitation invalid or expired", "application/json", ErrorResponse},
+      too_many_requests: @rate_limited_response,
+      service_unavailable: @rate_limiter_unavailable_response
     ]
 
   def resolve_invitation(conn, %{"token" => token})
@@ -198,7 +226,9 @@ defmodule ApiWeb.AuthController do
       bad_request: {"Invitation invalid or expired", "application/json", ErrorResponse},
       conflict: {"Email already registered", "application/json", ErrorResponse},
       forbidden: {"Origin rejected", "application/json", ErrorResponse},
-      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse},
+      too_many_requests: @rate_limited_response,
+      service_unavailable: @rate_limiter_unavailable_response
     ]
 
   def complete_invitation_signup(conn, %{"token" => token} = params)
@@ -246,8 +276,10 @@ defmodule ApiWeb.AuthController do
        required: true},
     responses: [
       accepted: {"Verification request accepted", "application/json", StatusResponse},
+      too_many_requests: @rate_limited_response,
       unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse},
-      service_unavailable: {"Verification delivery failed", "application/json", ErrorResponse}
+      service_unavailable:
+        {"Rate limiter or verification delivery unavailable", "application/json", ErrorResponse}
     ]
 
   def resend_verification(conn, %{"email" => email})
@@ -290,7 +322,9 @@ defmodule ApiWeb.AuthController do
       {"Email verification token", "application/json", ConfirmEmailRequest, required: true},
     responses: [
       ok: {"Email verified for signup completion", "application/json", SignupTokenResponse},
-      bad_request: {"Token invalid or expired", "application/json", ErrorResponse}
+      bad_request: {"Token invalid or expired", "application/json", ErrorResponse},
+      too_many_requests: @rate_limited_response,
+      service_unavailable: @rate_limiter_unavailable_response
     ]
 
   def confirm_email(conn, %{"token" => token}) do
@@ -327,7 +361,9 @@ defmodule ApiWeb.AuthController do
         {"Account and owner workspace created", "application/json", SignupCompletionResponse},
       bad_request: {"Signup token invalid or expired", "application/json", ErrorResponse},
       conflict: {"Email already registered", "application/json", ErrorResponse},
-      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse},
+      too_many_requests: @rate_limited_response,
+      service_unavailable: @rate_limiter_unavailable_response
     ]
 
   def complete_signup(conn, params) do
@@ -374,7 +410,9 @@ defmodule ApiWeb.AuthController do
       accepted:
         {"Password reset request accepted", "application/json", PasswordResetRequestResponse},
       forbidden: {"Origin rejected", "application/json", ErrorResponse},
-      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse},
+      too_many_requests: @rate_limited_response,
+      service_unavailable: @rate_limiter_unavailable_response
     ]
 
   def request_password_reset(conn, %{"email" => email})
@@ -404,7 +442,9 @@ defmodule ApiWeb.AuthController do
     responses: [
       ok: {"Password reset confirmed", "application/json", PasswordResetTokenResponse},
       bad_request: {"Token invalid or expired", "application/json", ErrorResponse},
-      forbidden: {"Origin rejected", "application/json", ErrorResponse}
+      forbidden: {"Origin rejected", "application/json", ErrorResponse},
+      too_many_requests: @rate_limited_response,
+      service_unavailable: @rate_limiter_unavailable_response
     ]
 
   def confirm_password_reset(conn, %{"token" => token}) do
@@ -428,7 +468,9 @@ defmodule ApiWeb.AuthController do
       ok: {"Password reset", "application/json", PasswordResetCompletionResponse},
       bad_request: {"Reset token invalid or expired", "application/json", ErrorResponse},
       forbidden: {"Origin rejected", "application/json", ErrorResponse},
-      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse},
+      too_many_requests: @rate_limited_response,
+      service_unavailable: @rate_limiter_unavailable_response
     ]
 
   def complete_password_reset(conn, params) do
@@ -462,7 +504,9 @@ defmodule ApiWeb.AuthController do
          }},
       unauthorized: {"Credentials invalid", "application/json", ErrorResponse},
       forbidden: {"Email not verified or origin rejected", "application/json", ErrorResponse},
-      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse}
+      unprocessable_entity: {"Validation failed", "application/json", ValidationErrorResponse},
+      too_many_requests: @rate_limited_response,
+      service_unavailable: @rate_limiter_unavailable_response
     ]
 
   def login(conn, params) do
@@ -531,7 +575,9 @@ defmodule ApiWeb.AuthController do
            }
          }},
       unauthorized: {"Refresh credential invalid", "application/json", ErrorResponse},
-      forbidden: {"Origin rejected", "application/json", ErrorResponse}
+      forbidden: {"Origin rejected", "application/json", ErrorResponse},
+      too_many_requests: @rate_limited_response,
+      service_unavailable: @rate_limiter_unavailable_response
     ]
 
   def refresh(conn, _params) do

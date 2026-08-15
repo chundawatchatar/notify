@@ -5,6 +5,7 @@ defmodule ApiWeb.HealthController do
   require Logger
 
   alias Api.Repo
+  alias Api.AuthRateLimiter
   alias NotifyOpenApi.Schemas.{LivenessResponse, ReadinessResponse}
 
   tags ["system"]
@@ -35,17 +36,22 @@ defmodule ApiWeb.HealthController do
 
   def ready(conn, _params) do
     database_ready? = database_ready?()
+    redis_ready? = AuthRateLimiter.ready?()
+    ready? = database_ready? and redis_ready?
 
-    status = if database_ready?, do: :ok, else: :service_unavailable
+    status = if ready?, do: :ok, else: :service_unavailable
 
     conn
     |> put_status(status)
     |> json(%{
-      status: if(database_ready?, do: "ok", else: "degraded"),
+      status: if(ready?, do: "ok", else: "degraded"),
       service: service_info(),
       checks: %{
         database: %{
           ready: database_ready?
+        },
+        redis: %{
+          ready: redis_ready?
         }
       }
     })

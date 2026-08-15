@@ -47,6 +47,24 @@ if auth_jwt_secret = System.get_env("AUTH_JWT_SECRET") do
   config :api, auth_jwt_secret: auth_jwt_secret
 end
 
+if redis_url = System.get_env("REDIS_URL") do
+  config :api, redis_url: String.trim(redis_url)
+end
+
+if namespace = System.get_env("AUTH_RATE_LIMIT_NAMESPACE") do
+  config :api, auth_rate_limit_namespace: String.trim(namespace)
+end
+
+if trusted_proxies = System.get_env("AUTH_RATE_LIMIT_TRUSTED_PROXIES") do
+  proxies =
+    trusted_proxies
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+
+  config :api, auth_rate_limit_trusted_proxies: proxies
+end
+
 if config_env() == :dev do
   if dev_email_smtp_host = System.get_env("DEV_EMAIL_SMTP_HOST") do
     config :api, Api.Mailer, relay: dev_email_smtp_host
@@ -64,6 +82,49 @@ if config_env() == :prod do
   if byte_size(auth_jwt_secret) < 32 do
     raise "AUTH_JWT_SECRET must contain at least 32 bytes"
   end
+
+  redis_url =
+    case System.get_env("REDIS_URL") do
+      nil -> raise "REDIS_URL must be set in production"
+      value -> String.trim(value)
+    end
+
+  if redis_url == "" do
+    raise "REDIS_URL must not be blank in production"
+  end
+
+  auth_rate_limit_namespace =
+    case System.get_env("AUTH_RATE_LIMIT_NAMESPACE") do
+      nil -> raise "AUTH_RATE_LIMIT_NAMESPACE must be set in production"
+      value -> String.trim(value)
+    end
+
+  if auth_rate_limit_namespace == "" do
+    raise "AUTH_RATE_LIMIT_NAMESPACE must not be blank in production"
+  end
+
+  auth_rate_limit_trusted_proxies =
+    case System.get_env("AUTH_RATE_LIMIT_TRUSTED_PROXIES") do
+      nil ->
+        raise "AUTH_RATE_LIMIT_TRUSTED_PROXIES must be set in production"
+
+      value ->
+        value
+        |> String.split(",", trim: true)
+        |> Enum.map(&String.trim/1)
+        |> Enum.reject(&(&1 == ""))
+    end
+
+  if auth_rate_limit_trusted_proxies == [] do
+    raise "AUTH_RATE_LIMIT_TRUSTED_PROXIES must contain at least one proxy CIDR"
+  end
+
+  Enum.each(auth_rate_limit_trusted_proxies, fn proxy ->
+    case InetCidr.parse_cidr(proxy) do
+      {:ok, _cidr} -> :ok
+      {:error, reason} -> raise "Invalid auth rate-limit proxy CIDR #{inspect(proxy)}: #{reason}"
+    end
+  end)
 
   web_app_url =
     System.get_env("WEB_APP_URL") ||
@@ -140,9 +201,13 @@ if config_env() == :prod do
 
   config :api,
     auth_jwt_secret: auth_jwt_secret,
+    auth_rate_limiter_enabled: true,
+    auth_rate_limit_namespace: auth_rate_limit_namespace,
+    auth_rate_limit_trusted_proxies: auth_rate_limit_trusted_proxies,
     cors_origins: allowed_origins,
     metrics_enabled: metrics_enabled,
     metrics_token: metrics_token,
+    redis_url: redis_url,
     web_app_url: normalized_web_app_url
 
   config :api, ApiWeb.Endpoint,

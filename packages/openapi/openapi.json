@@ -1027,6 +1027,25 @@
         "x-struct": "Elixir.NotifyOpenApi.AnalyticsSchemas.Window",
         "x-validate": null
       },
+      "RedisCheck": {
+        "description": "Redis readiness check result for shared authentication rate limiting.",
+        "example": {
+          "ready": true
+        },
+        "properties": {
+          "ready": {
+            "example": true,
+            "type": "boolean",
+            "x-struct": null,
+            "x-validate": null
+          }
+        },
+        "required": ["ready"],
+        "title": "RedisCheck",
+        "type": "object",
+        "x-struct": "Elixir.NotifyOpenApi.Schemas.RedisCheck",
+        "x-validate": null
+      },
       "DeliveryAnalyticsMetrics": {
         "properties": {
           "counts": {
@@ -1407,14 +1426,20 @@
         "example": {
           "database": {
             "ready": true
+          },
+          "redis": {
+            "ready": true
           }
         },
         "properties": {
           "database": {
             "$ref": "#/components/schemas/DatabaseCheck"
+          },
+          "redis": {
+            "$ref": "#/components/schemas/RedisCheck"
           }
         },
-        "required": ["database"],
+        "required": ["database", "redis"],
         "title": "ReadinessChecks",
         "type": "object",
         "x-struct": "Elixir.NotifyOpenApi.Schemas.ReadinessChecks",
@@ -1775,6 +1800,9 @@
           "checks": {
             "database": {
               "ready": true
+            },
+            "redis": {
+              "ready": true
             }
           },
           "service": {
@@ -2090,6 +2118,28 @@
             },
             "description": "Validation failed"
           },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
           "503": {
             "content": {
               "application/json": {
@@ -2098,7 +2148,7 @@
                 }
               }
             },
-            "description": "Verification delivery failed"
+            "description": "Rate limiter or verification delivery unavailable"
           }
         },
         "summary": "Resend email verification instructions",
@@ -2194,6 +2244,38 @@
               }
             },
             "description": "Validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limiter unavailable"
           }
         },
         "summary": "Sign in with email and password",
@@ -2893,6 +2975,28 @@
             },
             "description": "Validation failed"
           },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
           "503": {
             "content": {
               "application/json": {
@@ -2901,7 +3005,7 @@
                 }
               }
             },
-            "description": "Verification delivery failed"
+            "description": "Rate limiter or verification delivery unavailable"
           }
         },
         "summary": "Start email-first signup",
@@ -3203,6 +3307,38 @@
               }
             },
             "description": "Validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limiter unavailable"
           }
         },
         "summary": "Set a new password",
@@ -3286,6 +3422,38 @@
               }
             },
             "description": "Validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limiter unavailable"
           }
         },
         "summary": "Create an invited account and join its workspace",
@@ -3808,6 +3976,38 @@
               }
             },
             "description": "Token invalid or expired"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limiter unavailable"
           }
         },
         "summary": "Confirm an account email",
@@ -4025,6 +4225,38 @@
               }
             },
             "description": "Validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limiter unavailable"
           }
         },
         "summary": "Complete a verified signup",
@@ -4416,6 +4648,38 @@
               }
             },
             "description": "Origin rejected"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limiter unavailable"
           }
         },
         "summary": "Confirm a password reset link",
@@ -4787,6 +5051,38 @@
               }
             },
             "description": "Origin rejected"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limiter unavailable"
           }
         },
         "summary": "Rotate a refresh credential",
@@ -4994,6 +5290,38 @@
               }
             },
             "description": "Validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limiter unavailable"
           }
         },
         "summary": "Request password reset instructions",
@@ -5036,6 +5364,38 @@
               }
             },
             "description": "Invitation invalid or expired"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the exhausted budget resets",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                  "x-struct": null,
+                  "x-validate": null
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limiter unavailable"
           }
         },
         "summary": "Resolve an invitation for acceptance",
