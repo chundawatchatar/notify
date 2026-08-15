@@ -37,9 +37,11 @@ Current backend endpoints:
 - `GET /api/auth/me`
 - `DELETE /api/auth/session`
 
-Google OAuth and auth rate limiting are deferred.
-Rate limiting and a production email provider are required before public
-production exposure.
+Redis-backed auth rate limiting and Postmark transactional email are required
+before public production exposure. Their endpoint scope, runtime contract, and
+verification gates are defined in
+`docs/authentication-production-readiness.md`. Google OAuth and broader auth
+work remain deferred.
 
 ## Workspace Collaboration
 

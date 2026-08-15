@@ -5,6 +5,10 @@ database-backed rotating refresh session. The API owns both credentials and
 dashboard JavaScript never persists either credential in `localStorage` or
 `sessionStorage`.
 
+The authentication public-exposure gates, initial endpoint rate limits, and
+production email provider contract are defined in
+`docs/authentication-production-readiness.md`.
+
 ## Credential Model
 
 - The access token is a signed JWT with a 15-minute lifetime. It contains only
@@ -168,7 +172,8 @@ the user signs in with the new password.
 
 Development reset emails are delivered to the local Mailpit inbox at
 `http://localhost:8025` with the default `MAILPIT_UI_PORT`. The production
-adapter remains disabled until a real email provider is configured.
+adapter remains disabled until the Postmark implementation and public-exposure
+checks in `docs/authentication-production-readiness.md` are complete.
 
 ## Logout
 

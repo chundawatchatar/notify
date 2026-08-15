@@ -38,6 +38,11 @@ provide the production runtime values, including:
 - `WEB_APP_URL`, used to build verification links
 - `metrics-token`
 
+Before authentication is publicly exposed, the Secret must also provide the
+Redis and Postmark settings defined in
+`docs/authentication-production-readiness.md`. The Kubernetes templates do not
+enable public authentication by themselves.
+
 `CORS_ORIGINS` must contain exact comma-separated origins and must include
 `WEB_APP_URL`. Cookie-mutating authentication requests are rejected unless
 their `Origin` header matches one of these configured origins.
@@ -101,6 +106,12 @@ adapters are intentionally disabled. Configure real provider implementations
 before exposing signup, password recovery, or workspace invitations. Until auth
 rate limiting and production email delivery are installed, authentication must
 not be publicly exposed.
+
+`docs/authentication-production-readiness.md` is the authoritative contract for
+the protected endpoint set, Redis failure behavior, Postmark runtime variables,
+implementation order, and concrete public-exposure checklist. Once the limiter
+is installed, Redis is a required readiness dependency for API pods serving
+public authentication.
 
 In development, verification, password-reset, and invitation messages are
 delivered to the local Mailpit SMTP service and can be inspected at
